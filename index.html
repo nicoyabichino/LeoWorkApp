@@ -233,6 +233,38 @@
       .catch(err => console.log("Error", err));
   }
 </script>
+    <div id="install-banner" style="display:none; position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#3b82f6; color:white; padding:15px 25px; border-radius:30px; z-index:9999; box-shadow:0 4px 15px rgba(0,0,0,0.5); font-weight:bold; cursor:pointer;">
+   📲 INSTALAR APP EN MI CELULAR
+</div>
+
+<script>
+let deferredPrompt;
+const banner = document.getElementById('install-banner');
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  // Mostrar el botón si la app no está instalada
+  banner.style.display = 'block';
+});
+
+banner.addEventListener('click', async () => {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') {
+      banner.style.display = 'none';
+    }
+    deferredPrompt = null;
+  }
+});
+
+// Ocultar si ya está instalada
+window.addEventListener('appinstalled', () => {
+  banner.style.display = 'none';
+});
+</script>
 </body>
 
 </html>
+
