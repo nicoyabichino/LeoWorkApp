@@ -1,6 +1,6 @@
 {
-  "name": "Workout Player Pro",
-  "short_name": "WorkoutPro",
+  "name": "Leo Work App",
+  "short_name": "LeoWorkApp",
   "description": "App de entrenamiento de Leonardo Rodriguez",
   "start_url": "./index.html",
   "display": "standalone",
@@ -13,4 +13,5 @@
       "type": "image/png"
     }
   ]
+
 }
