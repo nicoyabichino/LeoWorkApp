@@ -192,110 +192,138 @@
 
         function borrarRutinaActual() { if(confirm("¿Borrar rutina?")) { localStorage.clear(); location.reload(); } }
 
-        // --- LÓGICA DE REPORTE AVANZADA ---
-        async function crearImgGrafico(canvasId, labels, data, maxVal, datasetLabel) {
-            const ctx = document.getElementById(canvasId).getContext('2d');
-            const chart = new Chart(ctx, {
-                type: 'bar', 
-                data: { labels: labels, datasets: [{ label: datasetLabel, data: data, backgroundColor: '#3b82f6', borderRadius: 5 }] },
-                options: { 
-                    animation: false, 
-                    plugins: { legend: { display: true, labels: { color: 'white' } } }, 
-                    scales: { 
-                        y: { beginAtZero: true, suggestedMax: maxVal, ticks: { color: 'white' }, grid: { color: '#333' } }, 
-                        x: { ticks: { color: 'white', font: { size: 10 } }, grid: { display: false } } 
-                    } 
-                },
-                plugins: [{
-                    id: 'valueLabel',
-                    afterDatasetsDraw(chart) {
-                        const {ctx} = chart; ctx.save(); ctx.textAlign = 'center'; ctx.fillStyle = 'white';
-                        ctx.font = 'bold 12px Arial'; chart.getDatasetMeta(0).data.forEach((bar, i) => {
-                            ctx.fillText(chart.data.datasets[0].data[i], bar.x, bar.y - 5);
-                        }); ctx.restore();
-                    }
-                }]
-            });
-            await new Promise(r => setTimeout(r, 500)); 
-            const url = document.getElementById(canvasId).toDataURL('image/png'); 
-            chart.destroy(); return url;
-        }
-
-        async function generarReporteProfe() {
-            try {
-                const { jsPDF } = window.jspdf;
-                const doc = new jsPDF('p', 'mm', 'a4');
-                let cM = {}, cS = {};
-
-                // Consolidar datos
-                Object.keys(rutinaFull.sesiones).forEach(sId => {
-                    let tS = 0;
-                    rutinaFull.sesiones[sId].ejercicios.forEach((ex, exIdx) => {
-                        for(let sIdx=0; sIdx < ex.series; sIdx++) {
-                            const saved = getSavedData(sId, exIdx, sIdx);
-                            if(saved.done) {
-                                const m = (ex.grupo || "OTRO").toUpperCase();
-                                cM[m] = (cM[m] || 0) + 1;
-                                tS++;
-                            }
-                        }
-                    });
-                    cS[rutinaFull.sesiones[sId].nombre] = tS;
-                });
-
-                // Diseño PDF
-                doc.setFillColor(0, 0, 0); doc.rect(0, 0, 210, 297, 'F');
-                doc.setTextColor(255, 255, 255); doc.setFontSize(22);
-                doc.text(`REPORTE SEMANA ${rutinaFull.semana || "-"}`, 105, 20, { align: 'center' });
-                doc.setTextColor(59, 130, 246); doc.setFontSize(14);
-                doc.text(`ALUMNO: ${rutinaFull.alumno.toUpperCase()}`, 105, 30, { align: 'center' });
-
-                // Gráfico 1
-                if (Object.keys(cM).length > 0) {
-                    const i1 = await crearImgGrafico('chartMusculos', Object.keys(cM), Object.values(cM), 20, 'Series por Músculo');
-                    doc.addImage(i1, 'PNG', 15, 45, 180, 70);
-                }
-
-                // Gráfico 2
-                if (Object.keys(cS).length > 0) {
-                    const i2 = await crearImgGrafico('chartSesiones', Object.keys(cS), Object.values(cS), 30, 'Series por Sesión');
-                    doc.addImage(i2, 'PNG', 15, 120, 180, 70);
-                }
-
-                // Tabla Detallada
-                let tableBody = [];
-                Object.keys(rutinaFull.sesiones).forEach(sId => {
-                    rutinaFull.sesiones[sId].ejercicios.forEach((ex, exIdx) => {
-                        for(let sIdx=0; sIdx < ex.series; sIdx++) {
-                            const saved = getSavedData(sId, exIdx, sIdx);
-                            if(saved.done) {
-                                tableBody.push([ex.nombre, `S${sIdx+1}`, saved.reps || '-', saved.peso || '-', saved.rpe || '-']);
-                            }
-                        }
-                    });
-                });
-
-                if (tableBody.length > 0) {
-                    doc.autoTable({
-                        startY: 200,
-                        head: [['EJERCICIO', 'SET', 'REPS', 'KG', 'RPE']],
-                        body: tableBody,
-                        theme: 'grid',
-                        styles: { fillColor: [15, 15, 15], textColor: 255, fontSize: 8 },
-                        headStyles: { fillColor: [59, 130, 246] },
-                        margin: { bottom: 20 }
-                    });
-                }
-
-                doc.save(`Reporte_${rutinaFull.alumno}_Semana${rutinaFull.semana}.pdf`);
-            } catch(e) {
-                console.error(e);
-                alert("Error al generar PDF: " + e.message);
+       // --- LÓGICA DE REPORTE AVANZADA ACTUALIZADA ---
+async function crearImgGrafico(canvasId, labels, data, maxVal, datasetLabel) {
+    const ctx = document.getElementById(canvasId).getContext('2d');
+    const chart = new Chart(ctx, {
+        type: 'bar', 
+        data: { 
+            labels: labels, 
+            datasets: [{ 
+                label: datasetLabel, 
+                data: data, 
+                backgroundColor: '#3b82f6', 
+                borderRadius: 5,
+                barPercentage: 0.5, // Hace las barras más angostas
+                categoryPercentage: 0.8
+            }] 
+        },
+        options: { 
+            animation: false, 
+            plugins: { 
+                legend: { 
+                    display: true, 
+                    labels: { color: 'white', font: { size: 16, weight: 'bold' } } 
+                } 
+            }, 
+            scales: { 
+                y: { 
+                    beginAtZero: true, 
+                    suggestedMax: maxVal, 
+                    ticks: { color: 'white', font: { size: 14 } }, 
+                    grid: { color: '#333' } 
+                }, 
+                x: { 
+                    ticks: { color: 'white', font: { size: 14, weight: 'bold' } }, 
+                    grid: { display: false } 
+                } 
+            } 
+        },
+        plugins: [{
+            id: 'valueLabel',
+            afterDatasetsDraw(chart) {
+                const {ctx} = chart; ctx.save(); 
+                ctx.textAlign = 'center'; 
+                ctx.fillStyle = 'white';
+                ctx.font = 'bold 18px Arial'; // Números más grandes sobre las barras
+                chart.getDatasetMeta(0).data.forEach((bar, i) => {
+                    ctx.fillText(chart.data.datasets[0].data[i], bar.x, bar.y - 8);
+                }); 
+                ctx.restore();
             }
+        }]
+    });
+    await new Promise(r => setTimeout(r, 600)); 
+    const url = document.getElementById(canvasId).toDataURL('image/png'); 
+    chart.destroy(); 
+    return url;
+}
+
+async function generarReporteProfe() {
+    try {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF('p', 'mm', 'a4');
+        let cM = {}, cS = {};
+
+        Object.keys(rutinaFull.sesiones).forEach(sId => {
+            let tS = 0;
+            rutinaFull.sesiones[sId].ejercicios.forEach((ex, exIdx) => {
+                for(let sIdx=0; sIdx < ex.series; sIdx++) {
+                    const saved = getSavedData(sId, exIdx, sIdx);
+                    if(saved.done) {
+                        const m = (ex.grupo || "OTRO").toUpperCase();
+                        cM[m] = (cM[m] || 0) + 1;
+                        tS++;
+                    }
+                }
+            });
+            cS[rutinaFull.sesiones[sId].nombre] = tS;
+        });
+
+        // Fondo negro PDF
+        doc.setFillColor(0, 0, 0); doc.rect(0, 0, 210, 297, 'F');
+        
+        // Títulos
+        doc.setTextColor(255, 255, 255); doc.setFontSize(24);
+        doc.text(`REPORTE SEMANA ${rutinaFull.semana || "-"}`, 105, 20, { align: 'center' });
+        doc.setTextColor(59, 130, 246); doc.setFontSize(16);
+        doc.text(`ALUMNO: ${rutinaFull.alumno.toUpperCase()}`, 105, 30, { align: 'center' });
+
+        // Gráfico 1 (Aumentado un poco el alto para que luzcan las letras grandes)
+        if (Object.keys(cM).length > 0) {
+            const i1 = await crearImgGrafico('chartMusculos', Object.keys(cM), Object.values(cM), 20, 'Series por Músculo');
+            doc.addImage(i1, 'PNG', 15, 45, 180, 75);
         }
+
+        // Gráfico 2
+        if (Object.keys(cS).length > 0) {
+            const i2 = await crearImgGrafico('chartSesiones', Object.keys(cS), Object.values(cS), 30, 'Series por Sesión');
+            doc.addImage(i2, 'PNG', 15, 125, 180, 75);
+        }
+
+        // Tabla Detallada
+        let tableBody = [];
+        Object.keys(rutinaFull.sesiones).forEach(sId => {
+            rutinaFull.sesiones[sId].ejercicios.forEach((ex, exIdx) => {
+                for(let sIdx=0; sIdx < ex.series; sIdx++) {
+                    const saved = getSavedData(sId, exIdx, sIdx);
+                    if(saved.done) {
+                        tableBody.push([ex.nombre, `S${sIdx+1}`, saved.reps || '-', saved.peso || '-', saved.rpe || '-']);
+                    }
+                }
+            });
+        });
+
+        if (tableBody.length > 0) {
+            doc.autoTable({
+                startY: 205,
+                head: [['EJERCICIO', 'SET', 'REPS', 'KG', 'RPE']],
+                body: tableBody,
+                theme: 'grid',
+                styles: { fillColor: [20, 20, 20], textColor: 255, fontSize: 9 }, // Letra de tabla un poco más grande
+                headStyles: { fillColor: [59, 130, 246], fontSize: 10 }
+            });
+        }
+
+        doc.save(`Reporte_${rutinaFull.alumno}_Semana${rutinaFull.semana}.pdf`);
+    } catch(e) {
+        alert("Error al generar PDF: " + e.message);
+    }
+}
 
         function confirmarFinalizacion() { if(confirm("¿Generar reporte semanal?")) generarReporteProfe(); }
         init();
     </script>
 </body>
 </html>
+
