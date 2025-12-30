@@ -113,14 +113,17 @@
         let rutinaFull = {}; let timerInt; let deferredPrompt;
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
-        // --- LÓGICA DE INSTALACIÓN (PWA) ---
+// --- LÓGICA DE INSTALACIÓN (PWA) SOLO PARA MÓVILES ---
         const installBtn = document.getElementById('install-banner');
 
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             deferredPrompt = e;
-            // Mostrar el botón solo si el evento de instalación está listo
-            installBtn.style.display = 'block';
+            
+            // Solo mostrar el botón si es un celular (pantalla menor a 768px)
+            if (window.innerWidth <= 768) {
+                installBtn.style.display = 'block';
+            }
         });
 
         installBtn.addEventListener('click', async () => {
@@ -142,7 +145,6 @@
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('sw.js').catch(() => {});
         }
-
         function playBeep() {
             try {
                 const osc = audioCtx.createOscillator();
@@ -370,3 +372,4 @@
     </script>
 </body>
 </html>
+
