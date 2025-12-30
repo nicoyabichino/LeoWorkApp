@@ -262,9 +262,46 @@ window.addEventListener('appinstalled', () => {
     btnInstalar.style.display = 'none';
     deferredPrompt = null;
 });
+    let deferredPrompt;
+const btnInstalar = document.getElementById('btn-instalar');
+
+// 1. Detectar si es dispositivo móvil
+const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+window.addEventListener('beforeinstallprompt', (e) => {
+    // Evitar que Chrome muestre el prompt automático
+    e.preventDefault();
+    // Guardar el evento para usarlo después
+    deferredPrompt = e;
+    
+    // Solo mostrar el botón si es móvil
+    if (isMobile) {
+        btnInstalar.style.display = 'flex';
+    }
+});
+
+btnInstalar.addEventListener('click', async () => {
+    if (deferredPrompt) {
+        // Mostrar el cuadro de instalación
+        deferredPrompt.prompt();
+        // Esperar la respuesta del usuario
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === 'accepted') {
+            console.log('El usuario aceptó la instalación');
+        }
+        deferredPrompt = null;
+        btnInstalar.style.display = 'none';
+    }
+});
+
+window.addEventListener('appinstalled', () => {
+    btnInstalar.style.display = 'none';
+    deferredPrompt = null;
+});
 </script>
 </body>
 </html>
+
 
 
 
