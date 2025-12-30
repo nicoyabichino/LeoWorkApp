@@ -54,7 +54,7 @@
         <div id="display" class="timer-val" style="display: none;">00:00</div>
         <div id="alumno-header" style="text-align: right; display: none;">
             <div id="alumno-display" style="font-size: 0.8rem; color: var(--primary); font-weight: bold;">-</div>
-            <div id="semana-display" style="font-size: 0.6rem; color: #666;"></div>
+        <div id="semana-display" style="font-size: 0.9rem; color: #ffffff; font-weight: bold; margin-top: 2px;"></div>
         </div>
     </header>
 
@@ -73,12 +73,12 @@
             <select id="session-picker" class="session-selector" onchange="loadSession(this.value)"></select>
             <div id="workout-content"></div>
             <button class="btn-stats" onclick="confirmarFinalizacion()">📊 GENERAR REPORTE SEMANAL</button>
-            <button onclick="borrarRutinaActual()" style="background:transparent; color:#555; border:none; width:100%; margin-top:30px; font-size:0.75rem; text-decoration:underline; cursor:pointer;">BORRAR Y CARGAR OTRA</button>
+            <button onclick="borrarRutinaActual()" style="background:transparent; color:#555; border:none; width:100%; margin-top:30px; font-size:0.75rem; text-decoration:underline; cursor:pointer;">BORRAR Y CARGAR OTRA RUTINA</button>
         </div>
     </main>
 
     <footer class="footer-sign">
-        DESIGNED BY <span class="brand-blue">NICOYABICHINO</span>
+        CREADO POR <span class="brand-blue">NICOYABI</span>
     </footer>
 
     <button id="install-banner">📲 INSTALAR APP EN MI CELULAR</button>
@@ -338,5 +338,6 @@ async function generarReporteProfe() {
     </script>
 </body>
 </html>
+
 
 
