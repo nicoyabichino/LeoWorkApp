@@ -1,250 +1,286 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#000000">
-    <meta name="apple-mobile-web-app-capable" content="yes">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>LEO WorkApp</title>
+    <title>Leo Work App</title>
     
+    <link rel="manifest" href="manifest.json?v=2">
+    <meta name="theme-color" content="#000000">
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
+
     <style>
         :root {
             --bg: #000000; --card: #111111; --text: #f8fafc;
             --primary: #3b82f6; --success: #22c55e; --danger: #ef4444;
-            --accent: #00d4ff; 
+            --accent: #00d4ff; /* Azul Eléctrico */
         }
-        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); padding-bottom: 30px; }
-        
-        /* Encabezado Dominante */
+
+        * { 
+            box-sizing: border-box; margin: 0; padding: 0; 
+            -webkit-tap-highlight-color: transparent; 
+            touch-action: manipulation; 
+        }
+
+        body { 
+            font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); 
+            padding-bottom: 30px; overflow-x: hidden;
+        }
+
         header { 
             position: sticky; top: 0; background: #000; padding: 15px; 
-            display: flex; justify-content: space-between; align-items: center; 
+            display: flex; justify-content: space-between; align-items: center;
             border-bottom: 2px solid var(--primary); z-index: 100;
         }
-        .logo-text { font-weight: 900; letter-spacing: -1px; font-size: 1.2rem; }
-        .logo-leo { color: white; }
-        .logo-work { color: var(--accent); }
 
-        .timer-val { font-family: monospace; font-size: 2.2rem; font-weight: bold; color: var(--success); text-shadow: 0 0 10px rgba(34, 197, 94, 0.5); }
+        .logo { font-weight: bold; font-size: 1.2rem; }
+        .timer-val { font-family: monospace; font-size: 1.8rem; font-weight: bold; color: var(--success); }
         
-        main { padding: 15px; max-width: 600px; margin: auto; }
+        main { padding: 15px; max-width: 600px; margin: auto; min-height: 85vh; }
         
         #welcome-screen { text-align: center; padding: 20px 0; }
-        .welcome-card { background: var(--card); border: 1px solid #333; padding: 30px; border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .welcome-card { background: var(--card); border: 1px solid #333; padding: 30px; border-radius: 20px; }
+        .prof-title { color: #888; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 5px; }
+        .main-welcome-title { color: var(--primary); font-size: 1.8rem; margin-bottom: 15px; font-weight: 800; }
         
-        .prof-name { color: #888; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 4px; margin-bottom: 8px; font-weight: 300; }
-        .app-title { font-size: 2.2rem; font-weight: 800; background: linear-gradient(to bottom, #fff, #3b82f6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 20px; }
-
-        textarea { width: 100%; height: 120px; background: #070707; color: var(--success); border: 1px solid #222; border-radius: 12px; padding: 15px; margin: 20px 0; font-family: monospace; outline: none; }
-        
-        .exercise-card { background: var(--card); border-radius: 16px; margin-bottom: 20px; border: 1px solid #222; overflow: hidden; }
-        .ex-header { padding: 15px; background: rgba(255,255,255,0.02); display: flex; justify-content: space-between; align-items: center; }
-        
-        .grid-header { display: grid; grid-template-columns: 35px 1.2fr 1fr 1fr 0.8fr 45px; gap: 5px; padding: 10px; font-size: 0.6rem; color: #555; text-align: center; text-transform: uppercase; }
-        .set-row { display: grid; grid-template-columns: 35px 1.2fr 1fr 1fr 0.8fr 45px; gap: 5px; padding: 10px; align-items: center; border-top: 1px solid #1a1a1a; }
-        
-        /* Cambio solicitado: Rep y Kg */
-        .obj-cell { font-size: 0.65rem; color: #eab308; background: #1a1300; padding: 4px; border-radius: 6px; text-align: center; border: 1px solid #332200; font-weight: bold; }
-        
-        input { width: 100%; background: #000; border: 1px solid #333; color: white; padding: 10px 2px; border-radius: 8px; text-align: center; font-size: 1rem; }
-        .check-btn { width: 40px; height: 40px; border-radius: 10px; border: none; background: #222; color: white; font-size: 1.2rem; transition: 0.3s; }
-        .check-btn.active { background: var(--success); box-shadow: 0 0 15px rgba(34, 197, 94, 0.4); }
-        
-        .btn-main { width: 100%; padding: 18px; background: var(--primary); color: white; border: none; border-radius: 14px; font-weight: 800; font-size: 1rem; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; }
-        
-        .btn-install { 
-            display: none; width: 100%; padding: 15px; background: var(--accent); color: #000; 
-            border: none; border-radius: 50px; font-weight: 900; margin-top: 20px; 
-            box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+        textarea { 
+            width: 100%; height: 150px; background: #000; color: #22c55e; border: 1px solid #333; 
+            border-radius: 12px; padding: 15px; margin: 20px 0; font-family: monospace; font-size: 0.9rem; outline: none;
         }
 
-        .yt-link { color: #ff0000; text-decoration: none; display: flex; align-items: center; gap: 4px; font-size: 0.7rem; font-weight: bold; }
+        .session-selector { 
+            width: 100%; padding: 12px; margin-bottom: 20px; 
+            background: #111; color: white; border: 1px solid var(--primary); border-radius: 8px; font-size: 1rem;
+        }
+        
+        .exercise-card { background: var(--card); border-radius: 12px; margin-bottom: 20px; overflow: hidden; border: 1px solid #222; }
+        .ex-header { padding: 15px; background: rgba(255,255,255,0.03); display: flex; justify-content: space-between; align-items: center; }
+        
+        .grid-header { display: grid; grid-template-columns: 35px 1.2fr 1fr 1fr 0.8fr 45px; gap: 5px; padding: 10px; font-size: 0.65rem; color: #666; text-align: center; font-weight: bold; }
+        .set-row { display: grid; grid-template-columns: 35px 1.2fr 1fr 1fr 0.8fr 45px; gap: 5px; padding: 8px 10px; align-items: center; border-top: 1px solid #222; }
+        
+        .obj-cell { font-size: 0.65rem; color: #eab308; background: #1a1300; padding: 4px; border-radius: 4px; text-align: center; line-height: 1.2; font-weight: bold; border: 1px solid #332200; }
+        input { width: 100%; background: #000; border: 1px solid #333; color: white; padding: 10px 2px; border-radius: 5px; text-align: center; font-size: 1rem; outline: none; }
+        
+        .check-btn { width: 40px; height: 40px; border-radius: 50%; border: none; background: #222; color: white; cursor: pointer; font-size: 1.2rem; transition: 0.2s; }
+        .check-btn.active { background: var(--success); transform: scale(1.1); }
+        .set-row.done { background: rgba(34, 197, 94, 0.05); }
+
+        .btn-stats { 
+            width: 100%; padding: 18px; background: var(--primary); color: white; 
+            border: none; border-radius: 12px; font-weight: bold; font-size: 1.1rem; margin-top: 10px; cursor: pointer;
+        }
+
+        .footer-sign { text-align: center; color: #888; font-size: 0.7rem; letter-spacing: 3px; margin-top: 40px; font-weight: bold; padding-bottom: 100px; }
+        .brand-blue { color: var(--accent); text-shadow: 0 0 5px rgba(0, 212, 255, 0.3); }
+
+        /* Banner de Instalación Móvil del backup */
+        #install-banner {
+            display: none; position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); 
+            background: var(--accent); color: #000; padding: 18px 30px; border-radius: 50px; 
+            z-index: 9999; box-shadow: 0 10px 25px rgba(0,212,255,0.4); 
+            font-weight: 900; text-transform: uppercase; font-size: 0.9rem; width: 85%; text-align: center; border: none;
+        }
+
+        #hidden-canvases { display: none; }
+        .yt-icon { color: #ff0000; text-decoration: none; display: flex; align-items: center; gap: 4px; font-size: 0.7rem; font-weight: bold; }
     </style>
 </head>
 <body>
 
-<header id="app-header" style="display:none;">
-    <div class="logo-text"><span class="logo-leo">LEO</span><span class="logo-work">WORK</span></div>
-    <div id="display" class="timer-val">00:00</div>
-    <div style="text-align: right;">
-        <h2 id="alumno-display" style="font-size: 0.9rem; color: var(--primary); margin:0;">-</h2>
-        <small id="semana-display" style="color:#666; font-size: 0.6rem;"></small>
-    </div>
-</header>
+    <header>
+        <div class="logo">LEO<span class="brand-blue">WorkApp</span></div>
+        <div id="display" class="timer-val" style="display: none;">00:00</div>
+        <div id="alumno-header" style="text-align: right; display: none;">
+            <div id="alumno-display" style="font-size: 0.8rem; color: var(--primary); font-weight: bold;">-</div>
+            <div id="semana-display" style="font-size: 0.6rem; color: #666;"></div>
+        </div>
+    </header>
 
-<main>
-    <div id="welcome-screen">
-        <div style="margin-bottom: 25px;">
-            <p style="color: #666; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 3px; font-weight: 500; margin-bottom: 5px;">
-                LEONARDO RODRIGUEZ
-            </p>
-            <h1 style="color: #00d4ff; font-size: 2rem; font-weight: 800; letter-spacing: -0.5px;">
-                Workout Player <span style="color: #00d4ff;">PRO</span>
-            </h1>
-            <p style="color: #fff; font-size: 1rem; margin-top: 10px; font-weight: 400;">
-                Pega el código de tu rutina para comenzar
-            </p>
+    <main id="app-container">
+        <div id="welcome-screen">
+            <div class="welcome-card">
+                <p class="prof-title">PROFESOR</p>
+                <h1 class="main-welcome-title">LEONARDO <span class="brand-blue">RODRIGUEZ GARCIA</span></h1>
+                <p style="font-size: 0.9rem; color: #ccc;">Pega el código que te envié para comenzar</p>
+                <textarea id="code-input" placeholder="Pega el código aquí..."></textarea>
+                <button class="btn-stats" onclick="cargarManual()">EMPEZAR ENTRENAMIENTO</button>
+            </div>
         </div>
 
-        <div style="background: #111; border-radius: 25px; padding: 25px; border: 1px solid #222; box-shadow: 0 10px 40px rgba(0,0,0,0.8);">
-            <textarea id="manual-data" 
-                placeholder="Pega el código aquí..." 
-                style="width: 100%; height: 180px; background: #000; color: #22c55e; border: 1px solid #333; border-radius: 15px; padding: 15px; font-family: monospace; font-size: 0.95rem; outline: none; margin-bottom: 25px; resize: none;">
-            </textarea>
-            
-            <button class="btn-main" onclick="cargarManual()" 
-                style="width: 100%; padding: 20px; background: #3b82f6; color: white; border: none; border-radius: 15px; font-weight: 800; font-size: 1.1rem; text-transform: uppercase; cursor: pointer; transition: 0.2s;">
-                CARGAR ENTRENAMIENTO
-            </button>
+        <div id="app-content" style="display:none;">
+            <select id="session-picker" class="session-selector" onchange="loadSession(this.value)"></select>
+            <div id="workout-content"></div>
+            <button class="btn-stats" onclick="confirmarFinalizacion()">📊 GENERAR REPORTE SEMANAL</button>
+            <button onclick="borrarRutinaActual()" style="background:transparent; color:#555; border:none; width:100%; margin-top:30px; font-size:0.75rem; text-decoration:underline; cursor:pointer;">BORRAR Y CARGAR OTRA</button>
         </div>
-    </div>
+    </main>
 
-    <div id="app-content" style="display:none;">
-        <select id="session-picker" style="width:100%; padding:12px; margin-bottom:20px; background:#111; color:white; border:1px solid #333; border-radius:8px;" onchange="loadSession(this.value)"></select>
-        <div id="workout-content"></div>
-        <button class="btn-main" onclick="confirmarFinalizacion()">📊 GENERAR REPORTE</button>
-    </div>
+    <footer class="footer-sign">
+        DESIGNED BY <span class="brand-blue">NICOYABICHINO</span>
+    </footer>
 
-    <button id="btn-instalar" style="display:none; width:100%; padding:15px; background: #00d4ff; color: #000; border: none; border-radius: 50px; font-weight: 900; margin-top: 30px; cursor: pointer;">
-        📲 INSTALAR APP EN MI CELULAR
-    </button>
-</main>
+    <button id="install-banner">📲 INSTALAR APP EN MI CELULAR</button>
 
-<script>
-    let rutinaFull = {}; 
-    let timerInt;
-    let deferredPrompt;
-    
-    // Sistema de Sonido (Beep de alta frecuencia para el final del descanso)
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    function playBeep() {
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(880, audioCtx.currentTime);
-        gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-        osc.start();
-        osc.stop(audioCtx.currentTime + 0.3);
-    }
+    <div id="hidden-canvases"><canvas id="chartMusculos" width="800" height="400"></canvas><canvas id="chartSesiones" width="800" height="400"></canvas></div>
 
-    function init() {
-        let dURL = new URLSearchParams(window.location.search).get('data');
-        let dSaved = localStorage.getItem('routine_data_raw');
-        if (dURL) procesarDatos(dURL); else if (dSaved) procesarDatos(dSaved);
-    }
+    <script>
+        let rutinaFull = {}; let timerInt; let deferredPrompt;
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
-    function cargarManual() {
-        let input = document.getElementById('manual-data').value;
-        if (!input) return alert("Pega el código");
-        procesarDatos(input.includes('data=') ? input.split('data=')[1] : input);
-    }
-
-    function procesarDatos(rawData) {
-        try {
-            rutinaFull = JSON.parse(decodeURIComponent(escape(atob(rawData.trim()))));
-            localStorage.setItem('routine_data_raw', rawData);
-            document.getElementById('alumno-display').innerText = rutinaFull.alumno;
-            document.getElementById('semana-display').innerText = "SEMANA " + (rutinaFull.semana || "-");
-            document.getElementById('session-picker').innerHTML = Object.keys(rutinaFull.sesiones).map(k => `<option value="${k}">${rutinaFull.sesiones[k].nombre}</option>`).join('');
-            document.getElementById('welcome-screen').style.display = 'none';
-            document.getElementById('app-header').style.display = 'flex';
-            document.getElementById('app-content').style.display = 'block';
-            loadSession(Object.keys(rutinaFull.sesiones)[0]);
-        } catch (e) { alert("Error en el código. Asegúrate de copiarlo completo."); }
-    }
-
-    function loadSession(id) {
-        const s = rutinaFull.sesiones[id];
-        document.getElementById('workout-content').innerHTML = s.ejercicios.map((ex, exIdx) => {
-            const rA = ex.reps_obj.split(',').map(x => x.trim());
-            const pA = ex.peso_obj.split(',').map(x => x.trim());
-            return `<div class="exercise-card">
-                <div class="ex-header">
-                    <div><strong>${ex.nombre}</strong><br><small style="color:var(--accent)">${ex.grupo}</small></div>
-                    ${ex.video ? `<a href="${ex.video}" target="_blank" class="yt-link">
-                        <svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16"><path d="M8.051 1.999h.089c.822.003 4.987.033 6.11.335a2.01 2.01 0 0 1 1.415 1.42c.101.38.172.883.22 1.402l.01.104.022.26.008.104c.065.914.073 1.77.074 1.957v.075c-.001.194-.01 1.108-.082 2.06l-.008.105-.009.104c-.05.572-.124 1.14-.235 1.558a2.007 2.007 0 0 1-1.415 1.42c-1.16.312-5.569.334-6.18.335h-.142c-.309 0-1.587-.006-2.927-.052l-.17-.006-.087-.004-.171-.007-.171-.007c-1.11-.049-2.167-.128-2.654-.26a2.007 2.007 0 0 1-1.415-1.419c-.111-.417-.185-.986-.235-1.558L.09 9.82l-.008-.104A31.4 31.4 0 0 1 0 7.68v-.123c.002-.215.01-.958.064-1.778l.007-.103.003-.052.008-.104.022-.26.01-.104c.048-.519.119-1.023.22-1.402a2.007 2.007 0 0 1 1.415-1.42c.487-.13 1.544-.21 2.654-.26l.17-.007.172-.006.086-.003.171-.007A99.788 99.788 0 0 1 7.858 2h.193zM6.4 5.209v4.818l4.157-2.408L6.4 5.209z"/></svg>
-                        VIDEO</a>` : ''}
-                </div>
-                <div class="grid-header"><div>Set</div><div>Objetivo</div><div>Reps</div><div>Kg</div><div>RPE</div><div>Ok</div></div>
-                ${Array.from({length: ex.series}).map((_, sIdx) => {
-                    const saved = getSavedData(id, exIdx, sIdx);
-                    const oR = rA[sIdx] || rA[rA.length-1] || ex.reps_obj;
-                    const oK = pA[sIdx] || pA[pA.length-1] || ex.peso_obj;
-                    return `<div class="set-row ${saved.done ? 'done' : ''}" id="row-${exIdx}-${sIdx}">
-                        <div style="text-align:center;font-weight:bold;color:#444;">${sIdx+1}</div>
-                        <div class="obj-cell">Rep:${oR}<br>Kg:${oK}</div>
-                        <div><input type="number" oninput="saveData('${id}',${exIdx},${sIdx})" value="${saved.reps || ''}" inputmode="numeric"></div>
-                        <div><input type="number" oninput="saveData('${id}',${exIdx},${sIdx})" value="${saved.peso || ''}" inputmode="decimal"></div>
-                        <div><input type="number" oninput="saveData('${id}',${exIdx},${sIdx})" value="${saved.rpe || ''}" inputmode="numeric"></div>
-                        <div><button class="check-btn ${saved.done ? 'active' : ''}" onclick="markSet('${id}', ${exIdx}, ${sIdx}, ${ex.series})">✓</button></div>
-                    </div>`;
-                }).join('')}
-            </div>`;
-        }).join('');
-    }
-
-    function saveData(sessId, exIdx, sIdx) {
-        const row = document.getElementById(`row-${exIdx}-${sIdx}`);
-        const inputs = row.querySelectorAll('input');
-        const done = row.querySelector('.check-btn').classList.contains('active');
-        localStorage.setItem(`workout_${sessId}_${exIdx}_${sIdx}`, JSON.stringify({reps: inputs[0].value, peso: inputs[1].value, rpe: inputs[2].value, done: done}));
-    }
-
-    function getSavedData(sessId, exIdx, sIdx) {
-        const saved = localStorage.getItem(`workout_${sessId}_${exIdx}_${sIdx}`);
-        return saved ? JSON.parse(saved) : { reps: '', peso: '', rpe: '', done: false };
-    }
-
-    function markSet(sessId, exIdx, sIdx, totalSets) {
-        const row = document.getElementById(`row-${exIdx}-${sIdx}`);
-        const btn = row.querySelector('.check-btn');
-        row.classList.toggle('done'); btn.classList.toggle('active');
-        saveData(sessId, exIdx, sIdx);
-        if(row.classList.contains('done')) {
-            const isLast = (sIdx === totalSets - 1);
-            startTimer(isLast ? rutinaFull.sesiones[sessId].descanso_e : rutinaFull.sesiones[sessId].descanso_s);
+        function playBeep() {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.type = 'sine'; osc.frequency.setValueAtTime(880, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.3);
         }
-    }
 
-    function startTimer(sec) {
-        clearInterval(timerInt); let t = sec;
-        timerInt = setInterval(() => {
-            let m = Math.floor(t/60); let s = t%60;
-            document.getElementById('display').innerText = `${m}:${s.toString().padStart(2,'0')}`;
-            if(t <= 0) {
-                clearInterval(timerInt);
-                playBeep(); // Suena al terminar
+        // Lógica de PWA e Instalación del Backup
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('./sw.js').catch(err => console.log(err));
+        }
+
+        const installBtn = document.getElementById('install-banner');
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault(); deferredPrompt = e;
+            if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+                installBtn.style.display = 'block';
             }
-            t--;
-        }, 1000);
-    }
+        });
 
-    // Instalación PWA
-    const btnInstalar = document.getElementById('btn-instalar');
-    window.addEventListener('beforeinstallprompt', (e) => {
-        e.preventDefault();
-        deferredPrompt = e;
-        if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) btnInstalar.style.display = 'block';
-    });
+        installBtn.addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') installBtn.style.display = 'none';
+                deferredPrompt = null;
+            }
+        });
 
-    btnInstalar.addEventListener('click', async () => {
-        if (deferredPrompt) {
-            deferredPrompt.prompt();
-            deferredPrompt = null;
-            btnInstalar.style.display = 'none';
+        // Funcionalidad de la App
+        function init() {
+            let dSaved = localStorage.getItem('routine_data_raw');
+            if (dSaved) procesarDatos(dSaved);
         }
-    });
 
-    init();
-</script>
+        function cargarManual() {
+            let input = document.getElementById('code-input').value;
+            if (!input) return alert("Pega el código");
+            procesarDatos(input.includes('data=') ? input.split('data=')[1] : input);
+        }
+
+        function procesarDatos(rawData) {
+            try {
+                rutinaFull = JSON.parse(decodeURIComponent(escape(atob(rawData.trim()))));
+                localStorage.setItem('routine_data_raw', rawData);
+                document.getElementById('alumno-display').innerText = rutinaFull.alumno;
+                document.getElementById('semana-display').innerText = "SEMANA " + (rutinaFull.semana || "-");
+                document.getElementById('session-picker').innerHTML = Object.keys(rutinaFull.sesiones).map(k => `<option value="${k}">${rutinaFull.sesiones[k].nombre}</option>`).join('');
+                
+                document.getElementById('welcome-screen').style.display = 'none';
+                document.getElementById('app-content').style.display = 'block';
+                document.getElementById('display').style.display = 'block';
+                document.getElementById('alumno-header').style.display = 'block';
+                
+                loadSession(Object.keys(rutinaFull.sesiones)[0]);
+            } catch (e) { alert("Código no válido"); }
+        }
+
+        function loadSession(id) {
+            const s = rutinaFull.sesiones[id];
+            document.getElementById('workout-content').innerHTML = s.ejercicios.map((ex, exIdx) => {
+                const rA = ex.reps_obj.split(',').map(x => x.trim());
+                const pA = ex.peso_obj.split(',').map(x => x.trim());
+                return `<div class="exercise-card">
+                    <div class="ex-header">
+                        <div><strong>${ex.nombre}</strong><br><small style="color:var(--accent)">${ex.grupo}</small></div>
+                        ${ex.video ? `<a href="${ex.video}" target="_blank" class="yt-icon"><svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M8.051 1.999h.089c.822.003 4.987.033 6.11.335a2.01 2.01 0 0 1 1.415 1.42c.101.38.172.883.22 1.402l.01.104.022.26.008.104c.065.914.073 1.77.074 1.957v.075c-.001.194-.01 1.108-.082 2.06l-.008.105-.009.104c-.05.572-.124 1.14-.235 1.558a2.007 2.007 0 0 1-1.415 1.42c-1.16.312-5.569.334-6.18.335h-.142c-.309 0-1.587-.006-2.927-.052l-.17-.006-.087-.004-.171-.007-.171-.007c-1.11-.049-2.167-.128-2.654-.26a2.007 2.007 0 0 1-1.415-1.419c-.111-.417-.185-.986-.235-1.558L.09 9.82l-.008-.104A31.4 31.4 0 0 1 0 7.68v-.123c.002-.215.01-.958.064-1.778l.007-.103.003-.052.008-.104.022-.26.01-.104c.048-.519.119-1.023.22-1.402a2.007 2.007 0 0 1 1.415-1.42c.487-.13 1.544-.21 2.654-.26l.17-.007.172-.006.086-.003.171-.007A99.788 99.788 0 0 1 7.858 2h.193zM6.4 5.209v4.818l4.157-2.408L6.4 5.209z"/></svg> VIDEO</a>` : ''}
+                    </div>
+                    <div class="grid-header"><div>Set</div><div>Objetivo</div><div>Reps</div><div>Kg</div><div>RPE</div><div>Ok</div></div>
+                    ${Array.from({length: ex.series}).map((_, sIdx) => {
+                        const saved = getSavedData(id, exIdx, sIdx);
+                        const oR = rA[sIdx] || rA[rA.length-1] || ex.reps_obj;
+                        const oK = pA[sIdx] || pA[pA.length-1] || ex.peso_obj;
+                        return `<div class="set-row ${saved.done ? 'done' : ''}" id="row-${exIdx}-${sIdx}">
+                            <div style="text-align:center;font-weight:bold;">${sIdx+1}</div>
+                            <div class="obj-cell">Rep:${oR}<br>Kg:${oK}</div>
+                            <div><input type="number" oninput="saveData('${id}',${exIdx},${sIdx})" value="${saved.reps || ''}" inputmode="numeric"></div>
+                            <div><input type="number" oninput="saveData('${id}',${exIdx},${sIdx})" value="${saved.peso || ''}" inputmode="decimal"></div>
+                            <div><input type="number" oninput="saveData('${id}',${exIdx},${sIdx})" value="${saved.rpe || ''}" inputmode="numeric"></div>
+                            <div><button class="check-btn ${saved.done ? 'active' : ''}" onclick="markSet('${id}', ${exIdx}, ${sIdx}, ${ex.series})">✓</button></div>
+                        </div>`;
+                    }).join('')}
+                </div>`;
+            }).join('');
+        }
+
+        function saveData(sessId, exIdx, sIdx) {
+            const row = document.getElementById(`row-${exIdx}-${sIdx}`);
+            const inputs = row.querySelectorAll('input');
+            const done = row.querySelector('.check-btn').classList.contains('active');
+            localStorage.setItem(`workout_${sessId}_${exIdx}_${sIdx}`, JSON.stringify({reps: inputs[0].value, peso: inputs[1].value, rpe: inputs[2].value, done: done}));
+        }
+
+        function getSavedData(sessId, exIdx, sIdx) {
+            const saved = localStorage.getItem(`workout_${sessId}_${exIdx}_${sIdx}`);
+            return saved ? JSON.parse(saved) : { reps: '', peso: '', rpe: '', done: false };
+        }
+
+        function markSet(sessId, exIdx, sIdx, totalSets) {
+            const row = document.getElementById(`row-${exIdx}-${sIdx}`);
+            const btn = row.querySelector('.check-btn');
+            row.classList.toggle('done'); btn.classList.toggle('active');
+            saveData(sessId, exIdx, sIdx);
+            if(row.classList.contains('done')) {
+                const isLast = (sIdx === totalSets - 1);
+                startTimer(isLast ? rutinaFull.sesiones[sessId].descanso_e : rutinaFull.sesiones[sessId].descanso_s);
+            }
+        }
+
+        function startTimer(sec) {
+            clearInterval(timerInt); let t = sec;
+            timerInt = setInterval(() => {
+                let m = Math.floor(t/60); let s = t%60;
+                document.getElementById('display').innerText = `${m}:${s.toString().padStart(2,'0')}`;
+                if(t <= 0) { clearInterval(timerInt); playBeep(); }
+                t--;
+            }, 1000);
+        }
+
+        function borrarRutinaActual() { if(confirm("¿Borrar rutina?")) { localStorage.clear(); location.reload(); } }
+
+        // Lógica de PDF y Gráficos (igual a la anterior)
+        async function crearImgGrafico(canvasId, labels, data, maxVal, datasetLabel) {
+            const ctx = document.getElementById(canvasId).getContext('2d');
+            const chart = new Chart(ctx, {
+                type: 'bar', data: { labels: labels, datasets: [{ label: datasetLabel, data: data, backgroundColor: '#3b82f6', borderRadius: 5 }] },
+                options: { animation: false, plugins: { legend: { display: true, labels: { color: 'white' } } }, scales: { y: { beginAtZero: true, suggestedMax: maxVal, ticks: { color: 'white' }, grid: { color: '#333' } }, x: { ticks: { color: 'white', font: { size: 10 } }, grid: { display: false } } } }
+            });
+            await new Promise(r => setTimeout(r, 300)); const url = document.getElementById(canvasId).toDataURL('image/png'); chart.destroy(); return url;
+        }
+
+        async function generarReporteProfe() {
+            const { jsPDF } = window.jspdf; const doc = new jsPDF('p', 'mm', 'a4'); let cM = {}, cS = {};
+            Object.keys(rutinaFull.sesiones).forEach(sId => {
+                let tS = 0; rutinaFull.sesiones[sId].ejercicios.forEach((ex, exIdx) => {
+                    for(let sIdx=0; sIdx < ex.series; sIdx++) { const saved = getSavedData(sId, exIdx, sIdx); if(saved.done) { const m = ex.grupo.toUpperCase(); cM[m] = (cM[m] || 0) + 1; tS++; } }
+                }); cS[rutinaFull.sesiones[sId].nombre] = tS;
+            });
+            doc.setFillColor(0, 0, 0); doc.rect(0, 0, 210, 297, 'F'); doc.setTextColor(255, 255, 255);
+            doc.setFontSize(22); doc.text(`REPORTE SEMANA ${rutinaFull.semana || "-"}`, 105, 20, { align: 'center' });
+            const i1 = await crearImgGrafico('chartMusculos', Object.keys(cM), Object.values(cM), 20, 'Series'); doc.addImage(i1, 'PNG', 15, 50, 180, 75);
+            doc.save(`Reporte_${rutinaFull.alumno}.pdf`);
+        }
+
+        function confirmarFinalizacion() { if(confirm("¿Generar reporte?")) generarReporteProfe(); }
+        init();
+    </script>
 </body>
 </html>
+
 
