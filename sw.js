@@ -1,4 +1,9 @@
-// Este código es el mínimo necesario para que Chrome permita la instalación
-self.addEventListener('fetch', function(event) {
-    // No hace nada, pero debe estar presente
+const CACHE_NAME = 'workout-v1';
+
+self.addEventListener('install', e => {
+  console.log('Service Worker instalado');
+});
+
+self.addEventListener('fetch', e => {
+  e.respondWith(fetch(e.request));
 });
