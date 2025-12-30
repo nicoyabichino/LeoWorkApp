@@ -173,19 +173,10 @@
                 <button class="btn-stats" onclick="location.reload()">CAMBIAR RUTINA</button>
             `;
         }
-
-        // 4. Timer Global (Opcional)
-        let seconds = 0;
-        setInterval(() => {
-            seconds++;
-            let mins = Math.floor(seconds / 60);
-            let secs = seconds % 60;
-            document.getElementById('global-timer').innerText = 
-                `${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
-        }, 1000);
     </script>
 </body>
 </html>
+
 
 
 
