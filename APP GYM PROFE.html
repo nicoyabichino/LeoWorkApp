@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Profe - Control Total</title>
+    <style>
+        :root {
+            --bg: #0b0f1a; --card: #161b22; --primary: #3b82f6;
+            --success: #238636; --danger: #da3633; --text: #f0f6fc;
+            --accent: #8b5cf6; /* Color Morado para separación de días */
+        }
+        
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 10px; }
+        h1 { font-size: 1.4rem; text-align: center; color: var(--primary); margin: 15px 0; }
+
+        .card { background: var(--card); padding: 15px; border-radius: 12px; margin-bottom: 25px; border: 1px solid #30363d; position: relative; }
+        
+        .sesion { border-top: 6px solid var(--accent); }
+        .dia-label { position: absolute; top: -15px; left: 15px; background: var(--accent); color: white; padding: 2px 12px; border-radius: 4px; font-size: 0.7rem; font-weight: bold; }
+
+        label { display: block; font-size: 0.7rem; color: var(--primary); font-weight: bold; margin-bottom: 4px; text-transform: uppercase; }
+        input, select { width: 100%; padding: 12px; margin-bottom: 10px; background: #0d1117; border: 1px solid #30363d; color: white; border-radius: 8px; box-sizing: border-box; font-size: 1rem; }
+
+        .btn-add-day { background: var(--accent); color: white; width: 100%; padding: 15px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; margin-bottom: 15px; }
+        
+        /* Botón añadir ejercicio: Color sutil pero más visible (Azul Grisáceo) */
+        .btn-add-ex { background: #3e4c5a; color: #fff; border: none; padding: 12px; border-radius: 8px; cursor: pointer; width: 100%; font-size: 0.9rem; font-weight: bold; transition: background 0.3s; }
+        .btn-add-ex:hover { background: #4e5d6c; }
+
+        .btn-gen { background: var(--primary); color: white; width: 100%; padding: 18px; font-size: 1.1rem; font-weight: bold; border: none; border-radius: 12px; cursor: pointer; margin-top: 10px; }
+
+        .ex-item { border-left: 3px solid var(--primary); padding: 12px; margin-bottom: 12px; background: #1c2128; border-radius: 0 8px 8px 0; }
+        .grid-ex { display: grid; grid-template-columns: 1fr; gap: 8px; }
+        @media (min-width: 768px) { .grid-ex { grid-template-columns: 2fr 1.5fr 0.6fr 1fr 1fr; } .grid-sub { grid-template-columns: 1fr 1fr !important; } }
+        .grid-sub { display: grid; grid-template-columns: 1fr; gap: 8px; margin-top: 8px; }
+
+        .copy-area { background: #000; color: #22c55e; border: 1px solid var(--success); font-family: monospace; padding: 15px; border-radius: 8px; word-break: break-all; font-size: 0.75rem; margin-top: 10px; }
+.footer-sign { 
+    text-align: center; 
+    color: #888; 
+    font-size: 0.7rem; 
+    letter-spacing: 3px; 
+    margin: 40px 0 20px 0; 
+    font-weight: bold; 
+}
+.brand-link { 
+    color: #00d4ff; 
+    text-decoration: none;
+}
+    </style>
+</head>
+<body>
+
+    <h1>🚀 Panel Entrenador</h1>
+
+    <div class="card">
+        <div class="grid-main" style="display: grid; gap:10px;">
+            <div><label>Nombre del Alumno</label><input type="text" id="alumno-nombre"></div>
+            <div><label>Semana #</label><input type="text" id="semana-nro"></div>
+        </div>
+    </div>
+
+    <div id="rutina-container"></div>
+
+    <button class="btn-add-day" onclick="agregarSesion()">+ AGREGAR OTRO DÍA</button>
+    <button class="btn-gen" onclick="generarLink()">GENERAR CÓDIGO DE RUTINA</button>
+
+    <div id="resultado" style="display:none;" class="card">
+        <label>Código para enviar:</label>
+        <div id="linkFinal" class="copy-area"></div>
+        <textarea id="temp-copy"></textarea>
+        <button onclick="copiarLink()" style="background:#eab308; width:100%; padding:18px; border:none; border-radius:12px; font-weight:bold; margin-top:15px; cursor:pointer; color:black;">📋 COPIAR CÓDIGO</button>
+    </div>
+
+  <div class="footer-sign">
+    CREADO POR <a href="https://www.linkedin.com/in/nicolas-yabichino/" target="_blank" class="brand-link">NICOYABI</a>
+</div>
+
+<script>
+    let contadorSesiones = 0;
+    const GRUPOS = ["PECTORAL SUPERIOR", "PECTORAL MEDIO/INF", "DELTOIDES ANTERIOR", "DELTOIDES LATERAL", "DELTOIDES POSTERIOR", "DORSAL ANCHO", "TRAPECIO/ESPALDA ALTA", "LUMBARES", "BICEPS BRAQUIAL", "BICEPS (C. LARGA)", "TRICEPS", "ANTEBRAZO", "CUADRICEPS", "ISQUIOS", "GLUTEO MAYOR", "GLUTEO MEDIO/MENOR", "ADUCTORES", "GEMELOS", "ABDOMINALES", "CARDIO"];
+
+    function agregarSesion() {
+        contadorSesiones++;
+        const div = document.createElement('div');
+        div.className = 'card sesion';
+        div.id = `sesion-${contadorSesiones}`;
+        div.innerHTML = `
+            <div class="dia-label">DÍA CONFIGURADO</div>
+            <div style="display:flex; justify-content:space-between; margin-bottom:15px; align-items:center;">
+                <input type="text" placeholder="Ej: Lunes" class="nombre-sesion" style="width:70%; margin:0; font-weight:bold;">
+                <button style="background:var(--danger); border:none; color:white; padding:5px 10px; border-radius:5px;" onclick="this.parentElement.parentElement.remove()">X</button>
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px;">
+                <div><label>Descanso Set</label><input type="number" class="descanso-series" value="90"></div>
+                <div><label>Descanso Ejerc.</label><input type="number" class="descanso-ejercicios" value="180"></div>
+            </div>
+            <div class="ejercicios-container"></div>
+            <button class="btn-add-ex" onclick="agregarEjercicio(${contadorSesiones})">+ Añadir Ejercicio</button>
+        `;
+        document.getElementById('rutina-container').appendChild(div);
+        agregarEjercicio(contadorSesiones);
+    }
+
+    function agregarEjercicio(sId) {
+        const container = document.querySelector(`#sesion-${sId} .ejercicios-container`);
+        const div = document.createElement('div');
+        div.className = 'ex-item';
+        div.innerHTML = `
+            <div class="grid-ex">
+                <div><label>Ejercicio</label><input type="text" class="ex-nombre"></div>
+                <div><label>Grupo</label><select class="ex-grupo">${GRUPOS.map(g=>`<option>${g}</option>`).join('')}</select></div>
+                <div><label>Sets</label><input type="number" class="ex-series" value="4"></div>
+                <div><label>Rep (Obj)</label><input type="text" class="ex-reps"></div>
+                <div><label>Kg (Obj)</label><input type="text" class="ex-peso"></div>
+            </div>
+            <button onclick="this.parentElement.remove()" style="background:none; color:#da3633; border:none; font-size:0.7rem; cursor:pointer; width:100%; text-align:right;">Eliminar Ejercicio</button>
+        `;
+        container.appendChild(div);
+    }
+
+    function generarLink() {
+        const nombre = document.getElementById('alumno-nombre').value;
+        const semana = document.getElementById('semana-nro').value;
+        if(!nombre) return alert("Falta nombre");
+        const rutina = { alumno: nombre, semana: semana, sesiones: {} };
+        document.querySelectorAll('.sesion').forEach((s, idx) => {
+            const ejercicios = [];
+            s.querySelectorAll('.ex-item').forEach(item => {
+                ejercicios.push({
+                    nombre: item.querySelector('.ex-nombre').value,
+                    grupo: item.querySelector('.ex-grupo').value,
+                    series: parseInt(item.querySelector('.ex-series').value),
+                    reps_obj: item.querySelector('.ex-reps').value,
+                    peso_obj: item.querySelector('.ex-peso').value
+                });
+            });
+            rutina.sesiones[idx + 1] = {
+                nombre: s.querySelector('.nombre-sesion').value || `Día ${idx+1}`,
+                descanso_s: parseInt(s.querySelector('.descanso-series').value),
+                descanso_e: parseInt(s.querySelector('.descanso-ejercicios').value),
+                ejercicios: ejercicios
+            };
+        });
+        const base64 = btoa(unescape(encodeURIComponent(JSON.stringify(rutina))));
+        document.getElementById('linkFinal').innerText = base64;
+        document.getElementById('resultado').style.display = "block";
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    function copiarLink() {
+        const text = document.getElementById("linkFinal").innerText;
+        const tempInput = document.getElementById("temp-copy");
+        tempInput.value = text; tempInput.select();
+        tempInput.setSelectionRange(0, 99999);
+        document.execCommand("copy");
+        alert("✅ ¡Copiado!");
+    }
+    agregarSesion();
+</script>
+</body>
+</html>
