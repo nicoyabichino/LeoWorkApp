@@ -2,49 +2,38 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Panel Profe - Control Total</title>
-    
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#3b82f6">
-    <meta name="apple-mobile-web-app-capable" content="yes">
 
     <style>
         :root {
             --bg: #0b0f1a; --card: #161b22; --primary: #3b82f6;
             --success: #238636; --danger: #da3633; --text: #f0f6fc;
-            --accent: #8b5cf6;
+            --accent: #00d4ff;
         }
-        
-        body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 10px; padding-bottom: 50px; }
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); padding: 10px; padding-bottom: 50px; }
         h1 { font-size: 1.4rem; text-align: center; color: var(--primary); margin: 15px 0; }
 
         .card { background: var(--card); padding: 15px; border-radius: 12px; margin-bottom: 25px; border: 1px solid #30363d; position: relative; }
-        
-        .sesion { border-top: 6px solid var(--accent); }
-        .dia-label { position: absolute; top: -15px; left: 15px; background: var(--accent); color: white; padding: 2px 12px; border-radius: 4px; font-size: 0.7rem; font-weight: bold; }
+        .sesion { border-top: 6px solid var(--primary); }
+        .dia-label { position: absolute; top: -15px; left: 15px; background: var(--primary); color: white; padding: 2px 12px; border-radius: 4px; font-size: 0.7rem; font-weight: bold; }
 
-        label { display: block; font-size: 0.7rem; color: var(--primary); font-weight: bold; margin-bottom: 4px; text-transform: uppercase; }
-        input, select { width: 100%; padding: 12px; margin-bottom: 10px; background: #0d1117; border: 1px solid #30363d; color: white; border-radius: 8px; box-sizing: border-box; font-size: 1rem; }
+        label { display: block; font-size: 0.7rem; color: var(--accent); font-weight: bold; margin-bottom: 4px; text-transform: uppercase; }
+        input, select { width: 100%; padding: 12px; margin-bottom: 10px; background: #0d1117; border: 1px solid #30363d; color: white; border-radius: 8px; font-size: 1rem; outline: none; }
+        input:focus { border-color: var(--accent); }
 
-        .btn-add-day { background: var(--accent); color: white; width: 100%; padding: 15px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; margin-bottom: 15px; }
-        .btn-add-ex { background: #3e4c5a; color: #fff; border: none; padding: 12px; border-radius: 8px; cursor: pointer; width: 100%; font-size: 0.9rem; font-weight: bold; }
+        .btn-add-day { background: #333; color: white; width: 100%; padding: 15px; border-radius: 10px; border: 1px dashed #666; font-weight: bold; margin-bottom: 15px; }
+        .btn-add-ex { background: var(--success); color: #fff; border: none; padding: 12px; border-radius: 8px; width: 100%; font-weight: bold; }
+        .btn-gen { background: var(--primary); color: white; width: 100%; padding: 18px; font-size: 1.1rem; font-weight: bold; border: none; border-radius: 12px; margin-top: 10px; box-shadow: 0 4px 15px rgba(59,130,246,0.3); }
 
-        .btn-gen { background: var(--primary); color: white; width: 100%; padding: 18px; font-size: 1.1rem; font-weight: bold; border: none; border-radius: 12px; cursor: pointer; margin-top: 10px; }
-
-        .ex-item { border-left: 3px solid var(--primary); padding: 12px; margin-bottom: 12px; background: #1c2128; border-radius: 0 8px 8px 0; }
-        
-        /* Layout responsive para los inputs del ejercicio */
-        .grid-ex { display: grid; grid-template-columns: 1fr; gap: 8px; }
-        @media (min-width: 768px) { 
-            .grid-ex { grid-template-columns: 2fr 1.5fr 0.6fr 1fr 1fr; } 
-        }
-
-        .copy-area { background: #000; color: #22c55e; border: 1px solid var(--success); font-family: monospace; padding: 15px; border-radius: 8px; word-break: break-all; font-size: 0.75rem; margin-top: 10px; }
+        .ex-item { border-left: 3px solid var(--accent); padding: 12px; margin-bottom: 12px; background: #1c2128; border-radius: 0 8px 8px 0; }
+        .copy-area { background: #000; color: #22c55e; border: 1px solid var(--success); font-family: monospace; padding: 15px; border-radius: 8px; word-break: break-all; font-size: 0.75rem; margin-top: 10px; max-height: 150px; overflow-y: auto; }
         
         .footer-sign { text-align: center; color: #888; font-size: 0.7rem; letter-spacing: 3px; margin: 40px 0 20px 0; font-weight: bold; }
-        .brand-link { color: #00d4ff; text-decoration: none; }
-
+        .brand-link { color: var(--accent); text-decoration: none; }
         #temp-copy { position: absolute; left: -9999px; }
     </style>
 </head>
@@ -53,10 +42,8 @@
     <h1>🚀 Panel Entrenador</h1>
 
     <div class="card">
-        <div style="display: grid; gap:10px;">
-            <div><label>Nombre del Alumno</label><input type="text" id="alumno-nombre" placeholder="Ej: Juan Pérez"></div>
-            <div><label>Semana #</label><input type="text" id="semana-nro" placeholder="Ej: 1"></div>
-        </div>
+        <label>Nombre del Alumno</label><input type="text" id="alumno-nombre" placeholder="Ej: Juan Pérez">
+        <label>Semana #</label><input type="text" id="semana-nro" placeholder="Ej: 1">
     </div>
 
     <div id="rutina-container"></div>
@@ -68,11 +55,11 @@
         <label>Código para enviar:</label>
         <div id="linkFinal" class="copy-area"></div>
         <textarea id="temp-copy"></textarea>
-        <button onclick="copiarLink()" style="background:#eab308; width:100%; padding:18px; border:none; border-radius:12px; font-weight:bold; margin-top:15px; cursor:pointer; color:black;">📋 COPIAR CÓDIGO</button>
+        <button onclick="copiarLink()" style="background:var(--accent); width:100%; padding:18px; border:none; border-radius:12px; font-weight:bold; margin-top:15px; cursor:pointer; color:black;">📋 COPIAR CÓDIGO</button>
     </div>
 
     <div class="footer-sign">
-        PROPIEDAD DE <a href="https://www.linkedin.com/in/nicolas-yabichino/" target="_blank" class="brand-link">NICOYABI</a>
+        PROPIEDAD DE <a href="#" class="brand-link">NICOYABI</a>
     </div>
 
 <script>
@@ -91,8 +78,8 @@
                 <button style="background:var(--danger); border:none; color:white; padding:5px 10px; border-radius:5px;" onclick="this.parentElement.parentElement.remove()">X</button>
             </div>
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px;">
-                <div><label>Descanso Set (seg)</label><input type="number" class="descanso-series" value="90"></div>
-                <div><label>Descanso Ejerc. (seg)</label><input type="number" class="descanso-ejercicios" value="180"></div>
+                <div><label>Descanso Set (s)</label><input type="number" class="descanso-series" value="90"></div>
+                <div><label>Descanso Ej. (s)</label><input type="number" class="descanso-ejercicios" value="180"></div>
             </div>
             <div class="ejercicios-container"></div>
             <button class="btn-add-ex" onclick="agregarEjercicio(${contadorSesiones})">+ Añadir Ejercicio</button>
@@ -106,18 +93,17 @@
         const div = document.createElement('div');
         div.className = 'ex-item';
         div.innerHTML = `
-            <div class="grid-ex">
-                <div><label>Ejercicio</label><input type="text" class="ex-nombre"></div>
+            <label>Ejercicio</label><input type="text" class="ex-nombre">
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
                 <div><label>Grupo</label><select class="ex-grupo">${GRUPOS.map(g=>`<option>${g}</option>`).join('')}</select></div>
                 <div><label>Sets</label><input type="number" class="ex-series" value="4"></div>
-                <div><label>Rep (Obj)</label><input type="text" class="ex-reps" placeholder="Ej: 12,12,10"></div>
-                <div><label>Kg (Obj)</label><input type="text" class="ex-peso" placeholder="Ej: 50,55,60"></div>
             </div>
-            <div style="margin-top:8px;">
-                <label>Link Video (YouTube)</label>
-                <input type="text" class="ex-video" placeholder="https://youtube.com/...">
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                <div><label>Rep (Obj)</label><input type="text" class="ex-reps" placeholder="12,10"></div>
+                <div><label>Kg (Obj)</label><input type="text" class="ex-peso" placeholder="50,60"></div>
             </div>
-            <button onclick="this.parentElement.remove()" style="background:none; color:#da3633; border:none; font-size:0.7rem; cursor:pointer; width:100%; text-align:right;">Eliminar Ejercicio</button>
+            <label>Link Video</label><input type="text" class="ex-video">
+            <button onclick="this.parentElement.remove()" style="color:var(--danger); border:none; background:none; font-size:0.7rem; width:100%; text-align:right;">Eliminar Ejercicio</button>
         `;
         container.appendChild(div);
     }
@@ -125,10 +111,9 @@
     function generarLink() {
         const nombre = document.getElementById('alumno-nombre').value;
         const semana = document.getElementById('semana-nro').value;
-        if(!nombre) return alert("Falta nombre del alumno");
+        if(!nombre) return alert("Falta nombre");
         
         const rutina = { alumno: nombre, semana: semana, sesiones: {} };
-        
         document.querySelectorAll('.sesion').forEach((s, idx) => {
             const ejercicios = [];
             s.querySelectorAll('.ex-item').forEach(item => {
@@ -138,7 +123,7 @@
                     series: parseInt(item.querySelector('.ex-series').value),
                     reps_obj: item.querySelector('.ex-reps').value,
                     peso_obj: item.querySelector('.ex-peso').value,
-                    video: item.querySelector('.ex-video').value // AQUÍ SE GUARDA EL VIDEO
+                    video: item.querySelector('.ex-video').value
                 });
             });
             rutina.sesiones[idx + 1] = {
@@ -160,14 +145,8 @@
         const tempInput = document.getElementById("temp-copy");
         tempInput.value = text;
         tempInput.select();
-        tempInput.setSelectionRange(0, 99999);
         document.execCommand("copy");
-        alert("✅ ¡Copiado!");
-    }
-
-    // REGISTRO DE SERVICE WORKER PARA PWA
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js').catch(err => console.log(err));
+        alert("✅ Copiado");
     }
 
     agregarSesion();
