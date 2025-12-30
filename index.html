@@ -16,7 +16,7 @@
         :root {
             --bg: #000000; --card: #111111; --text: #f8fafc;
             --primary: #3b82f6; --success: #22c55e; --danger: #ef4444;
-            --accent: #00d4ff; /* Azul Eléctrico */
+            --accent: #00d4ff; 
         }
 
         * { 
@@ -67,7 +67,6 @@
         
         .check-btn { width: 40px; height: 40px; border-radius: 50%; border: none; background: #222; color: white; cursor: pointer; font-size: 1.2rem; transition: 0.2s; }
         .check-btn.active { background: var(--success); transform: scale(1.1); }
-        .set-row.done { background: rgba(34, 197, 94, 0.05); }
 
         .btn-stats { 
             width: 100%; padding: 18px; background: var(--primary); color: white; 
@@ -77,7 +76,6 @@
         .footer-sign { text-align: center; color: #888; font-size: 0.7rem; letter-spacing: 3px; margin-top: 40px; font-weight: bold; padding-bottom: 100px; }
         .brand-blue { color: var(--accent); text-shadow: 0 0 5px rgba(0, 212, 255, 0.3); }
 
-        /* Banner de Instalación Móvil del backup */
         #install-banner {
             display: none; position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); 
             background: var(--accent); color: #000; padding: 18px 30px; border-radius: 50px; 
@@ -85,7 +83,8 @@
             font-weight: 900; text-transform: uppercase; font-size: 0.9rem; width: 85%; text-align: center; border: none;
         }
 
-        #hidden-canvases { display: none; }
+        /* Contenedores ocultos para los gráficos */
+        #hidden-canvases { position: absolute; left: -9999px; top: -9999px; }
         .yt-icon { color: #ff0000; text-decoration: none; display: flex; align-items: center; gap: 4px; font-size: 0.7rem; font-weight: bold; }
     </style>
 </head>
@@ -125,7 +124,10 @@
 
     <button id="install-banner">📲 INSTALAR APP EN MI CELULAR</button>
 
-    <div id="hidden-canvases"><canvas id="chartMusculos" width="800" height="400"></canvas><canvas id="chartSesiones" width="800" height="400"></canvas></div>
+    <div id="hidden-canvases">
+        <canvas id="chartMusculos" width="800" height="400"></canvas>
+        <canvas id="chartSesiones" width="800" height="400"></canvas>
+    </div>
 
     <script>
         let rutinaFull = {}; let timerInt; let deferredPrompt;
@@ -140,17 +142,11 @@
             osc.start(); osc.stop(audioCtx.currentTime + 0.3);
         }
 
-        // Lógica de PWA e Instalación del Backup
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('./sw.js').catch(err => console.log(err));
-        }
-
+        // Lógica PWA e Instalación
         const installBtn = document.getElementById('install-banner');
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault(); deferredPrompt = e;
-            if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
-                installBtn.style.display = 'block';
-            }
+            installBtn.style.display = 'block';
         });
 
         installBtn.addEventListener('click', async () => {
@@ -162,7 +158,7 @@
             }
         });
 
-        // Funcionalidad de la App
+        // Funciones de Datos
         function init() {
             let dSaved = localStorage.getItem('routine_data_raw');
             if (dSaved) procesarDatos(dSaved);
@@ -181,21 +177,19 @@
                 document.getElementById('alumno-display').innerText = rutinaFull.alumno;
                 document.getElementById('semana-display').innerText = "SEMANA " + (rutinaFull.semana || "-");
                 document.getElementById('session-picker').innerHTML = Object.keys(rutinaFull.sesiones).map(k => `<option value="${k}">${rutinaFull.sesiones[k].nombre}</option>`).join('');
-                
                 document.getElementById('welcome-screen').style.display = 'none';
                 document.getElementById('app-content').style.display = 'block';
                 document.getElementById('display').style.display = 'block';
                 document.getElementById('alumno-header').style.display = 'block';
-                
                 loadSession(Object.keys(rutinaFull.sesiones)[0]);
-            } catch (e) { alert("Código no válido"); }
+            } catch (e) { alert("Error en el código."); }
         }
 
         function loadSession(id) {
             const s = rutinaFull.sesiones[id];
             document.getElementById('workout-content').innerHTML = s.ejercicios.map((ex, exIdx) => {
-                const rA = ex.reps_obj.split(',').map(x => x.trim());
-                const pA = ex.peso_obj.split(',').map(x => x.trim());
+                const rA = ex.reps_obj.split(',');
+                const pA = ex.peso_obj.split(',');
                 return `<div class="exercise-card">
                     <div class="ex-header">
                         <div><strong>${ex.nombre}</strong><br><small style="color:var(--accent)">${ex.grupo}</small></div>
@@ -204,11 +198,9 @@
                     <div class="grid-header"><div>Set</div><div>Objetivo</div><div>Reps</div><div>Kg</div><div>RPE</div><div>Ok</div></div>
                     ${Array.from({length: ex.series}).map((_, sIdx) => {
                         const saved = getSavedData(id, exIdx, sIdx);
-                        const oR = rA[sIdx] || rA[rA.length-1] || ex.reps_obj;
-                        const oK = pA[sIdx] || pA[pA.length-1] || ex.peso_obj;
                         return `<div class="set-row ${saved.done ? 'done' : ''}" id="row-${exIdx}-${sIdx}">
-                            <div style="text-align:center;font-weight:bold;">${sIdx+1}</div>
-                            <div class="obj-cell">Rep:${oR}<br>Kg:${oK}</div>
+                            <div style="text-align:center;">${sIdx+1}</div>
+                            <div class="obj-cell">Rep:${rA[sIdx] || rA[0]}<br>Kg:${pA[sIdx] || pA[0]}</div>
                             <div><input type="number" oninput="saveData('${id}',${exIdx},${sIdx})" value="${saved.reps || ''}" inputmode="numeric"></div>
                             <div><input type="number" oninput="saveData('${id}',${exIdx},${sIdx})" value="${saved.peso || ''}" inputmode="decimal"></div>
                             <div><input type="number" oninput="saveData('${id}',${exIdx},${sIdx})" value="${saved.rpe || ''}" inputmode="numeric"></div>
@@ -254,128 +246,66 @@
 
         function borrarRutinaActual() { if(confirm("¿Borrar rutina?")) { localStorage.clear(); location.reload(); } }
 
-        // Lógica de PDF y Gráficos (igual a la anterior)
-        async function crearImgGrafico(canvasId, labels, data, maxVal, datasetLabel) {
-            const ctx = document.getElementById(canvasId).getContext('2d');
-            const chart = new Chart(ctx, {
-                type: 'bar', data: { labels: labels, datasets: [{ label: datasetLabel, data: data, backgroundColor: '#3b82f6', borderRadius: 5 }] },
-                options: { animation: false, plugins: { legend: { display: true, labels: { color: 'white' } } }, scales: { y: { beginAtZero: true, suggestedMax: maxVal, ticks: { color: 'white' }, grid: { color: '#333' } }, x: { ticks: { color: 'white', font: { size: 10 } }, grid: { display: false } } } }
+        // --- LÓGICA DE REPORTE PDF CON GRÁFICOS ---
+        async function generarReporteProfe() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('p', 'mm', 'a4');
+            let cM = {}, cS = {};
+
+            Object.keys(rutinaFull.sesiones).forEach(sId => {
+                let tS = 0;
+                rutinaFull.sesiones[sId].ejercicios.forEach((ex, exIdx) => {
+                    for(let sIdx=0; sIdx < ex.series; sIdx++) {
+                        const saved = getSavedData(sId, exIdx, sIdx);
+                        if(saved.done) {
+                            const m = ex.grupo.toUpperCase();
+                            cM[m] = (cM[m] || 0) + 1;
+                            tS++;
+                        }
+                    }
+                });
+                if(tS > 0) cS[rutinaFull.sesiones[sId].nombre] = tS;
             });
-            await new Promise(r => setTimeout(r, 300)); const url = document.getElementById(canvasId).toDataURL('image/png'); chart.destroy(); return url;
+
+            if (Object.keys(cM).length === 0) return alert("Marca ejercicios con ✓ para generar reporte.");
+
+            doc.setFillColor(0, 0, 0); doc.rect(0, 0, 210, 297, 'F');
+            doc.setTextColor(0, 212, 255); doc.setFontSize(22);
+            doc.text("REPORTE SEMANAL", 105, 25, { align: 'center' });
+            
+            doc.setTextColor(255, 255, 255); doc.setFontSize(12);
+            doc.text(`Alumno: ${rutinaFull.alumno}`, 20, 40);
+            doc.text(`Semana: ${rutinaFull.semana || "-"}`, 20, 47);
+
+            // Gráfico 1
+            doc.text("VOLUMEN MUSCULAR (SERIES)", 20, 65);
+            const img1 = await crearImgGrafico('chartMusculos', Object.keys(cM), Object.values(cM), 'Series');
+            doc.addImage(img1, 'PNG', 15, 70, 180, 80);
+
+            // Gráfico 2
+            doc.text("SERIES POR SESIÓN", 20, 165);
+            const img2 = await crearImgGrafico('chartSesiones', Object.keys(cS), Object.values(cS), 'Sets');
+            doc.addImage(img2, 'PNG', 15, 170, 180, 80);
+
+            doc.save(`Reporte_${rutinaFull.alumno}.pdf`);
         }
 
-        // Función para capturar los datos y generar el PDF
-async function generarReporteProfe() {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF('p', 'mm', 'a4');
-    
-    let conteoMusculos = {};
-    let conteoSesiones = {};
-
-    // 1. Recopilar datos de lo que el alumno marcó como "hecho"
-    Object.keys(rutinaFull.sesiones).forEach(sId => {
-        let totalSeriesSesion = 0;
-        rutinaFull.sesiones[sId].ejercicios.forEach((ex, exIdx) => {
-            for(let sIdx=0; sIdx < ex.series; sIdx++) {
-                const saved = getSavedData(sId, exIdx, sIdx);
-                if(saved.done) {
-                    const grupo = ex.grupo.toUpperCase();
-                    conteoMusculos[grupo] = (conteoMusculos[grupo] || 0) + 1;
-                    totalSeriesSesion++;
-                }
-            }
-        });
-        if(totalSeriesSesion > 0) {
-            conteoSesiones[rutinaFull.sesiones[sId].nombre] = totalSeriesSesion;
+        async function crearImgGrafico(canvasId, labels, data, label) {
+            const canvas = document.getElementById(canvasId);
+            const ctx = canvas.getContext('2d');
+            const chart = new Chart(ctx, {
+                type: 'bar',
+                data: { labels: labels, datasets: [{ label: label, data: data, backgroundColor: '#3b82f6' }] },
+                options: { devicePixelRatio: 2, animation: false, scales: { y: { beginAtZero: true, ticks: { color: 'white' } }, x: { ticks: { color: 'white' } } }, plugins: { legend: { labels: { color: 'white' } } } }
+            });
+            await new Promise(r => setTimeout(r, 500));
+            const url = canvas.toDataURL('image/png');
+            chart.destroy();
+            return url;
         }
-    });
 
-    if (Object.keys(conteoMusculos).length === 0) {
-        return alert("Primero debes marcar algunos sets como completados (✓) para generar un reporte.");
-    }
-
-    // 2. Configuración estética del PDF (Fondo Negro)
-    doc.setFillColor(0, 0, 0);
-    doc.rect(0, 0, 210, 297, 'F');
-    
-    doc.setTextColor(0, 212, 255); // Azul Eléctrico
-    doc.setFontSize(22);
-    doc.text("REPORTE DE ENTRENAMIENTO", 105, 25, { align: 'center' });
-    
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(14);
-    doc.text(`Alumno: ${rutinaFull.alumno}`, 20, 40);
-    doc.text(`Semana: ${rutinaFull.semana || "-"}`, 20, 48);
-
-    // 3. Crear y agregar Gráfico de Músculos
-    doc.setFontSize(12);
-    doc.text("VOLUMEN POR GRUPO MUSCULAR (Series)", 20, 65);
-    const imgMusculos = await crearImgGrafico(
-        'chartMusculos', 
-        Object.keys(conteoMusculos), 
-        Object.values(conteoMusculos), 
-        'Series Totales'
-    );
-    doc.addImage(imgMusculos, 'PNG', 15, 70, 180, 80);
-
-    // 4. Crear y agregar Gráfico de Sesiones
-    doc.text("INTENSIDAD POR SESIÓN (Series completadas)", 20, 165);
-    const imgSesiones = await crearImgGrafico(
-        'chartSesiones', 
-        Object.keys(conteoSesiones), 
-        Object.values(conteoSesiones), 
-        'Sets'
-    );
-    doc.addImage(imgSesiones, 'PNG', 15, 170, 180, 80);
-
-    // 5. Firma decorativa
-    doc.setTextColor(100, 100, 100);
-    doc.setFontSize(8);
-    doc.text("DESIGNED BY NICOYABICHINO - LEO WORKAPP PRO", 105, 285, { align: 'center' });
-
-    // Descargar
-    doc.save(`Reporte_Semana${rutinaFull.semana}_${rutinaFull.alumno}.pdf`);
-}
-
-// Función auxiliar para renderizar el gráfico en un canvas oculto y pasarlo a imagen
-async function crearImgGrafico(canvasId, labels, data, datasetLabel) {
-    const canvas = document.getElementById(canvasId);
-    const ctx = canvas.getContext('2d');
-    
-    const chart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: datasetLabel,
-                data: data,
-                backgroundColor: '#3b82f6',
-                borderColor: '#00d4ff',
-                borderWidth: 1
-            }]
-        },
-        options: {
-            devicePixelRatio: 2, // Mejor resolución para el PDF
-            animation: false,
-            scales: {
-                y: { beginAtZero: true, ticks: { color: 'white' } },
-                x: { ticks: { color: 'white' } }
-            },
-            plugins: {
-                legend: { labels: { color: 'white' } }
-            }
-        }
-    });
-
-    // Esperar a que se renderice el frame
-    await new Promise(r => setTimeout(r, 500));
-    const url = canvas.toDataURL('image/png');
-    chart.destroy();
-    return url;
-}
+        function confirmarFinalizacion() { if(confirm("¿Descargar reporte PDF?")) generarReporteProfe(); }
+        init();
     </script>
 </body>
 </html>
-
-
-
