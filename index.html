@@ -193,7 +193,7 @@
         function borrarRutinaActual() { if(confirm("¿Borrar rutina?")) { localStorage.clear(); location.reload(); } }
 
        // --- LÓGICA DE REPORTE AVANZADA ACTUALIZADA ---
-async function crearImgGrafico(canvasId, labels, data, maxVal, datasetLabel) {
+async function crearImgGrafico(canvasId, labels, data, maxVal, datasetLabel, tituloGrafico) {
     const ctx = document.getElementById(canvasId).getContext('2d');
     const chart = new Chart(ctx, {
         type: 'bar', 
@@ -204,16 +204,22 @@ async function crearImgGrafico(canvasId, labels, data, maxVal, datasetLabel) {
                 data: data, 
                 backgroundColor: '#3b82f6', 
                 borderRadius: 5,
-                barPercentage: 0.5, // Hace las barras más angostas
+                barPercentage: 0.4, // Pilares más angostos
                 categoryPercentage: 0.8
             }] 
         },
         options: { 
             animation: false, 
             plugins: { 
+                title: {
+                    display: true,
+                    text: tituloGrafico.toUpperCase(),
+                    color: '#00d4ff', // Azul eléctrico para resaltar
+                    font: { size: 20, weight: 'bold' },
+                    padding: { top: 10, bottom: 20 }
+                },
                 legend: { 
-                    display: true, 
-                    labels: { color: 'white', font: { size: 16, weight: 'bold' } } 
+                    display: false // Ocultamos la leyenda pequeña para usar el título grande
                 } 
             }, 
             scales: { 
@@ -235,7 +241,7 @@ async function crearImgGrafico(canvasId, labels, data, maxVal, datasetLabel) {
                 const {ctx} = chart; ctx.save(); 
                 ctx.textAlign = 'center'; 
                 ctx.fillStyle = 'white';
-                ctx.font = 'bold 18px Arial'; // Números más grandes sobre las barras
+                ctx.font = 'bold 18px Arial'; 
                 chart.getDatasetMeta(0).data.forEach((bar, i) => {
                     ctx.fillText(chart.data.datasets[0].data[i], bar.x, bar.y - 8);
                 }); 
@@ -270,28 +276,34 @@ async function generarReporteProfe() {
             cS[rutinaFull.sesiones[sId].nombre] = tS;
         });
 
-        // Fondo negro PDF
+        // Fondo negro total
         doc.setFillColor(0, 0, 0); doc.rect(0, 0, 210, 297, 'F');
         
-        // Títulos
-        doc.setTextColor(255, 255, 255); doc.setFontSize(24);
-        doc.text(`REPORTE SEMANA ${rutinaFull.semana || "-"}`, 105, 20, { align: 'center' });
-        doc.setTextColor(59, 130, 246); doc.setFontSize(16);
-        doc.text(`ALUMNO: ${rutinaFull.alumno.toUpperCase()}`, 105, 30, { align: 'center' });
+        // Cabecera Principal
+        doc.setTextColor(255, 255, 255); doc.setFontSize(22);
+        doc.text(`REPORTE SEMANA ${rutinaFull.semana || "-"}`, 105, 15, { align: 'center' });
+        doc.setTextColor(0, 212, 255); doc.setFontSize(14);
+        doc.text(`ALUMNO: ${rutinaFull.alumno.toUpperCase()}`, 105, 23, { align: 'center' });
 
-        // Gráfico 1 (Aumentado un poco el alto para que luzcan las letras grandes)
+        // Gráfico 1: Grupos Musculares
         if (Object.keys(cM).length > 0) {
-            const i1 = await crearImgGrafico('chartMusculos', Object.keys(cM), Object.values(cM), 20, 'Series por Músculo');
-            doc.addImage(i1, 'PNG', 15, 45, 180, 75);
+            const i1 = await crearImgGrafico('chartMusculos', Object.keys(cM), Object.values(cM), 20, 'Series', "Estimulo semanal de grupos musculares");
+            // Dibujar recuadro para el gráfico
+            doc.setDrawColor(59, 130, 246); doc.setLineWidth(0.5);
+            doc.rect(12, 35, 186, 80); // Recuadro gráfico 1
+            doc.addImage(i1, 'PNG', 15, 38, 180, 74);
         }
 
-        // Gráfico 2
+        // Gráfico 2: Series por Entrenamiento
         if (Object.keys(cS).length > 0) {
-            const i2 = await crearImgGrafico('chartSesiones', Object.keys(cS), Object.values(cS), 30, 'Series por Sesión');
-            doc.addImage(i2, 'PNG', 15, 125, 180, 75);
+            const i2 = await crearImgGrafico('chartSesiones', Object.keys(cS), Object.values(cS), 30, 'Series', "Numero de series por entrenamiento");
+            // Dibujar recuadro para el gráfico
+            doc.setDrawColor(59, 130, 246); doc.setLineWidth(0.5);
+            doc.rect(12, 125, 186, 80); // Recuadro gráfico 2
+            doc.addImage(i2, 'PNG', 15, 128, 180, 74);
         }
 
-        // Tabla Detallada
+        // Tabla Detallada (Ajustada para que no se encime con el recuadro)
         let tableBody = [];
         Object.keys(rutinaFull.sesiones).forEach(sId => {
             rutinaFull.sesiones[sId].ejercicios.forEach((ex, exIdx) => {
@@ -306,12 +318,12 @@ async function generarReporteProfe() {
 
         if (tableBody.length > 0) {
             doc.autoTable({
-                startY: 205,
+                startY: 215,
                 head: [['EJERCICIO', 'SET', 'REPS', 'KG', 'RPE']],
                 body: tableBody,
                 theme: 'grid',
-                styles: { fillColor: [20, 20, 20], textColor: 255, fontSize: 9 }, // Letra de tabla un poco más grande
-                headStyles: { fillColor: [59, 130, 246], fontSize: 10 }
+                styles: { fillColor: [20, 20, 20], textColor: 255, fontSize: 8 },
+                headStyles: { fillColor: [59, 130, 246], fontSize: 9 }
             });
         }
 
@@ -326,4 +338,5 @@ async function generarReporteProfe() {
     </script>
 </body>
 </html>
+
 
