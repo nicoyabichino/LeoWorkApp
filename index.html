@@ -264,23 +264,118 @@
             await new Promise(r => setTimeout(r, 300)); const url = document.getElementById(canvasId).toDataURL('image/png'); chart.destroy(); return url;
         }
 
-        async function generarReporteProfe() {
-            const { jsPDF } = window.jspdf; const doc = new jsPDF('p', 'mm', 'a4'); let cM = {}, cS = {};
-            Object.keys(rutinaFull.sesiones).forEach(sId => {
-                let tS = 0; rutinaFull.sesiones[sId].ejercicios.forEach((ex, exIdx) => {
-                    for(let sIdx=0; sIdx < ex.series; sIdx++) { const saved = getSavedData(sId, exIdx, sIdx); if(saved.done) { const m = ex.grupo.toUpperCase(); cM[m] = (cM[m] || 0) + 1; tS++; } }
-                }); cS[rutinaFull.sesiones[sId].nombre] = tS;
-            });
-            doc.setFillColor(0, 0, 0); doc.rect(0, 0, 210, 297, 'F'); doc.setTextColor(255, 255, 255);
-            doc.setFontSize(22); doc.text(`REPORTE SEMANA ${rutinaFull.semana || "-"}`, 105, 20, { align: 'center' });
-            const i1 = await crearImgGrafico('chartMusculos', Object.keys(cM), Object.values(cM), 20, 'Series'); doc.addImage(i1, 'PNG', 15, 50, 180, 75);
-            doc.save(`Reporte_${rutinaFull.alumno}.pdf`);
-        }
+        // Función para capturar los datos y generar el PDF
+async function generarReporteProfe() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('p', 'mm', 'a4');
+    
+    let conteoMusculos = {};
+    let conteoSesiones = {};
 
-        function confirmarFinalizacion() { if(confirm("¿Generar reporte?")) generarReporteProfe(); }
-        init();
+    // 1. Recopilar datos de lo que el alumno marcó como "hecho"
+    Object.keys(rutinaFull.sesiones).forEach(sId => {
+        let totalSeriesSesion = 0;
+        rutinaFull.sesiones[sId].ejercicios.forEach((ex, exIdx) => {
+            for(let sIdx=0; sIdx < ex.series; sIdx++) {
+                const saved = getSavedData(sId, exIdx, sIdx);
+                if(saved.done) {
+                    const grupo = ex.grupo.toUpperCase();
+                    conteoMusculos[grupo] = (conteoMusculos[grupo] || 0) + 1;
+                    totalSeriesSesion++;
+                }
+            }
+        });
+        if(totalSeriesSesion > 0) {
+            conteoSesiones[rutinaFull.sesiones[sId].nombre] = totalSeriesSesion;
+        }
+    });
+
+    if (Object.keys(conteoMusculos).length === 0) {
+        return alert("Primero debes marcar algunos sets como completados (✓) para generar un reporte.");
+    }
+
+    // 2. Configuración estética del PDF (Fondo Negro)
+    doc.setFillColor(0, 0, 0);
+    doc.rect(0, 0, 210, 297, 'F');
+    
+    doc.setTextColor(0, 212, 255); // Azul Eléctrico
+    doc.setFontSize(22);
+    doc.text("REPORTE DE ENTRENAMIENTO", 105, 25, { align: 'center' });
+    
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(14);
+    doc.text(`Alumno: ${rutinaFull.alumno}`, 20, 40);
+    doc.text(`Semana: ${rutinaFull.semana || "-"}`, 20, 48);
+
+    // 3. Crear y agregar Gráfico de Músculos
+    doc.setFontSize(12);
+    doc.text("VOLUMEN POR GRUPO MUSCULAR (Series)", 20, 65);
+    const imgMusculos = await crearImgGrafico(
+        'chartMusculos', 
+        Object.keys(conteoMusculos), 
+        Object.values(conteoMusculos), 
+        'Series Totales'
+    );
+    doc.addImage(imgMusculos, 'PNG', 15, 70, 180, 80);
+
+    // 4. Crear y agregar Gráfico de Sesiones
+    doc.text("INTENSIDAD POR SESIÓN (Series completadas)", 20, 165);
+    const imgSesiones = await crearImgGrafico(
+        'chartSesiones', 
+        Object.keys(conteoSesiones), 
+        Object.values(conteoSesiones), 
+        'Sets'
+    );
+    doc.addImage(imgSesiones, 'PNG', 15, 170, 180, 80);
+
+    // 5. Firma decorativa
+    doc.setTextColor(100, 100, 100);
+    doc.setFontSize(8);
+    doc.text("DESIGNED BY NICOYABICHINO - LEO WORKAPP PRO", 105, 285, { align: 'center' });
+
+    // Descargar
+    doc.save(`Reporte_Semana${rutinaFull.semana}_${rutinaFull.alumno}.pdf`);
+}
+
+// Función auxiliar para renderizar el gráfico en un canvas oculto y pasarlo a imagen
+async function crearImgGrafico(canvasId, labels, data, datasetLabel) {
+    const canvas = document.getElementById(canvasId);
+    const ctx = canvas.getContext('2d');
+    
+    const chart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: datasetLabel,
+                data: data,
+                backgroundColor: '#3b82f6',
+                borderColor: '#00d4ff',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            devicePixelRatio: 2, // Mejor resolución para el PDF
+            animation: false,
+            scales: {
+                y: { beginAtZero: true, ticks: { color: 'white' } },
+                x: { ticks: { color: 'white' } }
+            },
+            plugins: {
+                legend: { labels: { color: 'white' } }
+            }
+        }
+    });
+
+    // Esperar a que se renderice el frame
+    await new Promise(r => setTimeout(r, 500));
+    const url = canvas.toDataURL('image/png');
+    chart.destroy();
+    return url;
+}
     </script>
 </body>
 </html>
+
 
 
