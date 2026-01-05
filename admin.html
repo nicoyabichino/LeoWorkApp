@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Panel Profe Leo Rodriguez - Control Total</title>
+    <title>Panel Profe - Control Total</title>
     
+    <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#0b0f1a">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -24,7 +25,6 @@
         h1 { font-size: 1.4rem; text-align: center; color: var(--primary); margin: 15px 0; }
 
         .card { background: var(--card); padding: 15px; border-radius: 12px; margin-bottom: 25px; border: 1px solid #30363d; position: relative; }
-        
         .sesion { border-top: 6px solid var(--accent); }
         .dia-label { position: absolute; top: -15px; left: 15px; background: var(--accent); color: white; padding: 2px 12px; border-radius: 4px; font-size: 0.7rem; font-weight: bold; }
 
@@ -43,7 +43,6 @@
 
         #temp-copy { position: absolute; left: -9999px; }
 
-        /* Estilo para el banner de instalación */
         #install-profe { display: none; width: 100%; padding: 15px; background: white; color: black; border: none; border-radius: 12px; font-weight: 900; margin-bottom: 20px; cursor: pointer; text-transform: uppercase; font-size: 0.8rem; box-shadow: 0 4px 15px rgba(255,255,255,0.1); }
     </style>
 </head>
@@ -71,12 +70,17 @@
     </div>
 
     <div class="footer-sign">
-        PROPIEDAD DE <a href="https://www.linkedin.com/in/nicolas-yabichino/" target="_blank" class="brand-link">NICOYABI</a>
+        PROPIEDAD DE <a href="https://www.linkedin.com/in/nicolas-yabichino/" target="_blank" class="brand-link"><span>NICOYABI</span></a>
     </div>
 
 <script>
     let contadorSesiones = 0;
     let deferredPrompt;
+
+    // Registrar Service Worker para habilitar PWA
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js');
+    }
 
     const DATA_EJERCICIOS = {
         "MOVILIDAD": ["Rotacion de columna", "Movilidad de cadera", "Movilidad de rodilla", "Rotacion de hombros", "Gato malo/bueno"],
@@ -88,7 +92,6 @@
         "BICEPS / TRICEPS / DELTOIDES": ["Curl biceps con barra", "Curl biceps con mancuerna", "Curl biceps sentado con mancuerna", "Curl bicepspredicador con barra", "Curl biceps predicador con mancuerna", "Curl biceps en polea", "Curl biceps bayessian", "Curl biceps martillo", "Triceps polea alta bilat / unilat", "Triceps trasnuca bilat / unilat", "Press frances", "Fondo en paralela", "Press vertical barra / mancuerna (deltoides)", "Vuelo lateral", "Vuelo frontal", "Vuelo posterior", "Peck deck inverso."]
     };
 
-    // Lógica de Instalación
     window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
         deferredPrompt = e;
@@ -205,3 +208,4 @@
 </script>
 </body>
 </html>
+
