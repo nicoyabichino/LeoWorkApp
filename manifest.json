@@ -1,6 +1,6 @@
 {
-  "short_name": "Leo WorkApp",
-  "name": "Leo WorkApp",
+  "short_name": "LR WorkApp",
+  "name": "LR WorkApp",
   "icons": [
     {
       "src": "icono.png",
@@ -20,3 +20,4 @@
   "theme_color": "#000000",
   "background_color": "#000000"
 }
+
