@@ -9,8 +9,8 @@
         :root {
             --bg: #0b0f1a; --card: #161b22; --primary: #3b82f6;
             --success: #238636; --danger: #da3633; --text: #f0f6fc;
-            --accent: #8b5cf6; /* El Violeta original de tu backup */
-            --electric-blue: #00d4ff; /* Para detalles de marca */
+            --accent: #8b5cf6; 
+            --electric-blue: #00d4ff; 
         }
         
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -19,26 +19,44 @@
 
         .card { background: var(--card); padding: 15px; border-radius: 12px; margin-bottom: 25px; border: 1px solid #30363d; position: relative; }
         
-        /* Restaurado: Color Violeta para la sesión */
         .sesion { border-top: 6px solid var(--accent); }
         .dia-label { position: absolute; top: -15px; left: 15px; background: var(--accent); color: white; padding: 2px 12px; border-radius: 4px; font-size: 0.7rem; font-weight: bold; }
 
         label { display: block; font-size: 0.7rem; color: var(--primary); font-weight: bold; margin-bottom: 4px; text-transform: uppercase; }
         input, select { width: 100%; padding: 12px; margin-bottom: 10px; background: #0d1117; border: 1px solid #30363d; color: white; border-radius: 8px; font-size: 1rem; outline: none; }
 
-        /* Restaurado: Botón Agregar Día en Violeta */
         .btn-add-day { background: var(--accent); color: white; width: 100%; padding: 15px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; margin-bottom: 15px; }
-        
-        /* Restaurado: Botón Agregar Ejercicio en Gris Oscuro */
         .btn-add-ex { background: #3e4c5a; color: #fff; border: none; padding: 12px; border-radius: 8px; cursor: pointer; width: 100%; font-size: 0.9rem; font-weight: bold; }
-
         .btn-gen { background: var(--primary); color: white; width: 100%; padding: 18px; font-size: 1.1rem; font-weight: bold; border: none; border-radius: 12px; cursor: pointer; margin-top: 10px; }
 
         .ex-item { border-left: 3px solid var(--primary); padding: 12px; margin-bottom: 12px; background: #1c2128; border-radius: 0 8px 8px 0; }
-        
         .copy-area { background: #000; color: #22c55e; border: 1px solid var(--success); font-family: monospace; padding: 15px; border-radius: 8px; word-break: break-all; font-size: 0.75rem; margin-top: 10px; }
         
-        .footer-sign { text-align: center; color: #888; font-size: 0.7rem; letter-spacing: 3px; margin: 40px 0 20px 0; font-weight: bold; }
+               .footer-sign { 
+    text-align: center; 
+    color: #444; 
+    font-size: 0.7rem; 
+    letter-spacing: 3px; 
+    margin-top: 40px; 
+    font-weight: bold; 
+    padding-bottom: 100px; 
+}
+
+.footer-sign a {
+    text-decoration: none; /* Quita el subrayado del enlace */
+}
+
+.footer-sign span { 
+    color: #00d4ff; /* Azul Eléctrico */
+    text-shadow: 0 0 8px rgba(0, 212, 255, 0.6);
+    transition: 0.3s;
+}
+
+/* Efecto opcional al pasar el mouse o tocar */
+.footer-sign span:hover {
+    text-shadow: 0 0 15px rgba(0, 212, 255, 1);
+    color: #ffffff;
+}
         .brand-link { color: var(--electric-blue); text-decoration: none; }
 
         #temp-copy { position: absolute; left: -9999px; }
@@ -64,16 +82,23 @@
         <textarea id="temp-copy"></textarea>
         <button onclick="copiarLink()" style="background:#eab308; width:100%; padding:18px; border:none; border-radius:12px; font-weight:bold; margin-top:15px; cursor:pointer; color:black;">📋 COPIAR CÓDIGO</button>
     </div>
-<button id="btn-instalar" style="display:none; width:100%; padding:15px; background: #ffffff; color: #000; border: none; border-radius: 12px; font-weight: bold; margin-top: 20px; cursor: pointer; align-items: center; justify-content: center; gap: 10px;">
-    📲 INSTALAR APP EN MI CELULAR
-</button>
-    <div class="footer-sign">
-        PROPIEDAD DE <a href="https://www.linkedin.com/in/nicolas-yabichino/" target="_blank" class="brand-link">NICOYABI</a>
-    </div>
+
+    <footer class="footer-sign">
+    DESARROLLADO POR <a href="https://www.linkedin.com/in/nicolas-yabichino/" target="_blank"><span>NICOYABI</span></a>
+</footer>
 
 <script>
     let contadorSesiones = 0;
-    const GRUPOS = ["PECTORAL SUPERIOR", "PECTORAL MEDIO/INF", "DELTOIDES ANTERIOR", "DELTOIDES LATERAL", "DELTOIDES POSTERIOR", "DORSAL ANCHO", "TRAPECIO/ESPALDA ALTA", "LUMBARES", "BICEPS BRAQUIAL", "BICEPS (C. LARGA)", "TRICEPS", "ANTEBRAZO", "CUADRICEPS", "ISQUIOS", "GLUTEO MAYOR", "GLUTEO MEDIO/MENOR", "ADUCTORES", "GEMELOS", "ABDOMINALES", "CARDIO"];
+
+    const DATA_EJERCICIOS = {
+        "MOVILIDAD": ["Rotacion de columna", "Movilidad de cadera", "Movilidad de rodilla", "Rotacion de hombros", "Gato malo/bueno"],
+        "ABDOMEN / CORE": ["Plancha frontal", "Plancha lateral", "Planchas dinámicas", "Crunch", "Oblicuos", "Bicho muerto", "Bird-dog", "Abs wheel (ruedita)", "Abs sovieticas", "Leñador ascendente", "Leñador descendente", "Elevacion de piernas"],
+        "TREN INF / CUADRICEPS / GEMELOS": ["Sentadilla con barra alta", "Sentadilla con barra baja", "Sentadilla frontal", "Sentadilla en multipower", "Sentadilla hack", "Sentadilla pendular", "Sentadilla goblet", "Sentadilla bulgara (enfoque cuadriceps)", "Prensa bilateral / unilateral", "Sillon cuadriceps bilateral /unilateral", "Estocada hacia adelante", "Subidas al banco (enfoque cuadriceps)", "Gemelos en prensa", "Gemelos en maquina especifica", "Gemelos con mancuernas", "Gemelos con barra"],
+        "TREN INF / ISQUIOS / GLUTEOS / ADUCTORES": ["Peso muerto convencional", "Peso muerto rumano", "Peso muerto piernas rigidas", "Peso muerto sumo", "Peso muerto unilateral", "Camilla de isquis bilateral / unilateral", "Aductores en maquina", "Abducciones en maquina", "Patada de gluteo en maquina especifica", "Patada de gluteo en polea", "Hip-trust bilateral / unilateral", "Sentadilla bulgara (enfoque gluteo)", "Subida al banco (enfoque gluteo)", "Abducciones con banda"],
+        "PECTORAL": ["Press plano barra / mancuerna / multipower", "Press inclinado barra / mancuenra / multipower", "Press declinado con mancuerna", "Press en polea altura media", "Peck deck", "Apertura con mancuernas", "Flexiones de brazos", "Poleas cruzadas"],
+        "DORSALES": ["Dominadas supina", "Dominadas pronacion", "Jalon al pecho supino", "Jalon al pecho prono", "Jalon al pecho agarre cerrado (triangulo)", "Remo bajo ancho", "Remo bajo cerrado", "Remo bajo unilateral", "Remo con mancuerna biilateral / unilateral", "Remo con barra codo abierto", "Remo con barra codo cerrado", "Pullover", "Remo dorian"],
+        "BICEPS / TRICEPS / DELTOIDES": ["Curl biceps con barra", "Curl biceps con mancuerna", "Curl biceps sentado con mancuerna", "Curl bicepspredicador con barra", "Curl biceps predicador con mancuerna", "Curl biceps en polea", "Curl biceps bayessian", "Curl biceps martillo", "Triceps polea alta bilat / unilat", "Triceps trasnuca bilat / unilat", "Press frances", "Fondo en paralela", "Press vertical barra / mancuerna (deltoides)", "Vuelo lateral", "Vuelo frontal", "Vuelo posterior", "Peck deck inverso."]
+    };
 
     function agregarSesion() {
         contadorSesiones++;
@@ -101,25 +126,44 @@
         const container = document.querySelector(`#sesion-${sId} .ejercicios-container`);
         const div = document.createElement('div');
         div.className = 'ex-item';
+        
+        const gruposHtml = Object.keys(DATA_EJERCICIOS).map(g => `<option value="${g}">${g}</option>`).join('');
+        
         div.innerHTML = `
             <div style="display:grid; grid-template-columns: 1fr; gap: 8px;">
-                <div><label>Ejercicio</label><input type="text" class="ex-nombre"></div>
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-                    <div><label>Grupo</label><select class="ex-grupo">${GRUPOS.map(g=>`<option>${g}</option>`).join('')}</select></div>
+                    <div>
+                        <label>Grupo Muscular</label>
+                        <select class="ex-grupo" onchange="actualizarEjercicios(this)">
+                            ${gruposHtml}
+                        </select>
+                    </div>
+                    <div>
+                        <label>Ejercicio</label>
+                        <select class="ex-nombre"></select>
+                    </div>
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
                     <div><label>Sets</label><input type="number" class="ex-series" value="4"></div>
+                    <div><label>Rep (Obj)</label><input type="text" class="ex-reps" placeholder="Ej: 12,12,10"></div>
                 </div>
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-                    <div><label>Rep (Obj)</label><input type="text" class="ex-reps" placeholder="Ej: 12,12,10"></div>
                     <div><label>Kg (Obj)</label><input type="text" class="ex-peso" placeholder="Ej: 50,55,60"></div>
+                    <div><label>Link Video</label><input type="text" class="ex-video" placeholder="YouTube Link"></div>
                 </div>
             </div>
-            <div style="margin-top:8px;">
-                <label>Link Video (YouTube)</label>
-                <input type="text" class="ex-video" placeholder="https://youtube.com/...">
-            </div>
-            <button onclick="this.parentElement.remove()" style="background:none; color:#da3633; border:none; font-size:0.7rem; cursor:pointer; width:100%; text-align:right;">Eliminar Ejercicio</button>
+            <button onclick="this.parentElement.remove()" style="background:none; color:#da3633; border:none; font-size:0.7rem; cursor:pointer; width:100%; text-align:right; margin-top:5px;">Eliminar Ejercicio</button>
         `;
         container.appendChild(div);
+        // Inicializar la lista de ejercicios para el primer grupo
+        actualizarEjercicios(div.querySelector('.ex-grupo'));
+    }
+
+    function actualizarEjercicios(selectGrupo) {
+        const grupo = selectGrupo.value;
+        const selectEx = selectGrupo.parentElement.parentElement.parentElement.querySelector('.ex-nombre');
+        const ejercicios = DATA_EJERCICIOS[grupo] || [];
+        selectEx.innerHTML = ejercicios.map(e => `<option value="${e}">${e}</option>`).join('');
     }
 
     function generarLink() {
@@ -167,5 +211,3 @@
 </script>
 </body>
 </html>
-
-
