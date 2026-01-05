@@ -8,6 +8,9 @@
     <link rel="manifest" href="manifest.json?v=2">
     <meta name="theme-color" content="#000000">
 
+    <link rel="icon" type="image/png" href="icono.png">
+    <link rel="apple-touch-icon" href="icono.png">
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -22,7 +25,8 @@
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); padding-bottom: 30px; overflow-x: hidden; }
         
         header { position: sticky; top: 0; background: #000; padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--primary); z-index: 100; height: 60px; }
-        .logo-header { height: 35px; width: auto; object-fit: contain; }
+        /* Ajuste para el nuevo icono del header */
+        .logo-header { height: 40px; width: 40px; object-fit: contain; border-radius: 6px; }
         
         .timer-val { font-family: monospace; font-size: 1.8rem; font-weight: bold; color: var(--success); }
         main { padding: 15px; max-width: 600px; margin: auto; min-height: 85vh; }
@@ -56,7 +60,8 @@
 <body>
 
     <header>
-        <img src="logo.png?v=2" alt="Leo Rodriguez" class="logo-header">
+        <img src="icono.png" alt="Icono Leo" class="logo-header">
+        
         <div id="display" class="timer-val" style="display: none;">00:00</div>
         <div id="alumno-header" style="text-align: right; display: none;">
             <div id="alumno-display" style="font-size: 0.8rem; color: var(--primary); font-weight: bold;">-</div>
@@ -137,14 +142,14 @@
                         <div><strong>${ex.nombre}</strong><br><small style="color:var(--accent)">${ex.grupo}</small></div>
                         ${ex.video ? `<a href="${ex.video}" target="_blank" class="yt-icon">VIDEO</a>` : ''}
                     </div>
-                    <div class="grid-header"><div>Set</div><div>Objetivo</div><div>Reps</div><div>Kg</div><div>RPE</div><div>Ok</div></div>
+                    <div class="grid-header"><div>Set</div><div>Objetivo</div><div>Reps</div><div>Kg</div><div>RPE/RIR</div><div>Ok</div></div>
                     ${Array.from({length: ex.series}).map((_, sIdx) => {
                         const saved = getSavedData(id, exIdx, sIdx);
                         const oR = rA[sIdx] || rA[rA.length-1] || ex.reps_obj;
                         const oK = pA[sIdx] || pA[pA.length-1] || ex.peso_obj;
                         return `<div class="set-row ${saved.done ? 'done' : ''}" id="row-${exIdx}-${sIdx}">
                             <div style="text-align:center;font-weight:bold;">${sIdx+1}</div>
-                            <div class="obj-cell">Rep:${oR}<br>Kg:${oK}</div>
+                            <div class="obj-cell" data-obj-reps="${oR}" data-obj-peso="${oK}">Rep:${oR}<br>Kg:${oK}</div>
                             <div><input type="number" oninput="saveData('${id}',${exIdx},${sIdx})" value="${saved.reps || ''}" inputmode="numeric"></div>
                             <div><input type="number" oninput="saveData('${id}',${exIdx},${sIdx})" value="${saved.peso || ''}" inputmode="decimal"></div>
                             <div><input type="number" oninput="saveData('${id}',${exIdx},${sIdx})" value="${saved.rpe || ''}" inputmode="numeric"></div>
@@ -163,12 +168,7 @@
         function solicitarBorrar() { document.getElementById('custom-confirm').style.display = 'flex'; }
         function cerrarConfirm(aceptado) { document.getElementById('custom-confirm').style.display = 'none'; if(aceptado) { localStorage.clear(); location.reload(); } }
 
-        // --- LÓGICA DE PDF RECUPERADA ---
-        function confirmarFinalizacion() {
-            if(confirm("¿Generar reporte semanal?")) {
-                generarReporteProfe();
-            }
-        }
+        function confirmarFinalizacion() { if(confirm("¿Generar reporte semanal?")) { generarReporteProfe(); } }
 
         async function crearImgGrafico(canvasId, labels, data, maxVal, datasetLabel, tituloGrafico) {
             const ctx = document.getElementById(canvasId).getContext('2d');
@@ -218,6 +218,7 @@
                 const { jsPDF } = window.jspdf;
                 const doc = new jsPDF('p', 'mm', 'a4');
                 let cM = {}, cS = {};
+                
                 Object.keys(rutinaFull.sesiones).forEach(sId => {
                     let tS = 0;
                     rutinaFull.sesiones[sId].ejercicios.forEach((ex, exIdx) => {
@@ -232,11 +233,13 @@
                     });
                     cS[rutinaFull.sesiones[sId].nombre] = tS;
                 });
+
                 doc.setFillColor(0, 0, 0); doc.rect(0, 0, 210, 297, 'F');
                 doc.setTextColor(255, 255, 255); doc.setFontSize(22);
                 doc.text(`REPORTE SEMANA ${rutinaFull.semana || "-"}`, 105, 15, { align: 'center' });
                 doc.setTextColor(0, 212, 255); doc.setFontSize(14);
                 doc.text(`ALUMNO: ${rutinaFull.alumno.toUpperCase()}`, 105, 23, { align: 'center' });
+
                 if (Object.keys(cM).length > 0) {
                     const i1 = await crearImgGrafico('chartMusculos', Object.keys(cM), Object.values(cM), 20, 'Series', "Estimulo semanal de grupos musculares");
                     doc.setDrawColor(59, 130, 246); doc.rect(12, 35, 186, 80); 
@@ -247,27 +250,67 @@
                     doc.setDrawColor(59, 130, 246); doc.rect(12, 125, 186, 80); 
                     doc.addImage(i2, 'PNG', 15, 128, 180, 74);
                 }
+
                 let tableBody = [];
                 Object.keys(rutinaFull.sesiones).forEach(sId => {
                     rutinaFull.sesiones[sId].ejercicios.forEach((ex, exIdx) => {
+                        const rA = ex.reps_obj.split(',').map(x => x.trim());
+                        const pA = ex.peso_obj.split(',').map(x => x.trim());
+
                         for(let sIdx=0; sIdx < ex.series; sIdx++) {
                             const saved = getSavedData(sId, exIdx, sIdx);
-                            if(saved.done) tableBody.push([ex.nombre, `S${sIdx+1}`, saved.reps || '-', saved.peso || '-', saved.rpe || '-']);
+                            if(saved.done) {
+                                const objR = rA[sIdx] || rA[rA.length-1] || ex.reps_obj;
+                                const objK = pA[sIdx] || pA[pA.length-1] || ex.peso_obj;
+                                
+                                const objetivoText = `${objR}Rep / ${objK}Kg`;
+                                const realText = `${saved.reps || '-'}Rep / ${saved.peso || '-'}Kg`;
+
+                                tableBody.push([
+                                    ex.nombre, 
+                                    `Set ${sIdx+1}`, 
+                                    objetivoText, 
+                                    realText, 
+                                    saved.rpe || '-'
+                                ]);
+                            }
                         }
                     });
                 });
+
                 if (tableBody.length > 0) {
-                    doc.autoTable({ startY: 215, head: [['EJERCICIO', 'SET', 'REPS', 'KG', 'RPE']], body: tableBody, theme: 'grid', styles: { fillColor: [20, 20, 20], textColor: 255, fontSize: 8 }, headStyles: { fillColor: [59, 130, 246], fontSize: 9 } });
+                    doc.autoTable({ 
+                        startY: 215, 
+                        head: [['EJERCICIO', 'SET', 'OBJETIVO (Rep/Kg)', 'REALIZADO (Rep/Kg)', 'RPE/RIR']], 
+                        body: tableBody, 
+                        theme: 'grid', 
+                        styles: { fillColor: [20, 20, 20], textColor: 255, fontSize: 7, halign: 'center' }, 
+                        headStyles: { fillColor: [59, 130, 246], fontSize: 8, halign: 'center' },
+                        columnStyles: { 0: { halign: 'left', cellWidth: 50 } }
+                    });
                 }
+
                 doc.save(`Reporte_${rutinaFull.alumno}_Semana${rutinaFull.semana}.pdf`);
-            } catch(e) { alert("Error al generar PDF: " + e.message); }
+            } catch(e) { alert("Error al generar PDF: " + e.message); console.error(e); }
         }
+
+        // Lógica de Instalación (PWA)
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            document.getElementById('install-banner').style.display = 'block';
+        });
+
+        document.getElementById('install-banner').addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                deferredPrompt = null;
+                document.getElementById('install-banner').style.display = outcome === 'accepted' ? 'none' : 'block';
+            }
+        });
 
         init();
     </script>
 </body>
 </html>
-
-
-
-
