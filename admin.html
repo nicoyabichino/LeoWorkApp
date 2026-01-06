@@ -229,12 +229,12 @@
     }
 
     // ÚNICA ADICIÓN EN SCRIPT: REGISTRO DEL SERVICE WORKER
- if ('serviceWorker' in navigator) {
+if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-        // Registramos con un scope específico para que no choque con el index
-        navigator.serviceWorker.register('./sw-admin.js', { scope: '/LeoWorkApp/' })
-            .then(reg => console.log('Admin SW registrado con éxito'))
-            .catch(err => console.log('Fallo en el registro:', err));
+        // CAMBIO AQUÍ: El scope debe ser exactamente la página de admin
+        navigator.serviceWorker.register('./sw-admin.js', { scope: './' }) 
+            .then(reg => console.log('Admin SW registrado'))
+            .catch(err => console.log('Fallo:', err));
     });
 }
 
@@ -242,5 +242,6 @@
 </script>
 </body>
 </html>
+
 
 
