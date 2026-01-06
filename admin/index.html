@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Panel Profe - Control Total</title>
     
-   <link rel="manifest" href="manifest-admin.json">
+  <link rel="manifest" href="manifest-admin.json">
     <meta name="theme-color" content="#0b0f1a">
     
     <style>
@@ -231,10 +231,10 @@
     // ÚNICA ADICIÓN EN SCRIPT: REGISTRO DEL SERVICE WORKER
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-        // CAMBIO AQUÍ: El scope debe ser exactamente la página de admin
-        navigator.serviceWorker.register('./sw-admin.js', { scope: './' }) 
-            .then(reg => console.log('Admin SW registrado'))
-            .catch(err => console.log('Fallo:', err));
+        // Al estar en la misma carpeta, la ruta es directa
+        navigator.serviceWorker.register('./sw-admin.js')
+            .then(reg => console.log('Admin SW OK'))
+            .catch(err => console.log('Error:', err));
     });
 }
 
@@ -242,6 +242,7 @@ if ('serviceWorker' in navigator) {
 </script>
 </body>
 </html>
+
 
 
 
