@@ -1,13 +1,12 @@
-const CACHE_NAME = 'leo-admin-v3';
+const CACHE_NAME = 'leo-admin-v4'; // Subimos versión para forzar actualización
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      // Usamos rutas relativas al repositorio
       return cache.addAll([
-        './admin.html',
-        './manifest-admin.json',
-        './icono.png'
+        'admin.html',
+        'manifest-admin.json',
+        'icono.png'
       ]);
     })
   );
