@@ -1,11 +1,14 @@
-// sw-admin.js - El motor de la app del Profe
-const CACHE_NAME = 'leo-admin-v1'; // Nombre diferente al del alumno
+const CACHE_NAME = 'leo-admin-v3';
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      // Guardamos el HTML del admin y su manifest
-      return cache.addAll(['./admin.html', './manifest-admin.json']);
+      // Usamos rutas relativas al repositorio
+      return cache.addAll([
+        './admin.html',
+        './manifest-admin.json',
+        './icono.png'
+      ]);
     })
   );
   self.skipWaiting();
