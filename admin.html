@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Panel Profe - Control Total</title>
     
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0b0f1a">
+    
     <style>
         :root {
             --bg: #0b0f1a; --card: #161b22; --primary: #3b82f6;
@@ -174,7 +177,6 @@
             <button onclick="this.parentElement.remove()" style="background:none; color:#da3633; border:none; font-size:0.7rem; cursor:pointer; width:100%; text-align:right; margin-top:5px;">Eliminar Ejercicio</button>
         `;
         container.appendChild(div);
-        // Inicializar la lista de ejercicios para el primer grupo
         actualizarEjercicios(div.querySelector('.ex-grupo'));
     }
 
@@ -224,6 +226,15 @@
         tempInput.select();
         document.execCommand("copy");
         alert("✅ ¡Copiado!");
+    }
+
+    // ÚNICA ADICIÓN EN SCRIPT: REGISTRO DEL SERVICE WORKER
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('./sw.js')
+                .then(reg => console.log('SW registrado', reg))
+                .catch(err => console.log('SW falló', err));
+        });
     }
 
     agregarSesion();
