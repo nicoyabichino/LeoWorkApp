@@ -1,8 +1,8 @@
 {
-  "id": "leo-profe-app",
+  "id": "leo-profe-app-v1",
   "short_name": "Admin Leo",
   "name": "Panel Profe Leo Rodriguez",
-  "start_url": "./admin.html",
+  "start_url": "./index.html",
   "display": "standalone",
   "theme_color": "#0b0f1a",
   "background_color": "#0b0f1a",
@@ -10,12 +10,14 @@
     {
       "src": "icono.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
       "src": "icono.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }
