@@ -1,8 +1,8 @@
 {
-  "id": "/LeoWorkApp/admin",
+  "id": "leo-profe-app",
   "short_name": "Admin Leo",
   "name": "Panel Profe Leo Rodriguez",
-  "start_url": "/LeoWorkApp/admin.html",
+  "start_url": "./admin.html",
   "display": "standalone",
   "theme_color": "#0b0f1a",
   "background_color": "#0b0f1a",
