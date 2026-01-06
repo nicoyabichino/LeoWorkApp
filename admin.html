@@ -32,24 +32,41 @@
         .ex-item { border-left: 3px solid var(--primary); padding: 12px; margin-bottom: 12px; background: #1c2128; border-radius: 0 8px 8px 0; }
         .copy-area { background: #000; color: #22c55e; border: 1px solid var(--success); font-family: monospace; padding: 15px; border-radius: 8px; word-break: break-all; font-size: 0.75rem; margin-top: 10px; }
         
-               .footer-sign { 
+/* Estilo para el Título Grande */
+.title-sign { 
     text-align: center; 
-    color: #999; 
-    font-size: 2rem; 
+    color: #888; 
+    font-size: 2rem; /* Tamaño grande para el título */
     letter-spacing: 3px; 
     margin-top: 40px; 
+    font-weight: bold; 
+}
+
+/* Estilo para tu Firma Pequeña */
+.footer-sign { 
+    text-align: center; 
+    color: #444; 
+    font-size: 0.8rem; /* Tamaño original para tu marca */
+    letter-spacing: 3px; 
+    margin-top: 20px; 
     font-weight: bold; 
     padding-bottom: 100px; 
 }
 
-.footer-sign a {
-    text-decoration: none; /* Quita el subrayado del enlace */
+/* Reglas comunes para los enlaces y spans dentro de ambos */
+.title-sign a, .footer-sign a {
+    text-decoration: none;
 }
 
-.footer-sign span { 
-    color: #00d4ff; /* Azul Eléctrico */
+.title-sign span, .footer-sign span { 
+    color: #00d4ff;
     text-shadow: 0 0 8px rgba(0, 212, 255, 0.6);
     transition: 0.3s;
+}
+
+.title-sign span:hover, .footer-sign span:hover {
+    text-shadow: 0 0 15px rgba(0, 212, 255, 1);
+    color: #ffffff;
 }
 
 /* Efecto opcional al pasar el mouse o tocar */
@@ -64,7 +81,7 @@
 </head>
 <body>
 
-    <footer class="footer-sign">
+       <footer class="title-sign">
     PANEL PROFE <a><span>LEO RODRIGUEZ</span></a>
 </footer>
 
@@ -213,6 +230,3 @@
 </script>
 </body>
 </html>
-
-
-
