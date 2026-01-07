@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>LR WorkApp</title>
     
-    <link rel="manifest" href="manifest.json?v=7">
+    <link rel="manifest" href="manifest.json?v=6">
     <meta name="theme-color" content="#000000">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -232,7 +232,7 @@
             document.getElementById('custom-confirm').style.display = 'flex';
         }
 
-        function cerrarConfirm(aceptado) { 
+function cerrarConfirm(aceptado) { 
             document.getElementById('custom-confirm').style.display = 'none'; 
             if(aceptado) { 
                 if(modoModal === "BORRAR") {
@@ -240,6 +240,9 @@
                     location.reload(); 
                 } else if(modoModal === "REPORTE") {
                     generarReporteProfe(); 
+                } else if(modoModal === "FIN") { // Nueva condición para el reinicio final
+                    localStorage.clear();
+                    location.reload();
                 }
             } 
         }
@@ -345,15 +348,19 @@ async function generarReporteProfe() {
                     doc.autoTable({ startY: 215, head: [['EJERCICIO', 'SET', 'OBJETIVO (Rep/Kg)', 'REALIZADO (Rep/Kg)', 'RPE/RIR']], body: tableBody, theme: 'grid', styles: { fillColor: [20, 20, 20], textColor: 255, fontSize: 7, halign: 'center' }, headStyles: { fillColor: [59, 130, 246], fontSize: 8, halign: 'center' }, columnStyles: { 0: { halign: 'left', cellWidth: 50 } } });
                 }
 
-                // Guardamos el PDF
+             // Guardamos el PDF
                 doc.save(`Reporte_${rutinaFull.alumno}_Semana${rutinaFull.semana}.pdf`);
 
-                // --- NUEVA LÓGICA DE REINICIO ---
+                // En lugar de alert, usamos nuestro modal estético
                 setTimeout(() => {
-                    alert("¡Reporte generado! Envíaselo al Profe!");
-                    localStorage.clear(); // Borra pesos guardados y el código viejo
-                    location.reload();    // Recarga la app al estado inicial
-                }, 1000); // Damos un margen de 1s para que el navegador procese la descarga
+                    modoModal = "FIN";
+                    document.getElementById('modal-title').innerText = "¡REPORTE GENERADO!";
+                    document.getElementById('modal-text').innerText = "Se descargó tu progreso. La app se reiniciará para que puedas cargar la nueva rutina de la semana.";
+                    document.getElementById('modal-confirm-btn').style.background = "var(--primary)";
+                    document.getElementById('modal-confirm-btn').innerText = "ENTENDIDO";
+                    document.getElementById('modal-cancel-btn').style.display = "none"; // Ocultamos el botón 'No'
+                    document.getElementById('custom-confirm').style.display = 'flex';
+                }, 1500);
 
             } catch(e) { alert("Error al generar PDF: " + e.message); }
         }
@@ -381,3 +388,4 @@ async function generarReporteProfe() {
     </script>
 </body>
 </html>
+
