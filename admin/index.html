@@ -298,8 +298,15 @@ window.addEventListener('DOMContentLoaded', () => {
         document.getElementById('access-screen').style.display = 'none';
     }
 });
+    // Permite entrar al panel apretando la tecla "Enter"
+document.getElementById('admin-pass').addEventListener('keypress', function (e) {
+    if (e.key === 'Enter') {
+        verificarAcceso();
+    }
+});
 </script>
 </body>
 </html>
+
 
 
