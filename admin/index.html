@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Panel Profe - Control Total</title>
     
-  <link rel="manifest" href="manifest-admin.json?v=8">
+  <link rel="manifest" href="manifest-admin.json?v=7">
     <meta name="theme-color" content="#0b0f1a">
     
     <style>
@@ -80,13 +80,19 @@
         .brand-link { color: var(--electric-blue); text-decoration: none; }
 
         #temp-copy { position: absolute; left: -9999px; }
+/* Ajuste para que el título no se corte en celulares */
+@media (max-width: 400px) {
+    .title-sign span {
+        display: block; /* Fuerza el salto de línea solo en móviles */
+        margin-top: 5px;
+    }
+}
     </style>
 </head>
 <body>
 
 <footer class="title-sign">
-PANEL PROFE 
-<span>LEO RODRIGUEZ</span>
+    PANEL PROFE <a><span>LEO RODRIGUEZ</span></a>
 </footer>
 
     <div class="card">
@@ -243,3 +249,4 @@ if ('serviceWorker' in navigator) {
 </script>
 </body>
 </html>
+
