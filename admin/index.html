@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Panel Profe - Control Total</title>
     
-  <link rel="manifest" href="manifest-admin.json?v=8">
+  <link rel="manifest" href="manifest-admin.json?v=7">
     <meta name="theme-color" content="#0b0f1a">
     
     <style>
@@ -87,9 +87,25 @@
         margin-top: 5px;
     }
 }
+/* Protector de acceso */
+#access-screen {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: var(--bg); z-index: 9999; display: flex;
+    flex-direction: column; align-items: center; justify-content: center;
+    padding: 20px;
+}
     </style>
 </head>
 <body>
+<div id="access-screen">
+    <footer class="title-sign" style="margin-bottom: 20px;">
+        PANEL PROFE <a><span>LEO RODRIGUEZ</span></a>
+    </footer>
+    <input type="password" id="admin-pass" placeholder="Ingrese Clave de Acceso" 
+           style="max-width: 300px; text-align: center; border: 2px solid var(--primary);">
+    <button onclick="verificarAcceso()" class="btn-gen" style="max-width: 300px;">ENTRAR AL PANEL</button>
+    <p id="error-msg" style="color: var(--danger); font-size: 0.8rem; margin-top: 10px; display: none;">Clave incorrecta. Intente de nuevo.</p>
+</div>
 
 <footer class="title-sign">
     PANEL PROFE <a><span>LEO RODRIGUEZ</span></a>
@@ -274,6 +290,31 @@ if ('serviceWorker' in navigator) {
 }
 
     agregarSesion();
+function verificarAcceso() {
+    const pass = document.getElementById('admin-pass').value;
+    
+    // La clave "Rio2026" escondida en Base64
+    const CLAVE_ESCONDIDA = "UmlvMjAyNg=="; 
+
+    // Convertimos lo que ingresó el usuario a Base64 para comparar
+    const passCifrado = btoa(unescape(encodeURIComponent(pass)));
+
+    if(passCifrado === CLAVE_ESCONDIDA) {
+        document.getElementById('access-screen').style.display = 'none';
+        sessionStorage.setItem('admin_auth', 'true');
+    } else {
+        document.getElementById('error-msg').style.display = 'block';
+        document.getElementById('admin-pass').value = '';
+    }
+}
+
+// Al cargar la página, si ya entró antes en esta sesión, ocultamos el bloqueo
+window.addEventListener('DOMContentLoaded', () => {
+    if(sessionStorage.getItem('admin_auth') === 'true') {
+        document.getElementById('access-screen').style.display = 'none';
+    }
+});
 </script>
 </body>
 </html>
+
