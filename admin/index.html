@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Panel Profe - Control Total</title>
     
-  <link rel="manifest" href="manifest-admin.json?v=7">
+  <link rel="manifest" href="manifest-admin.json?v=8">
     <meta name="theme-color" content="#0b0f1a">
     
     <style>
@@ -105,11 +105,20 @@
     <button class="btn-add-day" onclick="agregarSesion()">+ AGREGAR OTRO DÍA</button>
     <button class="btn-gen" onclick="generarLink()">GENERAR CÓDIGO DE RUTINA</button>
 
-    <div id="resultado" style="display:none;" class="card">
-        <label>Código para enviar:</label>
-        <div id="linkFinal" class="copy-area"></div>
-        <textarea id="temp-copy"></textarea>
-        <button onclick="copiarLink()" style="background:#eab308; width:100%; padding:18px; border:none; border-radius:12px; font-weight:bold; margin-top:15px; cursor:pointer; color:black;">📋 COPIAR CÓDIGO</button>
+ <div id="resultado" style="display:none;" class="card">
+        <div style="text-align:center; padding: 10px 0;">
+            <div style="font-size: 3rem; margin-bottom: 10px;">✅</div>
+            <h2 style="color: var(--success); font-size: 1.2rem; margin-bottom: 5px;">¡RUTINA LISTA!</h2>
+            <p style="color: #888; font-size: 0.8rem; margin-bottom: 20px;">El código se generó correctamente para <b><span id="target-alumno"></span></b>.</p>
+            
+            <label>Vista previa del código:</label>
+            <div id="linkFinal" class="copy-area" style="height: 60px; overflow-y: auto; opacity: 0.5; border-style: dashed; margin-bottom: 20px;"></div>
+            
+            <button onclick="copiarLink(event)" style="background: var(--primary); color: white; width:100%; padding:18px; border:none; border-radius:12px; font-weight:bold; cursor:pointer; font-size: 1rem; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);">
+                📋 COPIAR CÓDIGO PARA ENVIAR
+            </button>
+        </div>
+        <textarea id="temp-copy" style="position: absolute; left: -9999px;"></textarea>
     </div>
 
     <footer class="footer-sign">
@@ -194,7 +203,7 @@
         selectEx.innerHTML = ejercicios.map(e => `<option value="${e}">${e}</option>`).join('');
     }
 
-    function generarLink() {
+function generarLink() {
         const nombre = document.getElementById('alumno-nombre').value;
         const semana = document.getElementById('semana-nro').value;
         if(!nombre) return alert("Falta nombre del alumno");
@@ -220,20 +229,39 @@
             };
         });
 
+        // Generamos el base64
         const base64 = btoa(unescape(encodeURIComponent(JSON.stringify(rutina))));
+        
+        // --- CAMBIOS VISUALES AQUÍ ---
+        document.getElementById('target-alumno').innerText = nombre.toUpperCase();
         document.getElementById('linkFinal').innerText = base64;
         document.getElementById('resultado').style.display = "block";
-        window.scrollTo(0, document.body.scrollHeight);
+        
+        // Scroll suave hacia el resultado
+        window.scrollTo({
+            top: document.getElementById('resultado').offsetTop - 20,
+            behavior: 'smooth'
+        });
     }
 
-    function copiarLink() {
-        const text = document.getElementById("linkFinal").innerText;
-        const tempInput = document.getElementById("temp-copy");
-        tempInput.value = text;
-        tempInput.select();
-        document.execCommand("copy");
-        alert("✅ ¡Copiado!");
-    }
+function copiarLink(event) { // <--- Agregamos 'event' aquí
+    const text = document.getElementById("linkFinal").innerText;
+    const tempInput = document.getElementById("temp-copy");
+    tempInput.value = text;
+    tempInput.select();
+    document.execCommand("copy");
+    
+    // Feedback visual en el botón
+    const btn = event.currentTarget;
+    const originalText = btn.innerHTML;
+    btn.style.background = "var(--success)";
+    btn.innerHTML = "✅ ¡COPIADO CON ÉXITO!";
+    
+    setTimeout(() => {
+        btn.style.background = "var(--primary)";
+        btn.innerHTML = originalText;
+    }, 2000);
+}
 
     // ÚNICA ADICIÓN EN SCRIPT: REGISTRO DEL SERVICE WORKER
 if ('serviceWorker' in navigator) {
@@ -249,4 +277,3 @@ if ('serviceWorker' in navigator) {
 </script>
 </body>
 </html>
-
