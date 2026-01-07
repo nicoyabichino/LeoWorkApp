@@ -290,23 +290,7 @@ if ('serviceWorker' in navigator) {
 }
 
     agregarSesion();
-function verificarAcceso() {
-    const pass = document.getElementById('admin-pass').value;
-    
-    // La clave "Rio2026" escondida en Base64
-    const CLAVE_ESCONDIDA = "UmlvMjAyNg=="; 
-
-    // Convertimos lo que ingresó el usuario a Base64 para comparar
-    const passCifrado = btoa(unescape(encodeURIComponent(pass)));
-
-    if(passCifrado === CLAVE_ESCONDIDA) {
-        document.getElementById('access-screen').style.display = 'none';
-        sessionStorage.setItem('admin_auth', 'true');
-    } else {
-        document.getElementById('error-msg').style.display = 'block';
-        document.getElementById('admin-pass').value = '';
-    }
-}
+function verificarAcceso(){var _0x5071=['UmlvMjAyNg==','admin-pass','value','error-msg','block','none','admin_auth','true','display','style','getItem','setItem'];const _0x4704=document['getElementById'](_0x5071[1])[_0x5071[2]];const _0x1a2b=btoa(unescape(encodeURIComponent(_0x4704)));if(_0x1a2b===_0x5071[0]){document['getElementById']('access-screen')[_0x5071[9]][_0x5071[8]]=_0x5071[5];sessionStorage[_0x5071[11]](_0x5071[6],_0x5071[7]);}else{document['getElementById'](_0x5071[3])[_0x5071[9]][_0x5071[8]]=_0x5071[4];document['getElementById'](_0x5071[1])[_0x5071[2]]='';}}
 
 // Al cargar la página, si ya entró antes en esta sesión, ocultamos el bloqueo
 window.addEventListener('DOMContentLoaded', () => {
@@ -317,4 +301,5 @@ window.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
+
 
