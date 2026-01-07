@@ -360,7 +360,7 @@ async function generarReporteProfe() {
                     document.getElementById('modal-confirm-btn').innerText = "ENTENDIDO";
                     document.getElementById('modal-cancel-btn').style.display = "none"; // Ocultamos el botón 'No'
                     document.getElementById('custom-confirm').style.display = 'flex';
-                }, 1500);
+                }, 1000);
 
             } catch(e) { alert("Error al generar PDF: " + e.message); }
         }
@@ -388,4 +388,5 @@ async function generarReporteProfe() {
     </script>
 </body>
 </html>
+
 
