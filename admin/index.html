@@ -290,11 +290,11 @@ if ('serviceWorker' in navigator) {
 }
 
     agregarSesion();
-function verificarAcceso(){var _0x5071=['UmlvMjAyNg==','admin-pass','value','error-msg','block','none','admin_auth','true','display','style','getItem','setItem'];const _0x4704=document['getElementById'](_0x5071[1])[_0x5071[2]];const _0x1a2b=btoa(unescape(encodeURIComponent(_0x4704)));if(_0x1a2b===_0x5071[0]){document['getElementById']('access-screen')[_0x5071[9]][_0x5071[8]]=_0x5071[5];sessionStorage[_0x5071[11]](_0x5071[6],_0x5071[7]);}else{document['getElementById'](_0x5071[3])[_0x5071[9]][_0x5071[8]]=_0x5071[4];document['getElementById'](_0x5071[1])[_0x5071[2]]='';}}
+function verificarAcceso(){var _0x5071=['UmlvMjAyNg==','admin-pass','value','error-msg','block','none','admin_auth','true','display','style','getItem','setItem'];const _0x4704=document['getElementById'](_0x5071[1])[_0x5071[2]];const _0x1a2b=btoa(unescape(encodeURIComponent(_0x4704)));if(_0x1a2b===_0x5071[0]){document['getElementById']('access-screen')[_0x5071[9]][_0x5071[8]]=_0x5071[5];localStorage[_0x5071[11]](_0x5071[6],_0x5071[7]);}else{document['getElementById'](_0x5071[3])[_0x5071[9]][_0x5071[8]]=_0x5071[4];document['getElementById'](_0x5071[1])[_0x5071[2]]='';}}
 
-// Al cargar la página, si ya entró antes en esta sesión, ocultamos el bloqueo
+// Al cargar la página, chequeamos el localStorage
 window.addEventListener('DOMContentLoaded', () => {
-    if(sessionStorage.getItem('admin_auth') === 'true') {
+    if(localStorage.getItem('admin_auth') === 'true') {
         document.getElementById('access-screen').style.display = 'none';
     }
 });
@@ -307,6 +307,7 @@ document.getElementById('admin-pass').addEventListener('keypress', function (e) 
 </script>
 </body>
 </html>
+
 
 
 
