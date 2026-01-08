@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>LR WorkApp</title>
     
-    <link rel="manifest" href="manifest.json?v=8">
+    <link rel="manifest" href="manifest.json?v=9">
     <meta name="theme-color" content="#000000">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -339,7 +339,7 @@ async function generarReporteProfe() {
         // --- PREPARACIÓN DE DATOS ---
         const hoy = new Date().toISOString().split('T')[0]; 
         const nombreArchivo = `Reporte_${rutinaFull.alumno.replace(/\s+/g, '_')}_S${rutinaFull.semana}_${hoy}.pdf`;
-        const numeroLeo = "54911XXXXXXXX"; // <--- TU NÚMERO REAL
+        const numeroLeo = "5493884862686"; // <--- TU NÚMERO REAL
         const mensajeWA = `¡Hola Leo! Te adjunto mi reporte de la Semana ${rutinaFull.semana}.`;
         const urlWA = `https://api.whatsapp.com/send?phone=${numeroLeo}&text=${encodeURIComponent(mensajeWA)}`;
 
@@ -406,6 +406,7 @@ async function generarReporteProfe() {
     </script>
 </body>
 </html>
+
 
 
 
