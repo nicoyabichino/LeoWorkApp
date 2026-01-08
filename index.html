@@ -388,8 +388,9 @@ async function generarReporteProfe() {
                 doc.save(`Reporte_${rutinaFull.alumno}_Semana${rutinaFull.semana}.pdf`);
 
                 // PREPARAMOS WHATSAPP (Factible y simple)
-                const mensajeWA = `¡Hola Leo! Acabo de terminar la Semana ${rutinaFull.semana}. Te adjunto el PDF de mi progreso.`;
-                const urlWA = `https://api.whatsapp.com/send?text=${encodeURIComponent(mensajeWA)}`;
+const numeroLeo = "5493884862686"; // <--- NÚMERO DEL PROFE (sin el +)
+const mensajeWA = `¡Hola Profe Leo! Acabo de terminar la Semana ${rutinaFull.semana}. Te adjunto el PDF de mi progreso.`;
+const urlWA = `https://api.whatsapp.com/send?phone=${numeroLeo}&text=${encodeURIComponent(mensajeWA)}`;
 
                 // Reinicio rápido y apertura de WhatsApp
                 setTimeout(() => {
@@ -431,6 +432,7 @@ async function generarReporteProfe() {
     </script>
 </body>
 </html>
+
 
 
 
