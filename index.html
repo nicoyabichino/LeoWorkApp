@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>LR WorkApp</title>
     
-    <link rel="manifest" href="manifest.json?v=6">
+    <link rel="manifest" href="manifest.json?v=7">
     <meta name="theme-color" content="#000000">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -332,7 +332,7 @@ async function generarReporteProfe() {
         const doc = new jsPDF('p', 'mm', 'a4');
         let cM = {}, cS = {};
         
-        // --- (Toda la lógica de recolección de datos y gráficos se mantiene igual) ---
+        // --- RECOLECCIÓN DE DATOS (Se mantiene igual) ---
         Object.keys(rutinaFull.sesiones).forEach(sId => {
             let tS = 0;
             rutinaFull.sesiones[sId].ejercicios.forEach((ex, exIdx) => {
@@ -348,6 +348,7 @@ async function generarReporteProfe() {
             cS[rutinaFull.sesiones[sId].nombre] = tS;
         });
 
+        // --- DISEÑO DEL PDF (Se mantiene igual) ---
         doc.setFillColor(0, 0, 0); doc.rect(0, 0, 210, 297, 'F');
         doc.setTextColor(255, 255, 255); doc.setFontSize(22);
         doc.text(`REPORTE SEMANA ${rutinaFull.semana || "-"}`, 105, 15, { align: 'center' });
@@ -385,35 +386,49 @@ async function generarReporteProfe() {
             doc.autoTable({ startY: 215, head: [['EJERCICIO', 'SET', 'OBJETIVO (Rep/Kg)', 'REALIZADO (Rep/Kg)', 'RPE/RIR']], body: tableBody, theme: 'grid', styles: { fillColor: [20, 20, 20], textColor: 255, fontSize: 7, halign: 'center' }, headStyles: { fillColor: [59, 130, 246], fontSize: 8, halign: 'center' }, columnStyles: { 0: { halign: 'left', cellWidth: 50 } } });
         }
 
-        // --- AQUÍ ESTÁ EL CAMBIO CLAVE ---
+        // --- NUEVA LÓGICA DE DESCARGA Y ENVÍO ---
 
-        // 1. Preparamos los datos pero NO descargamos todavía
-        const nombreArchivo = `Reporte_${rutinaFull.alumno}_Semana${rutinaFull.semana}.pdf`;
-        const numeroLeo = "5493884862686"; // Reemplaza con el número real de Leo
-        const mensajeWA = `¡Hola Profe Leo! Acabo de terminar la Semana ${rutinaFull.semana}. Te adjunto el PDF de mi progreso que acabo de descargar.`;
+        // Generamos fecha actual para el nombre del archivo (Evita que se pisen)
+        const hoy = new Date().toISOString().split('T')[0]; 
+        const nombreArchivo = `Reporte_${rutinaFull.alumno.replace(/\s+/g, '_')}_S${rutinaFull.semana}_${hoy}.pdf`;
+        
+        const numeroLeo = "5493884862686"; // <--- REEMPLAZAR POR EL REAL
+        const mensajeWA = `¡Hola Profe Leo! Acabo de terminar la Semana ${rutinaFull.semana}. Te adjunto el PDF de mi progreso (${hoy}).`;
         const urlWA = `https://api.whatsapp.com/send?phone=${numeroLeo}&text=${encodeURIComponent(mensajeWA)}`;
 
-        // 2. Mostramos el modal de aviso
+        // Mostramos el modal de confirmación final
         modoModal = "FIN";
-        document.getElementById('modal-title').innerText = "¡TODO LISTO!";
-        document.getElementById('modal-text').innerText = "Al confirmar, se descargará el PDF y abriremos el chat de Leo. ¡No olvides adjuntarlo!";
+        document.getElementById('modal-title').innerText = "¡REPORTE LISTO!";
+        document.getElementById('modal-text').innerText = "Primero se descargará el PDF y luego se abrirá WhatsApp. Asegúrate de aceptar la descarga.";
         document.getElementById('modal-confirm-btn').innerText = "DESCARGAR Y ENVIAR";
         document.getElementById('modal-confirm-btn').style.background = "var(--success)";
         document.getElementById('modal-cancel-btn').style.display = "none";
         document.getElementById('custom-confirm').style.display = 'flex';
 
-        // 3. Modificamos la función de cierre para este caso específico
-        // Reemplazamos temporalmente el comportamiento del botón confirmar
+        // Re-definimos la acción del botón para asegurar el orden
         document.getElementById('modal-confirm-btn').onclick = function() {
-            doc.save(nombreArchivo); // Primero la descarga
+            // 1. Ejecutamos la descarga del PDF
+            doc.save(nombreArchivo);
+            
+            // 2. Cambiamos el texto del botón para que el usuario sepa qué pasa
+            this.innerText = "Abriendo WhatsApp...";
+            this.style.opacity = "0.5";
+            this.disabled = true;
+
+            // 3. Esperamos 2.5 segundos. Tiempo suficiente para que el usuario 
+            // interactúe con el cartel de descarga del navegador si es necesario.
             setTimeout(() => {
-                window.open(urlWA, '_blank'); // Luego WhatsApp
-                localStorage.clear();
-                location.reload();
-            }, 1000); // Damos 1 segundo para que la descarga inicie
+                window.open(urlWA, '_blank');
+                
+                // 4. Reiniciamos la app después de abrir el chat
+                setTimeout(() => {
+                    localStorage.clear();
+                    location.reload();
+                }, 1000);
+            }, 2500); 
         };
 
-    } catch(e) { alert("Error al preparar el reporte: " + e.message); }
+    } catch(e) { alert("Error al preparar reporte: " + e.message); }
 }
 
         window.addEventListener('beforeinstallprompt', (e) => {
@@ -439,6 +454,7 @@ async function generarReporteProfe() {
     </script>
 </body>
 </html>
+
 
 
 
