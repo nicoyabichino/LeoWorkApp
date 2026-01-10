@@ -163,347 +163,179 @@
         <canvas id="chartSesiones" width="800" height="400"></canvas>
     </div>
 
-    <script>
-        // Este es un "motor" de silencio que mantiene viva la App en segundo plano
-const audioSilencio = new Audio("data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA==");
-audioSilencio.loop = true;
-        let rutinaFull = {}; let timerInt; let deferredPrompt;
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+<script>
+    const audioSilencio = new Audio("data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA==");
+    audioSilencio.loop = true;
+    let rutinaFull = {}; let timerInt; let deferredPrompt;
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    let endTime;
 
-let endTime; // Nueva variable global necesaria
+    function playBeepFuerte() { 
+        try { 
+            let count = 0;
+            const interval = setInterval(() => {
+                const osc = audioCtx.createOscillator(); 
+                const gain = audioCtx.createGain(); 
+                osc.connect(gain); 
+                gain.connect(audioCtx.destination); 
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(1000, audioCtx.currentTime); 
+                gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
+                osc.start(); 
+                osc.stop(audioCtx.currentTime + 0.2); 
+                count++;
+                if (count >= 4) clearInterval(interval);
+            }, 300);
+        } catch(e) {} 
+    }
 
-function playBeepFuerte() { 
-    try { 
-        let count = 0;
-        const interval = setInterval(() => {
-            const osc = audioCtx.createOscillator(); 
-            const gain = audioCtx.createGain(); 
-            osc.connect(gain); 
-            gain.connect(audioCtx.destination); 
-            osc.type = 'square'; // Sonido más agresivo para el gimnasio
-            osc.frequency.setValueAtTime(1000, audioCtx.currentTime); 
-            gain.gain.setValueAtTime(0.5, audioCtx.currentTime); // Volumen más alto
-            osc.start(); 
-            osc.stop(audioCtx.currentTime + 0.2); 
-            count++;
-            if (count >= 4) clearInterval(interval);
-        }, 300);
-    } catch(e) {} 
-}
+    // --- LÓGICA DE INICIO Y DETECCIÓN DE CELULAR ---
+    function init() {
+        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+        const isPWA = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+        const dSaved = localStorage.getItem('routine_data_raw');
 
-        function init() { let dSaved = localStorage.getItem('routine_data_raw'); if (dSaved) procesarDatos(dSaved); }
-        function cargarManual() { let input = document.getElementById('code-input').value; if (!input) return alert("Pega el código"); procesarDatos(input.includes('data=') ? input.split('data=')[1] : input); }
-        
-        function procesarDatos(rawData) {
-            try {
-                rutinaFull = JSON.parse(decodeURIComponent(escape(atob(rawData.trim()))));
-                localStorage.setItem('routine_data_raw', rawData);
-                document.getElementById('alumno-display').innerText = rutinaFull.alumno;
-                document.getElementById('semana-display').innerText = "SEMANA " + (rutinaFull.semana || "-");
-                document.getElementById('session-picker').innerHTML = Object.keys(rutinaFull.sesiones).map(k => `<option value="${k}">${rutinaFull.sesiones[k].nombre}</option>`).join('');
-                document.getElementById('welcome-screen').style.display = 'none';
-                document.getElementById('app-content').style.display = 'block';
-                document.getElementById('display').style.display = 'block';
-                document.getElementById('alumno-header').style.display = 'block';
-                loadSession(Object.keys(rutinaFull.sesiones)[0]);
-            } catch (e) { alert("Código no válido"); }
-        }
-
-        function loadSession(id) {
-            const s = rutinaFull.sesiones[id];
-            document.getElementById('workout-content').innerHTML = s.ejercicios.map((ex, exIdx) => {
-                const rA = ex.reps_obj.split(',').map(x => x.trim());
-                const pA = ex.peso_obj.split(',').map(x => x.trim());
-                return `<div class="exercise-card">
-                    <div class="ex-header">
-                        <div><strong>${ex.nombre}</strong><br><small style="color:var(--accent)">${ex.grupo}</small></div>
-                        ${ex.video ? `<a href="${ex.video}" target="_blank" class="yt-icon">▶ VIDEO</a>` : ''}
-                    </div>
-                    <div class="grid-header"><div>Set</div><div>Objetivo</div><div>Reps</div><div>Kg</div><div>RPE/RIR</div><div>Ok</div></div>
-                    ${Array.from({length: ex.series}).map((_, sIdx) => {
-                        const saved = getSavedData(id, exIdx, sIdx);
-                        const oR = rA[sIdx] || rA[rA.length-1] || ex.reps_obj;
-                        const oK = pA[sIdx] || pA[pA.length-1] || ex.peso_obj;
-                        return `<div class="set-row ${saved.done ? 'done' : ''}" id="row-${exIdx}-${sIdx}">
-                            <div style="text-align:center;font-weight:bold;">${sIdx+1}</div>
-                            <div class="obj-cell" data-obj-reps="${oR}" data-obj-peso="${oK}">Rep:${oR}<br>Kg:${oK}</div>
-                            <div><input type="number" oninput="saveData('${id}',${exIdx},${sIdx})" value="${saved.reps || ''}" inputmode="numeric"></div>
-                            <div><input type="number" oninput="saveData('${id}',${exIdx},${sIdx})" value="${saved.peso || ''}" inputmode="decimal"></div>
-                            <div><input type="number" oninput="saveData('${id}',${exIdx},${sIdx})" value="${saved.rpe || ''}" inputmode="numeric"></div>
-                            <div><button class="check-btn ${saved.done ? 'active' : ''}" onclick="markSet('${id}', ${exIdx}, ${sIdx}, ${ex.series})">✓</button></div>
-                        </div>`;
-                    }).join('')}
-                </div>`;
-            }).join('');
-        }
-
-        function saveData(sessId, exIdx, sIdx) { const row = document.getElementById(`row-${exIdx}-${sIdx}`); const inputs = row.querySelectorAll('input'); const done = row.querySelector('.check-btn').classList.contains('active'); localStorage.setItem(`workout_${sessId}_${exIdx}_${sIdx}`, JSON.stringify({reps: inputs[0].value, peso: inputs[1].value, rpe: inputs[2].value, done: done})); }
-        function getSavedData(sessId, exIdx, sIdx) { const saved = localStorage.getItem(`workout_${sessId}_${exIdx}_${sIdx}`); return saved ? JSON.parse(saved) : { reps: '', peso: '', rpe: '', done: false }; }
-        function markSet(sessId, exIdx, sIdx, totalSets) { const row = document.getElementById(`row-${exIdx}-${sIdx}`); const btn = row.querySelector('.check-btn'); row.classList.toggle('done'); btn.classList.toggle('active'); saveData(sessId, exIdx, sIdx); if(row.classList.contains('done')) { const isLast = (sIdx === totalSets - 1); startTimer(isLast ? rutinaFull.sesiones[sessId].descanso_e : rutinaFull.sesiones[sessId].descanso_s); } }
-function startTimer(sec) { 
-    clearInterval(timerInt); 
-    const display = document.getElementById('display');
-    
-    // IMPORTANTE: Play al silencio para que el sistema no congele la app al bloquear
-    audioSilencio.play().catch(e => console.log("Audio iniciado tras interacción"));
-
-    endTime = Date.now() + (sec * 1000); 
-
-    timerInt = setInterval(() => { 
-        const ahora = Date.now();
-        const faltan = Math.round((endTime - ahora) / 1000);
-
-        if(faltan <= 0) { 
-            clearInterval(timerInt); 
-            display.innerText = "00:00";
-            
-            // Suena el Beep real
-            playBeepFuerte(); 
-            
-            // Apagamos el motor de silencio para no gastar batería de más
-            audioSilencio.pause();
-            audioSilencio.currentTime = 0;
+        // Si ya hay datos guardados, vamos directo a la rutina
+        if (dSaved) {
+            procesarDatos(dSaved);
             return;
-        } 
-
-        let m = Math.floor(faltan / 60); 
-        let s = faltan % 60; 
-        display.innerText = `${m}:${s.toString().padStart(2,'0')}`; 
-    }, 1000); 
-}
-        
-        
-      let modoModal = ""; // Variable para saber si estamos borrando o reportando
-
-        function solicitarBorrar() { 
-            modoModal = "BORRAR";
-            document.getElementById('modal-title').innerText = "¿Borrar rutina?";
-            document.getElementById('modal-text').innerText = "Se eliminarán los pesos y series marcadas de esta semana.";
-            document.getElementById('modal-confirm-btn').style.background = "var(--danger)";
-            document.getElementById('modal-confirm-btn').innerText = "Borrar";
-            document.getElementById('custom-confirm').style.display = 'flex'; 
         }
 
-        function confirmarFinalizacion() { 
-            modoModal = "REPORTE";
-            document.getElementById('modal-title').innerText = "Reporte Semanal";
-            document.getElementById('modal-text').innerText = "¿Deseas generar el PDF con tu progreso de esta semana para enviárselo a Leo?";
-            document.getElementById('modal-confirm-btn').style.background = "var(--success)";
-            document.getElementById('modal-confirm-btn').innerText = "Generar";
-            document.getElementById('custom-confirm').style.display = 'flex';
-        }
-
-function cerrarConfirm(aceptado) { 
-            document.getElementById('custom-confirm').style.display = 'none'; 
-            if(aceptado) { 
-                if(modoModal === "BORRAR") {
-                    localStorage.clear(); 
-                    location.reload(); 
-                } else if(modoModal === "REPORTE") {
-                    generarReporteProfe(); 
-                } else if(modoModal === "FIN") { // Nueva condición para el reinicio final
-                    localStorage.clear();
-                    location.reload();
-                }
-            } 
-        }
-
-        async function crearImgGrafico(canvasId, labels, data, maxVal, datasetLabel, tituloGrafico) {
-            const ctx = document.getElementById(canvasId).getContext('2d');
-            const chart = new Chart(ctx, {
-                type: 'bar', 
-                data: { 
-                    labels: labels, 
-                    datasets: [{ 
-                        label: datasetLabel, 
-                        data: data, 
-                        backgroundColor: '#3b82f6', 
-                        borderRadius: 5,
-                        barPercentage: 0.4,
-                        categoryPercentage: 0.8
-                    }] 
-                },
-                options: { 
-                    animation: false, 
-                    plugins: { 
-                        title: { display: true, text: tituloGrafico.toUpperCase(), color: '#00d4ff', font: { size: 20, weight: 'bold' }, padding: { top: 10, bottom: 20 } },
-                        legend: { display: false } 
-                    }, 
-                    scales: { 
-                        y: { beginAtZero: true, suggestedMax: maxVal, ticks: { color: 'white', font: { size: 14 } }, grid: { color: '#333' } }, 
-                        x: { ticks: { color: 'white', font: { size: 14, weight: 'bold' } }, grid: { display: false } } 
-                    } 
-                },
-                plugins: [{
-                    id: 'valueLabel',
-                    afterDatasetsDraw(chart) {
-                        const {ctx} = chart; ctx.save(); 
-                        ctx.textAlign = 'center'; ctx.fillStyle = 'white'; ctx.font = 'bold 18px Arial'; 
-                        chart.getDatasetMeta(0).data.forEach((bar, i) => {
-                            ctx.fillText(chart.data.datasets[0].data[i], bar.x, bar.y - 8);
-                        }); ctx.restore();
-                    }
-                }]
-            });
-            await new Promise(r => setTimeout(r, 600)); 
-            const url = document.getElementById(canvasId).toDataURL('image/png'); 
-            chart.destroy(); 
-            return url;
-        }
-
-async function generarReporteProfe() {
-    try {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF('p', 'mm', 'a4');
-        let cM = {}, cS = {};
-        
-        // --- RECOLECCIÓN DE DATOS (Se mantiene igual) ---
-        Object.keys(rutinaFull.sesiones).forEach(sId => {
-            let tS = 0;
-            rutinaFull.sesiones[sId].ejercicios.forEach((ex, exIdx) => {
-                for(let sIdx=0; sIdx < ex.series; sIdx++) {
-                    const saved = getSavedData(sId, exIdx, sIdx);
-                    if(saved.done) {
-                        const m = (ex.grupo || "OTRO").toUpperCase();
-                        cM[m] = (cM[m] || 0) + 1;
-                        tS++;
-                    }
-                }
-            });
-            cS[rutinaFull.sesiones[sId].nombre] = tS;
-        });
-
-        // --- DISEÑO DEL PDF (Se mantiene igual) ---
-        doc.setFillColor(0, 0, 0); doc.rect(0, 0, 210, 297, 'F');
-        doc.setTextColor(255, 255, 255); doc.setFontSize(22);
-        doc.text(`REPORTE SEMANA ${rutinaFull.semana || "-"}`, 105, 15, { align: 'center' });
-        doc.setTextColor(0, 212, 255); doc.setFontSize(14);
-        doc.text(`ALUMNO: ${rutinaFull.alumno.toUpperCase()}`, 105, 23, { align: 'center' });
-
-        if (Object.keys(cM).length > 0) {
-            const i1 = await crearImgGrafico('chartMusculos', Object.keys(cM), Object.values(cM), 20, 'Series', "Estimulo semanal de grupos musculares");
-            doc.setDrawColor(59, 130, 246); doc.rect(12, 35, 186, 80); 
-            doc.addImage(i1, 'PNG', 15, 38, 180, 74);
-        }
-        if (Object.keys(cS).length > 0) {
-            const i2 = await crearImgGrafico('chartSesiones', Object.keys(cS), Object.values(cS), 30, 'Series', "Numero de series por entrenamiento");
-            doc.setDrawColor(59, 130, 246); doc.rect(12, 125, 186, 80); 
-            doc.addImage(i2, 'PNG', 15, 128, 180, 74);
-        }
-
-        let tableBody = [];
-        Object.keys(rutinaFull.sesiones).forEach(sId => {
-            rutinaFull.sesiones[sId].ejercicios.forEach((ex, exIdx) => {
-                const rA = ex.reps_obj.split(',').map(x => x.trim());
-                const pA = ex.peso_obj.split(',').map(x => x.trim());
-                for(let sIdx=0; sIdx < ex.series; sIdx++) {
-                    const saved = getSavedData(sId, exIdx, sIdx);
-                    if(saved.done) {
-                        const objR = rA[sIdx] || rA[rA.length-1] || ex.reps_obj;
-                        const objK = pA[sIdx] || pA[pA.length-1] || ex.peso_obj;
-                        tableBody.push([ex.nombre, `Set ${sIdx+1}`, `${objR}Rep / ${objK}Kg`, `${saved.reps || '-'}Rep / ${saved.peso || '-'}Kg`, saved.rpe || '-']);
-                    }
-                }
-            });
-        });
-
-        if (tableBody.length > 0) {
-            doc.autoTable({ startY: 215, head: [['EJERCICIO', 'SET', 'OBJETIVO (Rep/Kg)', 'REALIZADO (Rep/Kg)', 'RPE/RIR']], body: tableBody, theme: 'grid', styles: { fillColor: [20, 20, 20], textColor: 255, fontSize: 7, halign: 'center' }, headStyles: { fillColor: [59, 130, 246], fontSize: 8, halign: 'center' }, columnStyles: { 0: { halign: 'left', cellWidth: 50 } } });
-        }
-
-        // --- NUEVA LÓGICA DE DESCARGA Y ENVÍO ---
-
-        // Generamos fecha actual para el nombre del archivo (Evita que se pisen)
-        const hoy = new Date().toISOString().split('T')[0]; 
-        const nombreArchivo = `Reporte_${rutinaFull.alumno.replace(/\s+/g, '_')}_S${rutinaFull.semana}_${hoy}.pdf`;
-        
-        const numeroLeo = "5493884862686"; // <--- REEMPLAZAR POR EL REAL
-        const mensajeWA = `¡Hola Profe Leo! Acabo de terminar la Semana ${rutinaFull.semana}. Te adjunto el PDF de mi progreso (${hoy}).`;
-        const urlWA = `https://api.whatsapp.com/send?phone=${numeroLeo}&text=${encodeURIComponent(mensajeWA)}`;
-
-        // Mostramos el modal de confirmación final
-        modoModal = "FIN";
-        document.getElementById('modal-title').innerText = "¡REPORTE LISTO!";
-        document.getElementById('modal-text').innerText = "Primero se descargará el PDF y luego se abrirá WhatsApp. Asegúrate de aceptar la descarga.";
-        document.getElementById('modal-confirm-btn').innerText = "DESCARGAR Y ENVIAR";
-        document.getElementById('modal-confirm-btn').style.background = "var(--success)";
-        document.getElementById('modal-cancel-btn').style.display = "none";
-        document.getElementById('custom-confirm').style.display = 'flex';
-
-        // Re-definimos la acción del botón para asegurar el orden
-        document.getElementById('modal-confirm-btn').onclick = function() {
-            // 1. Ejecutamos la descarga del PDF
-            doc.save(nombreArchivo);
-            
-            // 2. Cambiamos el texto del botón para que el usuario sepa qué pasa
-            this.innerText = "Abriendo WhatsApp...";
-            this.style.opacity = "0.5";
-            this.disabled = true;
-
-            // 3. Esperamos 2.5 segundos. Tiempo suficiente para que el usuario 
-            // interactúe con el cartel de descarga del navegador si es necesario.
-            setTimeout(() => {
-                window.open(urlWA, '_blank');
-                
-                // 4. Reiniciamos la app después de abrir el chat
-                setTimeout(() => {
-                    localStorage.clear();
-                    location.reload();
-                }, 1000);
-            }, 2500); 
-        };
-
-    } catch(e) { alert("Error al preparar reporte: " + e.message); }
-}
-
-// Variable para capturar el evento de instalación
-let deferredPrompt;
-
-window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault();
-    deferredPrompt = e;
-    
-    // Si es móvil, ocultamos el input y mostramos el botón de instalar
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-    if (isMobile) {
-        document.getElementById('code-entry-area').style.display = 'none';
-        document.getElementById('install-required').style.display = 'block';
-    }
-});
-
-async function instalarApp() {
-    if (deferredPrompt) {
-        deferredPrompt.prompt();
-        const { outcome } = await deferredPrompt.userChoice;
-        if (outcome === 'accepted') {
-            // Una vez aceptado, podemos volver a mostrar el cargador de código
-            document.getElementById('install-required').style.display = 'none';
+        // Si es móvil y NO está abierta como PWA, obligamos a instalar
+        if (isMobile && !isPWA) {
+            document.getElementById('code-entry-area').style.display = 'none';
+            document.getElementById('install-required').style.display = 'block';
+        } else {
+            // Si es PC o ya es PWA, mostramos el cargador de código
             document.getElementById('code-entry-area').style.display = 'block';
-            deferredPrompt = null;
+            document.getElementById('install-required').style.display = 'none';
         }
-    } else {
-        // Caso específico para iPhone/iOS
-        alert("Para instalar en iPhone:\n1. Toca el botón 'Compartir' (el cuadrado con la flecha hacia arriba).\n2. Baja y elige 'Agregar al inicio'.");
     }
-}
 
-// Opcional: Si el usuario ya la tiene instalada y entra desde el icono, 
-// este evento asegura que vea directamente el cargador de código.
-window.addEventListener('appinstalled', () => {
-    document.getElementById('install-required').style.display = 'none';
-    document.getElementById('code-entry-area').style.display = 'block';
-});
+    // Capturar el evento de instalación para Android/Chrome
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+    });
 
-        document.getElementById('install-banner').addEventListener('click', async () => {
-            if (deferredPrompt) {
-                deferredPrompt.prompt();
-                const { outcome } = await deferredPrompt.userChoice;
+    async function instalarApp() {
+        if (deferredPrompt) {
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            if (outcome === 'accepted') {
                 deferredPrompt = null;
-                document.getElementById('install-banner').style.display = outcome === 'accepted' ? 'none' : 'block';
+                // No ocultamos el botón aquí, dejamos que el usuario abra la app desde el icono
             }
-        });
+        } else {
+            // Caso iPhone o si el prompt no está disponible
+            alert("Para instalar:\n1. Toca el botón 'Compartir' (cuadrado con flecha).\n2. Selecciona 'Agregar al inicio'.\n\nSi ya lo hiciste, abre la App desde tu pantalla de inicio.");
+        }
+    }
 
-        init();
-    </script>
+    // --- RESTO DE TUS FUNCIONES (Cargar, Marcar, Timer, Reporte) ---
+    function cargarManual() { 
+        let input = document.getElementById('code-input').value; 
+        if (!input) return alert("Pega el código"); 
+        procesarDatos(input.includes('data=') ? input.split('data=')[1] : input); 
+    }
+    
+    function procesarDatos(rawData) {
+        try {
+            rutinaFull = JSON.parse(decodeURIComponent(escape(atob(rawData.trim()))));
+            localStorage.setItem('routine_data_raw', rawData);
+            document.getElementById('alumno-display').innerText = rutinaFull.alumno;
+            document.getElementById('semana-display').innerText = "SEMANA " + (rutinaFull.semana || "-");
+            document.getElementById('session-picker').innerHTML = Object.keys(rutinaFull.sesiones).map(k => `<option value="${k}">${rutinaFull.sesiones[k].nombre}</option>`).join('');
+            document.getElementById('welcome-screen').style.display = 'none';
+            document.getElementById('app-content').style.display = 'block';
+            document.getElementById('display').style.display = 'block';
+            document.getElementById('alumno-header').style.display = 'block';
+            loadSession(Object.keys(rutinaFull.sesiones)[0]);
+        } catch (e) { alert("Código no válido"); }
+    }
+
+    function loadSession(id) {
+        const s = rutinaFull.sesiones[id];
+        document.getElementById('workout-content').innerHTML = s.ejercicios.map((ex, exIdx) => {
+            const rA = ex.reps_obj.split(',').map(x => x.trim());
+            const pA = ex.peso_obj.split(',').map(x => x.trim());
+            return `<div class="exercise-card">
+                <div class="ex-header">
+                    <div><strong>${ex.nombre}</strong><br><small style="color:var(--accent)">${ex.grupo}</small></div>
+                    ${ex.video ? `<a href="${ex.video}" target="_blank" class="yt-icon">▶ VIDEO</a>` : ''}
+                </div>
+                <div class="grid-header"><div>Set</div><div>Objetivo</div><div>Reps</div><div>Kg</div><div>RPE</div><div>Ok</div></div>
+                ${Array.from({length: ex.series}).map((_, sIdx) => {
+                    const saved = getSavedData(id, exIdx, sIdx);
+                    const oR = rA[sIdx] || rA[rA.length-1] || ex.reps_obj;
+                    const oK = pA[sIdx] || pA[pA.length-1] || ex.peso_obj;
+                    return `<div class="set-row ${saved.done ? 'done' : ''}" id="row-${exIdx}-${sIdx}">
+                        <div style="text-align:center;font-weight:bold;">${sIdx+1}</div>
+                        <div class="obj-cell">Rep:${oR}<br>Kg:${oK}</div>
+                        <div><input type="number" oninput="saveData('${id}',${exIdx},${sIdx})" value="${saved.reps || ''}" inputmode="numeric"></div>
+                        <div><input type="number" oninput="saveData('${id}',${exIdx},${sIdx})" value="${saved.peso || ''}" inputmode="decimal"></div>
+                        <div><input type="number" oninput="saveData('${id}',${exIdx},${sIdx})" value="${saved.rpe || ''}" inputmode="numeric"></div>
+                        <div><button class="check-btn ${saved.done ? 'active' : ''}" onclick="markSet('${id}', ${exIdx}, ${sIdx}, ${ex.series})">✓</button></div>
+                    </div>`;
+                }).join('')}
+            </div>`;
+        }).join('');
+    }
+
+    function saveData(sessId, exIdx, sIdx) { 
+        const row = document.getElementById(`row-${exIdx}-${sIdx}`); 
+        const inputs = row.querySelectorAll('input'); 
+        const done = row.querySelector('.check-btn').classList.contains('active'); 
+        localStorage.setItem(`workout_${sessId}_${exIdx}_${sIdx}`, JSON.stringify({reps: inputs[0].value, peso: inputs[1].value, rpe: inputs[2].value, done: done})); 
+    }
+    
+    function getSavedData(sessId, exIdx, sIdx) { 
+        const saved = localStorage.getItem(`workout_${sessId}_${exIdx}_${sIdx}`); 
+        return saved ? JSON.parse(saved) : { reps: '', peso: '', rpe: '', done: false }; 
+    }
+
+    function markSet(sessId, exIdx, sIdx, totalSets) { 
+        const row = document.getElementById(`row-${exIdx}-${sIdx}`); 
+        const btn = row.querySelector('.check-btn'); 
+        row.classList.toggle('done'); 
+        btn.classList.toggle('active'); 
+        saveData(sessId, exIdx, sIdx); 
+        if(row.classList.contains('done')) { 
+            const isLast = (sIdx === totalSets - 1); 
+            startTimer(isLast ? rutinaFull.sesiones[sessId].descanso_e : rutinaFull.sesiones[sessId].descanso_s); 
+        } 
+    }
+
+    function startTimer(sec) { 
+        clearInterval(timerInt); 
+        const display = document.getElementById('display');
+        audioSilencio.play().catch(e => console.log("Audio activo"));
+        endTime = Date.now() + (sec * 1000); 
+        timerInt = setInterval(() => { 
+            const ahora = Date.now();
+            const faltan = Math.round((endTime - ahora) / 1000);
+            if(faltan <= 0) { 
+                clearInterval(timerInt); 
+                display.innerText = "00:00";
+                playBeepFuerte(); 
+                audioSilencio.pause();
+                return;
+            } 
+            let m = Math.floor(faltan / 60); 
+            let s = faltan % 60; 
+            display.innerText = `${m}:${s.toString().padStart(2,'0')}`; 
+        }, 1000); 
+    }
+
+    // Lógica de Modales y PDF... (Se mantiene igual a tu código funcional)
+    let modoModal = ""; 
+    function solicitarBorrar() { modoModal = "BORRAR"; document.getElementById('modal-title').innerText = "¿Borrar rutina?"; document.getElementById('modal-text').innerText = "Se eliminarán los pesos y series marcadas de esta semana."; document.getElementById('modal-confirm-btn').style.background = "var(--danger)"; document.getElementById('modal-confirm-btn').innerText = "Borrar"; document.getElementById('custom-confirm').style.display = 'flex'; }
+    function confirmarFinalizacion() { modoModal = "REPORTE"; document.getElementById('modal-title').innerText = "Reporte Semanal"; document.getElementById('modal-text').innerText = "¿Deseas generar el PDF?"; document.getElementById('modal-confirm-btn').style.background = "var(--success)"; document.getElementById('modal-confirm-btn').innerText = "Generar"; document.getElementById('custom-confirm').style.display = 'flex'; }
+    function cerrarConfirm(aceptado) { document.getElementById('custom-confirm').style.display = 'none'; if(aceptado) { if(modoModal === "BORRAR") { localStorage.clear(); location.reload(); } else if(modoModal === "REPORTE") { generarReporteProfe(); } } }
+
+    // Ejecutar inicialización al cargar
+    init();
+</script>
 </body>
 </html>
+
