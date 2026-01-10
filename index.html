@@ -97,6 +97,33 @@
     box-shadow: 0 4px 10px rgba(0,0,0,0.8);
     width: 100%;
 }
+        .btn-ghost {
+    background: rgba(255, 255, 255, 0.05); /* Fondo casi transparente */
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.4); /* Borde suave */
+    padding: 18px;
+    border-radius: 15px;
+    font-weight: bold;
+    font-size: 0.9rem;
+    letter-spacing: 1px;
+    width: 100%;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    animation: pulse-ghost 2s infinite; /* Efecto de respiración */
+}
+
+.btn-ghost:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: #ffffff;
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+}
+
+@keyframes pulse-ghost {
+    0% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.1); }
+    70% { box-shadow: 0 0 0 10px rgba(255, 255, 255, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
+}
     </style>
 </head>
 <body>
@@ -116,15 +143,25 @@
     <div class="welcome-card">
         <img src="logo.png?v=2" alt="Leo Rodriguez Entrenamiento Personal" class="logo-welcome">
         
-        <div id="install-required" style="display: none;">
-            <p style="font-size: 1rem; color: #fff; margin: 20px 0; font-weight: bold; line-height: 1.4;">
-                PARA UNA MEJOR EXPERIENCIA DE ENTRENAMIENTO:
-            </p>
-            <button class="btn-stats" onclick="instalarApp()" style="background: #00d4ff; color: #000; border: 2px solid #fff;">
-                📲 INSTALAR APP EN MI CELULAR
-            </button>
-            <p style="font-size: 0.75rem; color: #666; margin-top: 15px;">Luego de instalar, abre la App desde tu pantalla de inicio.</p>
-        </div>
+  <div id="install-required" style="display: none; padding: 10px;">
+    <div style="font-size: 2.5rem; margin-bottom: 15px;">📲</div>
+    
+    <h3 style="color: #fff; font-size: 1.1rem; margin-bottom: 10px; letter-spacing: 1px;">
+        MEJORA TU EXPERIENCIA
+    </h3>
+    
+    <p style="font-size: 0.85rem; color: #888; margin-bottom: 25px; line-height: 1.5;">
+        Instalá la App para evitar que el cronómetro se detenga al bloquear el celular.
+    </p>
+
+    <button class="btn-ghost" onclick="instalarApp()">
+        Instalar Aplicación
+    </button>
+
+    <p style="font-size: 0.7rem; color: #444; margin-top: 20px; font-style: italic;">
+        Ocupa menos de 1MB y funciona como una App real.
+    </p>
+</div>
 
         <div id="code-entry-area">
             <p style="font-size: 0.9rem; color: #888; margin-top: 10px;">COPIÁ EL CÓDIGO DE RUTINA QUE TE ENVIÉ</p>
@@ -338,6 +375,7 @@
 </script>
 </body>
 </html>
+
 
 
 
