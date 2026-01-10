@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>LR WorkApp</title>
     
-    <link rel="manifest" href="manifest.json?v=18">
+    <link rel="manifest" href="manifest.json?v=14">
     <meta name="theme-color" content="#000000">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -112,12 +112,27 @@
 
     <main id="app-container">
         <div id="welcome-screen">
-            <div class="welcome-card">
-                <img src="logo.png?v=2" alt="Leo Rodriguez Entrenamiento Personal" class="logo-welcome">
-                <p style="font-size: 0.9rem; color: #888; margin-top: 10px;">COPIÁ EL CODIGO DE RUTINA QUE TE ENVIÉ</p>
-                <textarea id="code-input" placeholder="Pega el código aquí..."></textarea>
-                <button class="btn-stats" onclick="cargarManual()">EMPEZAR A ENTRENAR</button>
-            </div>
+          <div id="welcome-screen">
+    <div class="welcome-card">
+        <img src="logo.png?v=2" alt="Leo Rodriguez Entrenamiento Personal" class="logo-welcome">
+        
+        <div id="install-required" style="display: none;">
+            <p style="font-size: 1rem; color: #fff; margin: 20px 0; font-weight: bold; line-height: 1.4;">
+                PARA UNA MEJOR EXPERIENCIA Y QUE EL CRONÓMETRO NO SE CORTE:
+            </p>
+            <button class="btn-stats" onclick="instalarApp()" style="background: #fff; color: #000; border: 2px solid #fff;">
+                📲 INSTALAR APP EN MI CELULAR
+            </button>
+            <p style="font-size: 0.75rem; color: #666; margin-top: 15px;">Luego de instalar, abre la App desde tu pantalla de inicio.</p>
+        </div>
+
+        <div id="code-entry-area">
+            <p style="font-size: 0.9rem; color: #888; margin-top: 10px;">COPIÁ EL CÓDIGO DE RUTINA QUE TE ENVIÉ</p>
+            <textarea id="code-input" placeholder="Pega el código aquí..."></textarea>
+            <button class="btn-stats" onclick="cargarManual()">EMPEZAR A ENTRENAR</button>
+        </div>
+    </div>
+</div>
         </div>
 
         <div id="app-content" style="display:none;">
@@ -142,8 +157,6 @@
     <footer class="footer-sign">
     DESARROLLADO POR <a href="https://www.linkedin.com/in/nicolas-yabichino/" target="_blank"><span>NICOYABI</span></a>
 </footer>
-
-    <button id="install-banner">📲 INSTALAR EN MI CELULAR</button>
 
     <div id="hidden-canvases">
         <canvas id="chartMusculos" width="800" height="400"></canvas>
@@ -178,113 +191,23 @@ function playBeepFuerte() {
     } catch(e) {} 
 }
 
-function init() {
-    // 1. Intentamos capturar el código desde la URL (Link de WhatsApp)
-    const urlParams = new URLSearchParams(window.location.search);
-    let dataUrl = urlParams.get('data');
-
-    if (dataUrl) {
-        console.log("Rutina detectada en el link, procesando...");
-        // Limpiamos posibles caracteres raros del final del link
-        dataUrl = dataUrl.split('&')[0]; 
+        function init() { let dSaved = localStorage.getItem('routine_data_raw'); if (dSaved) procesarDatos(dSaved); }
+        function cargarManual() { let input = document.getElementById('code-input').value; if (!input) return alert("Pega el código"); procesarDatos(input.includes('data=') ? input.split('data=')[1] : input); }
         
-        procesarDatos(dataUrl);
-        
-        // Limpiamos la URL para que quede bonita (sin el código largo arriba)
-        window.history.replaceState({}, document.title, window.location.pathname);
-    } else {
-        // 2. Si no hay link, buscamos si ya tenía una rutina guardada en el cel
-        let dSaved = localStorage.getItem('routine_data_raw'); 
-        if (dSaved) procesarDatos(dSaved);
-    }
-
-    verificarInstalacion();
-}
-
-function verificarInstalacion() {
-    // Si la app se abre en el navegador y no como PWA instalada
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
-    
-    if (!isStandalone) {
-        // Podés mostrar un aviso o cambiar el texto del banner
-        const banner = document.getElementById('install-banner');
-        if (banner) {
-            banner.innerText = "⚠️ INSTALÁ LA APP PARA ENTRENAR";
-            banner.style.background = "var(--danger)";
-            banner.style.display = "block";
+        function procesarDatos(rawData) {
+            try {
+                rutinaFull = JSON.parse(decodeURIComponent(escape(atob(rawData.trim()))));
+                localStorage.setItem('routine_data_raw', rawData);
+                document.getElementById('alumno-display').innerText = rutinaFull.alumno;
+                document.getElementById('semana-display').innerText = "SEMANA " + (rutinaFull.semana || "-");
+                document.getElementById('session-picker').innerHTML = Object.keys(rutinaFull.sesiones).map(k => `<option value="${k}">${rutinaFull.sesiones[k].nombre}</option>`).join('');
+                document.getElementById('welcome-screen').style.display = 'none';
+                document.getElementById('app-content').style.display = 'block';
+                document.getElementById('display').style.display = 'block';
+                document.getElementById('alumno-header').style.display = 'block';
+                loadSession(Object.keys(rutinaFull.sesiones)[0]);
+            } catch (e) { alert("Código no válido"); }
         }
-    }
-}
-       function cargarManual() { 
-    let input = document.getElementById('code-input').value.trim(); 
-    if (!input) return alert("Pega el código"); 
-
-    // Si el alumno pega el link entero por error, extraemos solo lo que importa
-    let codigoLimpio = input;
-    if (input.includes('data=')) {
-        codigoLimpio = input.split('data=')[1].split('&')[0];
-    }
-
-    procesarDatos(codigoLimpio); 
-}
-        
-function procesarDatos(rawData) {
-    try {
-        // 1. Decodificamos el Base64
-        const data = JSON.parse(decodeURIComponent(escape(atob(rawData.trim()))));
-        
-        // 2. Mapeamos los datos comprimidos al formato que usa el resto de la App
-        rutinaFull = {
-            alumno: data.a || "Alumno", // Respaldo por si data.a viene vacío
-            semana: data.s || "-",
-            sesiones: {}
-        };
-
-        // 3. Reconstruimos las sesiones y ejercicios
-        if (data.ss) {
-            Object.keys(data.ss).forEach(k => {
-                rutinaFull.sesiones[k] = {
-                    nombre: data.ss[k].n || `Día ${k}`,
-                    descanso_s: data.ss[k].ds || 90,
-                    descanso_e: data.ss[k].de || 180,
-                    ejercicios: (data.ss[k].e || []).map(ex => ({
-                        nombre: ex.n,
-                        grupo: ex.g,
-                        series: ex.se,
-                        reps_obj: ex.ro,
-                        peso_obj: ex.po,
-                        video: ex.v
-                    }))
-                };
-            });
-        }
-
-        // 4. Guardamos el código crudo para que la sesión persista al cerrar la App
-        localStorage.setItem('routine_data_raw', rawData);
-        
-        // 5. Actualizamos la interfaz (Header)
-        document.getElementById('alumno-display').innerText = rutinaFull.alumno;
-        document.getElementById('semana-display').innerText = "SEMANA " + rutinaFull.semana;
-        
-        const picker = document.getElementById('session-picker');
-        picker.innerHTML = Object.keys(rutinaFull.sesiones).map(k => 
-            `<option value="${k}">${rutinaFull.sesiones[k].nombre}</option>`
-        ).join('');
-        
-        // 6. Mostramos la pantalla de bienvenida inteligente (Instalar vs Entrenar)
-        mostrarPantallaCargada(); 
-
-        // 7. Cargamos la primera sesión por defecto en el fondo
-        if (Object.keys(rutinaFull.sesiones).length > 0) {
-            loadSession(Object.keys(rutinaFull.sesiones)[0]);
-        }
-
-  } catch (e) { 
-    console.error("Error detallado:", e);
-    // Si el error es porque 'data.ss' no existe, es un código viejo
-    alert("Este código no es compatible con la nueva versión de la App o está mal copiado. ¡Pedile uno nuevo a Leo!"); 
-}
-}
 
         function loadSession(id) {
             const s = rutinaFull.sesiones[id];
@@ -533,15 +456,43 @@ async function generarReporteProfe() {
     } catch(e) { alert("Error al preparar reporte: " + e.message); }
 }
 
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            // Solo mostrar si es un dispositivo móvil
-            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-            if (isMobile) {
-                document.getElementById('install-banner').style.display = 'block';
-            }
-        });
+// Variable para capturar el evento de instalación
+let deferredPrompt;
+
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    
+    // Si es móvil, ocultamos el input y mostramos el botón de instalar
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    if (isMobile) {
+        document.getElementById('code-entry-area').style.display = 'none';
+        document.getElementById('install-required').style.display = 'block';
+    }
+});
+
+async function instalarApp() {
+    if (deferredPrompt) {
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === 'accepted') {
+            // Una vez aceptado, podemos volver a mostrar el cargador de código
+            document.getElementById('install-required').style.display = 'none';
+            document.getElementById('code-entry-area').style.display = 'block';
+            deferredPrompt = null;
+        }
+    } else {
+        // Caso específico para iPhone/iOS
+        alert("Para instalar en iPhone:\n1. Toca el botón 'Compartir' (el cuadrado con la flecha hacia arriba).\n2. Baja y elige 'Agregar al inicio'.");
+    }
+}
+
+// Opcional: Si el usuario ya la tiene instalada y entra desde el icono, 
+// este evento asegura que vea directamente el cargador de código.
+window.addEventListener('appinstalled', () => {
+    document.getElementById('install-required').style.display = 'none';
+    document.getElementById('code-entry-area').style.display = 'block';
+});
 
         document.getElementById('install-banner').addEventListener('click', async () => {
             if (deferredPrompt) {
@@ -553,76 +504,6 @@ async function generarReporteProfe() {
         });
 
         init();
-function mostrarPantallaCargada() {
-    const welcome = document.getElementById('welcome-screen');
-    
-    // Detectamos si ya está instalada (standalone)
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
-
-    if (!isStandalone) {
-        // --- BLOQUEO PARA NO INSTALADOS ---
-        welcome.innerHTML = `
-            <div class="welcome-card" style="border-color: var(--accent);">
-                <img src="logo.png?v=2" alt="Logo" class="logo-welcome">
-                <h2 style="color: var(--accent);">RUTINA LISTA</h2>
-                <p style="margin: 20px 0; color: #ccc; line-height: 1.4;">
-                    Hola <b>${rutinaFull.alumno}</b>, para poder abrir tu rutina y que el <b>Timer</b> funcione correctamente, debes instalar la App en tu celular.
-                </p>
-                <button class="btn-stats" onclick="instalarPWA()" style="background: var(--accent);">
-                    📲 INSTALAR APP PARA EMPEZAR
-                </button>
-                <p style="font-size: 0.7rem; color: #555; margin-top: 15px;">
-                    Una vez instalada, ábrela desde tu pantalla de inicio.
-                </p>
-            </div>
-        `;
-    } else {
-        // --- VISTA PARA CUANDO YA ESTÁ INSTALADA ---
-        welcome.innerHTML = `
-            <div class="welcome-card" style="border-color: var(--success);">
-                <img src="logo.png?v=2" alt="Logo" class="logo-welcome">
-                <h2 style="color: var(--success);">¡HOLA ${rutinaFull.alumno.toUpperCase()}!</h2>
-                <p style="margin: 15px 0; color: #888;">Tu rutina de la <b>Semana ${rutinaFull.semana}</b> está cargada.</p>
-                <button class="btn-stats" onclick="entrarALaApp()">EMPEZAR A ENTRENAR</button>
-            </div>
-        `;
-    }
-}
-
-// Función auxiliar para el botón de instalar
-async function instalarPWA() {
-    if (deferredPrompt) {
-        deferredPrompt.prompt();
-        const { outcome } = await deferredPrompt.userChoice;
-        if (outcome === 'accepted') {
-            deferredPrompt = null;
-        }
-    } else {
-        alert("Para instalar: toca el ícono de 'Compartir' o 'Tres puntos' y selecciona 'Instalar' o 'Agregar a pantalla de inicio'.");
-    }
-}
-
-function entrarALaApp() {
-    document.getElementById('welcome-screen').style.display = 'none';
-    document.getElementById('app-content').style.display = 'block';
-    document.getElementById('display').style.display = 'block';
-    document.getElementById('alumno-header').style.display = 'block';
-}
     </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
