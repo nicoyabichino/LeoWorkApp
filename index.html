@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>LR WorkApp</title>
     
-    <link rel="manifest" href="manifest.json?v=12">
+    <link rel="manifest" href="manifest.json?v=13">
     <meta name="theme-color" content="#000000">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -150,6 +151,9 @@
     </div>
 
     <script>
+        // Este es un "motor" de silencio que mantiene viva la App en segundo plano
+const audioSilencio = new Audio("data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA==");
+audioSilencio.loop = true;
         let rutinaFull = {}; let timerInt; let deferredPrompt;
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
@@ -223,11 +227,13 @@ function playBeepFuerte() {
         function saveData(sessId, exIdx, sIdx) { const row = document.getElementById(`row-${exIdx}-${sIdx}`); const inputs = row.querySelectorAll('input'); const done = row.querySelector('.check-btn').classList.contains('active'); localStorage.setItem(`workout_${sessId}_${exIdx}_${sIdx}`, JSON.stringify({reps: inputs[0].value, peso: inputs[1].value, rpe: inputs[2].value, done: done})); }
         function getSavedData(sessId, exIdx, sIdx) { const saved = localStorage.getItem(`workout_${sessId}_${exIdx}_${sIdx}`); return saved ? JSON.parse(saved) : { reps: '', peso: '', rpe: '', done: false }; }
         function markSet(sessId, exIdx, sIdx, totalSets) { const row = document.getElementById(`row-${exIdx}-${sIdx}`); const btn = row.querySelector('.check-btn'); row.classList.toggle('done'); btn.classList.toggle('active'); saveData(sessId, exIdx, sIdx); if(row.classList.contains('done')) { const isLast = (sIdx === totalSets - 1); startTimer(isLast ? rutinaFull.sesiones[sessId].descanso_e : rutinaFull.sesiones[sessId].descanso_s); } }
-        function startTimer(sec) { 
+function startTimer(sec) { 
     clearInterval(timerInt); 
     const display = document.getElementById('display');
     
-    // Guardamos el momento exacto en el futuro en que debe terminar
+    // IMPORTANTE: Play al silencio para que el sistema no congele la app al bloquear
+    audioSilencio.play().catch(e => console.log("Audio iniciado tras interacción"));
+
     endTime = Date.now() + (sec * 1000); 
 
     timerInt = setInterval(() => { 
@@ -237,14 +243,20 @@ function playBeepFuerte() {
         if(faltan <= 0) { 
             clearInterval(timerInt); 
             display.innerText = "00:00";
+            
+            // Suena el Beep real
             playBeepFuerte(); 
+            
+            // Apagamos el motor de silencio para no gastar batería de más
+            audioSilencio.pause();
+            audioSilencio.currentTime = 0;
             return;
         } 
 
         let m = Math.floor(faltan / 60); 
         let s = faltan % 60; 
         display.innerText = `${m}:${s.toString().padStart(2,'0')}`; 
-    }, 500); // Chequea cada medio segundo para no perderse nada
+    }, 1000); 
 }
         
         
