@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Panel Profe - Control Total</title>
     
-  <link rel="manifest" href="manifest-admin.json?v=8">
+  <link rel="manifest" href="manifest-admin.json?v=9">
     <meta name="theme-color" content="#0b0f1a">
     
     <style>
@@ -130,9 +130,9 @@
             <label>Vista previa del código:</label>
             <div id="linkFinal" class="copy-area" style="height: 60px; overflow-y: auto; opacity: 0.5; border-style: dashed; margin-bottom: 20px;"></div>
             
-            <button onclick="copiarLink(event)" style="background: var(--primary); color: white; width:100%; padding:18px; border:none; border-radius:12px; font-weight:bold; cursor:pointer; font-size: 1rem; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);">
-                📋 COPIAR CÓDIGO PARA ENVIAR
-            </button>
+            <button onclick="enviarWhatsApp(event)" style="background: #232d36; color: white; width:100%; padding:18px; border:1px solid #25D366; border-radius:12px; font-weight:bold; cursor:pointer; font-size: 1rem; margin-top: 10px;">
+    📲 ENVIAR POR WHATSAPP DIRECTO
+</button>
         </div>
         <textarea id="temp-copy" style="position: absolute; left: -9999px;"></textarea>
     </div>
@@ -247,12 +247,15 @@ function generarLink() {
 
         // Generamos el base64
         const base64 = btoa(unescape(encodeURIComponent(JSON.stringify(rutina))));
-        
-        // --- CAMBIOS VISUALES AQUÍ ---
+    // --- CAMBIOS VISUALES AQUÍ ---
         document.getElementById('target-alumno').innerText = nombre.toUpperCase();
         document.getElementById('linkFinal').innerText = base64;
         document.getElementById('resultado').style.display = "block";
         
+        // Guardamos el base64 en una variable global temporal para WhatsApp
+        window.currentBase64 = base64;
+        window.currentAlumno = nombre;
+
         // Scroll suave hacia el resultado
         window.scrollTo({
             top: document.getElementById('resultado').offsetTop - 20,
@@ -304,9 +307,32 @@ document.getElementById('admin-pass').addEventListener('keypress', function (e) 
         verificarAcceso();
     }
 });
+    function enviarWhatsApp(event) {
+    if (!window.currentBase64) return alert("Primero genera la rutina");
+
+    // REEMPLAZA ESTO con la URL real donde el alumno ve su rutina
+    // Ejemplo: "https://leoprofe-entrenamientos.netlify.app/"
+    const urlAppAlumno = "https://nicoyabichino.github.io/LeoWorkApp/index.html"; 
+
+    // Construimos el link con el parámetro ?data=
+    const linkFinal = `${urlAppAlumno}?data=${encodeURIComponent(window.currentBase64)}`;
+    
+    // Mensaje personalizado
+    const mensaje = `💪 *¡Hola ${window.currentAlumno}!* Acá te paso tu rutina de la semana actualizada. \n\nPara cargarla, solo hacé clic en este link:\n\n${linkFinal}`;
+    
+    // Abrir WhatsApp
+    const urlWA = `https://api.whatsapp.com/send?text=${encodeURIComponent(mensaje)}`;
+    window.open(urlWA, '_blank');
+
+    // Feedback visual en el botón
+    const btn = event.currentTarget;
+    btn.innerHTML = "✅ ENVIADO A WHATSAPP";
+    setTimeout(() => { btn.innerHTML = "📲 ENVIAR POR WHATSAPP DIRECTO"; }, 2000);
+}
 </script>
 </body>
 </html>
+
 
 
 
