@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>LR WorkApp</title>
     
-    <link rel="manifest" href="manifest.json?v=14">
+    <link rel="manifest" href="manifest.json?v=15">
     <meta name="theme-color" content="#000000">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -179,23 +179,25 @@ function playBeepFuerte() {
 }
 
 function init() {
-    // 1. Intentamos capturar el código desde la URL
+    // 1. Intentamos capturar el código desde la URL (Link de WhatsApp)
     const urlParams = new URLSearchParams(window.location.search);
-    const dataUrl = urlParams.get('data');
+    let dataUrl = urlParams.get('data');
 
     if (dataUrl) {
         console.log("Rutina detectada en el link, procesando...");
+        // Limpiamos posibles caracteres raros del final del link
+        dataUrl = dataUrl.split('&')[0]; 
+        
         procesarDatos(dataUrl);
         
-        // Limpiamos la URL para que no quede el código largo ahí arriba
+        // Limpiamos la URL para que quede bonita (sin el código largo arriba)
         window.history.replaceState({}, document.title, window.location.pathname);
     } else {
-        // 2. Si no hay link, buscamos si ya tenía una rutina guardada antes
+        // 2. Si no hay link, buscamos si ya tenía una rutina guardada en el cel
         let dSaved = localStorage.getItem('routine_data_raw'); 
         if (dSaved) procesarDatos(dSaved);
     }
 
-    // 3. Verificamos si está instalada (opcional, para avisar al usuario)
     verificarInstalacion();
 }
 
@@ -213,7 +215,18 @@ function verificarInstalacion() {
         }
     }
 }
-        function cargarManual() { let input = document.getElementById('code-input').value; if (!input) return alert("Pega el código"); procesarDatos(input.includes('data=') ? input.split('data=')[1] : input); }
+       function cargarManual() { 
+    let input = document.getElementById('code-input').value.trim(); 
+    if (!input) return alert("Pega el código"); 
+
+    // Si el alumno pega el link entero por error, extraemos solo lo que importa
+    let codigoLimpio = input;
+    if (input.includes('data=')) {
+        codigoLimpio = input.split('data=')[1].split('&')[0];
+    }
+
+    procesarDatos(codigoLimpio); 
+}
         
         function procesarDatos(rawData) {
             try {
@@ -500,6 +513,7 @@ async function generarReporteProfe() {
     </script>
 </body>
 </html>
+
 
 
 
