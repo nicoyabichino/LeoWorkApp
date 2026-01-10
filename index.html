@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>LR WorkApp</title>
     
-    <link rel="manifest" href="manifest.json?v=15">
+    <link rel="manifest" href="manifest.json?v=16">
     <meta name="theme-color" content="#000000">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -228,20 +228,49 @@ function verificarInstalacion() {
     procesarDatos(codigoLimpio); 
 }
         
-        function procesarDatos(rawData) {
-            try {
-                rutinaFull = JSON.parse(decodeURIComponent(escape(atob(rawData.trim()))));
-                localStorage.setItem('routine_data_raw', rawData);
-                document.getElementById('alumno-display').innerText = rutinaFull.alumno;
-                document.getElementById('semana-display').innerText = "SEMANA " + (rutinaFull.semana || "-");
-                document.getElementById('session-picker').innerHTML = Object.keys(rutinaFull.sesiones).map(k => `<option value="${k}">${rutinaFull.sesiones[k].nombre}</option>`).join('');
-                document.getElementById('welcome-screen').style.display = 'none';
-                document.getElementById('app-content').style.display = 'block';
-                document.getElementById('display').style.display = 'block';
-                document.getElementById('alumno-header').style.display = 'block';
-                loadSession(Object.keys(rutinaFull.sesiones)[0]);
-            } catch (e) { alert("Código no válido"); }
-        }
+function procesarDatos(rawData) {
+    try {
+        const data = JSON.parse(decodeURIComponent(escape(atob(rawData.trim()))));
+        
+        // Mapeamos los datos comprimidos a nuestro formato original
+        rutinaFull = {
+            alumno: data.a,
+            semana: data.s,
+            sesiones: {}
+        };
+
+        Object.keys(data.ss).forEach(k => {
+            rutinaFull.sesiones[k] = {
+                nombre: data.ss[k].n,
+                descanso_s: data.ss[k].ds,
+                descanso_e: data.ss[k].de,
+                ejercicios: data.ss[k].e.map(ex => ({
+                    nombre: ex.n,
+                    grupo: ex.g,
+                    series: ex.se,
+                    reps_obj: ex.ro,
+                    peso_obj: ex.po,
+                    video: ex.v
+                }))
+            };
+        });
+
+        localStorage.setItem('routine_data_raw', rawData);
+        
+        // Lógica de UI (lo que ya tenías)
+        document.getElementById('alumno-display').innerText = rutinaFull.alumno;
+        document.getElementById('semana-display').innerText = "SEMANA " + (rutinaFull.semana || "-");
+        document.getElementById('session-picker').innerHTML = Object.keys(rutinaFull.sesiones).map(k => `<option value="${k}">${rutinaFull.sesiones[k].nombre}</option>`).join('');
+        
+        // --- CAMBIO AQUÍ PARA LA PANTALLA DE INICIO ---
+        mostrarPantallaCargada(); 
+
+        loadSession(Object.keys(rutinaFull.sesiones)[0]);
+    } catch (e) { 
+        console.error(e);
+        alert("Código no válido o muy largo"); 
+    }
+}
 
         function loadSession(id) {
             const s = rutinaFull.sesiones[id];
@@ -510,9 +539,30 @@ async function generarReporteProfe() {
         });
 
         init();
+        function mostrarPantallaCargada() {
+    const welcome = document.getElementById('welcome-screen');
+    
+    // En lugar de ocultar todo, cambiamos el contenido del card de bienvenida
+    welcome.innerHTML = `
+        <div class="welcome-card" style="border-color: var(--success);">
+            <img src="logo.png?v=2" alt="Logo" class="logo-welcome">
+            <h2 style="color: var(--success);">¡RUTINA RECIBIDA!</h2>
+            <p style="margin: 15px 0; color: #888;">Hola <b>${rutinaFull.alumno}</b>, Leo te envió tu rutina de la <b>Semana ${rutinaFull.semana}</b>.</p>
+            <button class="btn-stats" onclick="entrarALaApp()">EMPEZAR A ENTRENAR</button>
+        </div>
+    `;
+}
+
+function entrarALaApp() {
+    document.getElementById('welcome-screen').style.display = 'none';
+    document.getElementById('app-content').style.display = 'block';
+    document.getElementById('display').style.display = 'block';
+    document.getElementById('alumno-header').style.display = 'block';
+}
     </script>
 </body>
 </html>
+
 
 
 
