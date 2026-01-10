@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>LR WorkApp</title>
     
-    <link rel="manifest" href="manifest.json?v=17">
+    <link rel="manifest" href="manifest.json?v=18">
     <meta name="theme-color" content="#000000">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -279,10 +279,11 @@ function procesarDatos(rawData) {
             loadSession(Object.keys(rutinaFull.sesiones)[0]);
         }
 
-    } catch (e) { 
-        console.error("Error al procesar:", e);
-        alert("El código de rutina es antiguo o no es válido. Pedile uno nuevo a Leo."); 
-    }
+  } catch (e) { 
+    console.error("Error detallado:", e);
+    // Si el error es porque 'data.ss' no existe, es un código viejo
+    alert("Este código no es compatible con la nueva versión de la App o está mal copiado. ¡Pedile uno nuevo a Leo!"); 
+}
 }
 
         function loadSession(id) {
@@ -610,6 +611,7 @@ function entrarALaApp() {
     </script>
 </body>
 </html>
+
 
 
 
