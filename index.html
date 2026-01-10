@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>LR WorkApp</title>
     
-    <link rel="manifest" href="manifest.json?v=13">
+    <link rel="manifest" href="manifest.json?v=14">
     <meta name="theme-color" content="#000000">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -178,7 +178,41 @@ function playBeepFuerte() {
     } catch(e) {} 
 }
 
-        function init() { let dSaved = localStorage.getItem('routine_data_raw'); if (dSaved) procesarDatos(dSaved); }
+function init() {
+    // 1. Intentamos capturar el código desde la URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const dataUrl = urlParams.get('data');
+
+    if (dataUrl) {
+        console.log("Rutina detectada en el link, procesando...");
+        procesarDatos(dataUrl);
+        
+        // Limpiamos la URL para que no quede el código largo ahí arriba
+        window.history.replaceState({}, document.title, window.location.pathname);
+    } else {
+        // 2. Si no hay link, buscamos si ya tenía una rutina guardada antes
+        let dSaved = localStorage.getItem('routine_data_raw'); 
+        if (dSaved) procesarDatos(dSaved);
+    }
+
+    // 3. Verificamos si está instalada (opcional, para avisar al usuario)
+    verificarInstalacion();
+}
+
+function verificarInstalacion() {
+    // Si la app se abre en el navegador y no como PWA instalada
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+    
+    if (!isStandalone) {
+        // Podés mostrar un aviso o cambiar el texto del banner
+        const banner = document.getElementById('install-banner');
+        if (banner) {
+            banner.innerText = "⚠️ INSTALÁ LA APP PARA ENTRENAR";
+            banner.style.background = "var(--danger)";
+            banner.style.display = "block";
+        }
+    }
+}
         function cargarManual() { let input = document.getElementById('code-input').value; if (!input) return alert("Pega el código"); procesarDatos(input.includes('data=') ? input.split('data=')[1] : input); }
         
         function procesarDatos(rawData) {
@@ -466,6 +500,7 @@ async function generarReporteProfe() {
     </script>
 </body>
 </html>
+
 
 
 
