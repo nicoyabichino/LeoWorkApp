@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Panel Profe - Control Total</title>
     
-  <link rel="manifest" href="manifest-admin.json?v=9">
+  <link rel="manifest" href="manifest-admin.json?v=10">
     <meta name="theme-color" content="#0b0f1a">
     
     <style>
@@ -220,48 +220,43 @@
     }
 
 function generarLink() {
-        const nombre = document.getElementById('alumno-nombre').value;
-        const semana = document.getElementById('semana-nro').value;
-        if(!nombre) return alert("Falta nombre del alumno");
-        
-        const rutina = { alumno: nombre, semana: semana, sesiones: {} };
-        document.querySelectorAll('.sesion').forEach((s, idx) => {
-            const ejercicios = [];
-            s.querySelectorAll('.ex-item').forEach(item => {
-                ejercicios.push({
-                    nombre: item.querySelector('.ex-nombre').value,
-                    grupo: item.querySelector('.ex-grupo').value,
-                    series: parseInt(item.querySelector('.ex-series').value),
-                    reps_obj: item.querySelector('.ex-reps').value,
-                    peso_obj: item.querySelector('.ex-peso').value,
-                    video: item.querySelector('.ex-video').value
-                });
+    const nombre = document.getElementById('alumno-nombre').value;
+    const semana = document.getElementById('semana-nro').value;
+    if(!nombre) return alert("Falta nombre del alumno");
+    
+    // USAMOS CLAVES CORTAS PARA AHORRAR ESPACIO:
+    // a = alumno, s = semana, ss = sesiones, n = nombre, d_s = descanso_s...
+    const rutina = { a: nombre, s: semana, ss: {} }; 
+    
+    document.querySelectorAll('.sesion').forEach((s, idx) => {
+        const ejercicios = [];
+        s.querySelectorAll('.ex-item').forEach(item => {
+            ejercicios.push({
+                n: item.querySelector('.ex-nombre').value,      // n = nombre
+                g: item.querySelector('.ex-grupo').value,       // g = grupo
+                se: parseInt(item.querySelector('.ex-series').value), // se = series
+                ro: item.querySelector('.ex-reps').value,       // ro = reps_obj
+                po: item.querySelector('.ex-peso').value,       // po = peso_obj
+                v: item.querySelector('.ex-video').value        // v = video
             });
-            rutina.sesiones[idx + 1] = {
-                nombre: s.querySelector('.nombre-sesion').value || `Día ${idx+1}`,
-                descanso_s: parseInt(s.querySelector('.descanso-series').value),
-                descanso_e: parseInt(s.querySelector('.descanso-ejercicios').value),
-                ejercicios: ejercicios
-            };
         });
+        rutina.ss[idx + 1] = {
+            n: s.querySelector('.nombre-sesion').value || `Día ${idx+1}`,
+            ds: parseInt(s.querySelector('.descanso-series').value),
+            de: parseInt(s.querySelector('.descanso-ejercicios').value),
+            e: ejercicios
+        };
+    });
 
-        // Generamos el base64
-        const base64 = btoa(unescape(encodeURIComponent(JSON.stringify(rutina))));
-    // --- CAMBIOS VISUALES AQUÍ ---
-        document.getElementById('target-alumno').innerText = nombre.toUpperCase();
-        document.getElementById('linkFinal').innerText = base64;
-        document.getElementById('resultado').style.display = "block";
-        
-        // Guardamos el base64 en una variable global temporal para WhatsApp
-        window.currentBase64 = base64;
-        window.currentAlumno = nombre;
-
-        // Scroll suave hacia el resultado
-        window.scrollTo({
-            top: document.getElementById('resultado').offsetTop - 20,
-            behavior: 'smooth'
-        });
-    }
+    const base64 = btoa(unescape(encodeURIComponent(JSON.stringify(rutina))));
+    
+    document.getElementById('target-alumno').innerText = nombre.toUpperCase();
+    document.getElementById('linkFinal').innerText = base64;
+    document.getElementById('resultado').style.display = "block";
+    
+    window.currentBase64 = base64;
+    window.currentAlumno = nombre;
+}
 
 function copiarLink(event) { // <--- Agregamos 'event' aquí
     const text = document.getElementById("linkFinal").innerText;
@@ -332,6 +327,7 @@ document.getElementById('admin-pass').addEventListener('keypress', function (e) 
 </script>
 </body>
 </html>
+
 
 
 
