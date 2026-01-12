@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Panel Profe - Control Total</title>
     
-  <link rel="manifest" href="manifest-admin.json?v=8">
+  <link rel="manifest" href="manifest-admin.json?v=9">
     <meta name="theme-color" content="#0b0f1a">
     
     <style>
@@ -311,11 +311,15 @@ window.addEventListener('DOMContentLoaded', () => {
     }
 });
 function importarRutina() {
-    const codigo = prompt("Pega aquí el código Base64 de la rutina que quieres modificar:");
+    let codigo = prompt("Pega aquí el código Base64 de la rutina:");
     if (!codigo) return;
 
     try {
-        const data = JSON.parse(decodeURIComponent(escape(atob(codigo.trim()))));
+        // LIMPIEZA: Quitamos espacios, saltos de línea y tabulaciones que el celular suele meter
+        codigo = codigo.trim().replace(/\s/g, '');
+
+        // Decodificamos con manejo de caracteres especiales
+        const data = JSON.parse(decodeURIComponent(escape(atob(codigo))));
         
         // 1. Limpiar el contenedor actual
         document.getElementById('rutina-container').innerHTML = "";
@@ -328,12 +332,10 @@ function importarRutina() {
         // 3. Reconstruir cada Sesión
         Object.keys(data.sesiones).forEach(sKey => {
             const s = data.sesiones[sKey];
-            agregarSesion(); // Esto crea la sesión y 1 ejercicio por defecto
+            agregarSesion(); 
             
             const sesionDiv = document.getElementById(`sesion-${contadorSesiones}`);
             sesionDiv.querySelector('.nombre-sesion').value = s.nombre;
-            
-            // IMPORTANTE: Limpiamos el ejercicio por defecto para cargar los reales del JSON
             sesionDiv.querySelector('.ejercicios-container').innerHTML = "";
 
             s.ejercicios.forEach(ex => {
@@ -341,19 +343,15 @@ function importarRutina() {
                 const exItems = sesionDiv.querySelectorAll('.ex-item');
                 const lastEx = exItems[exItems.length - 1];
 
-                // Cargamos los valores en los inputs del ejercicio
                 lastEx.querySelector('.ex-grupo').value = ex.grupo;
-                actualizarEjercicios(lastEx.querySelector('.ex-grupo')); // Para que cargue el select de nombres
+                actualizarEjercicios(lastEx.querySelector('.ex-grupo')); 
                 
                 lastEx.querySelector('.ex-nombre').value = ex.nombre;
                 lastEx.querySelector('.ex-series').value = ex.series;
                 lastEx.querySelector('.ex-reps').value = ex.reps_obj;
                 lastEx.querySelector('.ex-peso').value = ex.peso_obj;
-                
-                // Carga de los dos descansos
                 lastEx.querySelector('.ex-descanso').value = ex.descanso || 90;
                 
-                // Usamos un selector específico para el descanso final por ejercicio
                 if(lastEx.querySelector('.ex-descanso-final')) {
                     lastEx.querySelector('.ex-descanso-final').value = ex.descanso_final || 120;
                 }
@@ -363,13 +361,14 @@ function importarRutina() {
             });
         });
         
-        alert("¡Rutina importada! Ahora podés corregir los errores y volver a generar el código.");
+        alert("¡Rutina importada con éxito!");
         
     } catch (e) {
-        alert("Error al importar: El código no es válido o está incompleto.");
-        console.error("Error detallado:", e);
+        alert("Error: El código pegado no es válido. Asegúrate de copiarlo completo.");
+        console.error("Error al decodificar:", e);
     }
 }
 </script>
 </body>
 </html>
+
