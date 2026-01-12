@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Panel Profe - Control Total</title>
     
-  <link rel="manifest" href="manifest-admin.json?v=9">
+  <link rel="manifest" href="manifest-admin.json?v=10">
     <meta name="theme-color" content="#0b0f1a">
     
     <style>
@@ -311,25 +311,29 @@ window.addEventListener('DOMContentLoaded', () => {
     }
 });
 function importarRutina() {
-    let codigo = prompt("Pega aquí el código Base64 de la rutina:");
+    let codigo = prompt("Pega aquí el código de la rutina:");
     if (!codigo) return;
 
     try {
-        // LIMPIEZA: Quitamos espacios, saltos de línea y tabulaciones que el celular suele meter
-        codigo = codigo.trim().replace(/\s/g, '');
+        // 1. Limpieza extrema: quitamos espacios, saltos de línea y caracteres invisibles
+        codigo = codigo.trim().replace(/\s+/g, '');
 
-        // Decodificamos con manejo de caracteres especiales
-        const data = JSON.parse(decodeURIComponent(escape(atob(codigo))));
+        // 2. Decodificación segura para móviles (Soporta emojis, tildes y textos largos)
+        const base64Decoded = atob(codigo);
+        const bytes = new Uint8Array(base64Decoded.length);
+        for (let i = 0; i < base64Decoded.length; i++) {
+            bytes[i] = base64Decoded.charCodeAt(i);
+        }
+        const decodedText = new TextDecoder().decode(bytes);
+        const data = JSON.parse(decodedText);
         
-        // 1. Limpiar el contenedor actual
+        // --- A partir de aquí el proceso de carga ---
         document.getElementById('rutina-container').innerHTML = "";
         contadorSesiones = 0;
 
-        // 2. Cargar datos generales
         document.getElementById('alumno-nombre').value = data.alumno || "";
         document.getElementById('semana-nro').value = data.semana || "";
 
-        // 3. Reconstruir cada Sesión
         Object.keys(data.sesiones).forEach(sKey => {
             const s = data.sesiones[sKey];
             agregarSesion(); 
@@ -364,11 +368,12 @@ function importarRutina() {
         alert("¡Rutina importada con éxito!");
         
     } catch (e) {
-        alert("Error: El código pegado no es válido. Asegúrate de copiarlo completo.");
-        console.error("Error al decodificar:", e);
+        alert("ERROR DE FORMATO: El código está incompleto o se copió mal desde el celular. Intentá copiarlo nuevamente desde el botón 'Copiar'.");
+        console.error("Detalle técnico:", e);
     }
 }
 </script>
 </body>
 </html>
+
 
