@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>LR WorkApp</title>
     
-    <link rel="manifest" href="manifest.json?v=7">
+    <link rel="manifest" href="manifest.json?v=8">
     <meta name="theme-color" content="#000000">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -148,14 +148,31 @@
     </header>
 
     <main id="app-container">
-        <div id="welcome-screen">
-            <div class="welcome-card">
-                <img src="logo.png?v=2" alt="Leo Rodriguez Entrenamiento Personal" class="logo-welcome">
-                <p style="font-size: 0.9rem; color: #888; margin-top: 10px;">COPIÁ EL CODIGO DE RUTINA QUE TE ENVIÉ</p>
-                <textarea id="code-input" placeholder="Pega el código aquí..."></textarea>
-                <button class="btn-stats" onclick="cargarManual()">EMPEZAR A ENTRENAR</button>
-            </div>
+<div id="welcome-screen">
+    <div class="welcome-card">
+        <img src="logo.png?v=2" alt="Leo Rodriguez" class="logo-welcome">
+        
+        <div id="browser-view" style="display: none;">
+            <h2 style="color: var(--accent); margin-bottom: 15px;">📲 EXPERIENCIA MEJORADA</h2>
+            <p style="font-size: 0.95rem; color: #ccc; line-height: 1.5; margin-bottom: 25px;">
+                Para una mejor experiencia y poder registrar tus entrenamientos sin interrupciones, 
+                <strong style="color: white;">instala la App en tu celular</strong>.
+            </p>
+            <button class="btn-stats" onclick="triggerInstall()" style="background: white; color: black; box-shadow: 0 0 20px rgba(255,255,255,0.2);">
+                INSTALAR APP AHORA
+            </button>
+            <p style="font-size: 0.7rem; color: #555; margin-top: 20px; text-transform: uppercase; letter-spacing: 1px;">
+                Leo Rodriguez Entrenamiento Personal
+            </p>
         </div>
+
+        <div id="app-view" style="display: none;">
+            <p style="font-size: 0.9rem; color: #888; margin-top: 10px;">COPIÁ EL CÓDIGO DE RUTINA QUE TE ENVIÉ</p>
+            <textarea id="code-input" placeholder="Pega el código aquí..."></textarea>
+            <button class="btn-stats" onclick="cargarManual()">EMPEZAR A ENTRENAR</button>
+        </div>
+    </div>
+</div>
 
         <div id="app-content" style="display:none;">
             <select id="session-picker" class="session-selector" onchange="loadSession(this.value)"></select>
@@ -210,7 +227,33 @@
             } catch(e) {} 
         }
 
-        function init() { let dSaved = localStorage.getItem('routine_data_raw'); if (dSaved) procesarDatos(dSaved); }
+       function init() { 
+    // Detectar si está en modo App instalada
+    const isPWA = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone || document.referrer.includes('android-app://');
+    
+    const dSaved = localStorage.getItem('routine_data_raw'); 
+    
+    if (dSaved) {
+        // Si ya hay una rutina cargada, entramos directo (no importa si es navegador o app)
+        procesarDatos(dSaved); 
+    } else {
+        // Si no hay rutina, decidimos qué mostrar según el modo
+        if (isPWA) {
+            document.getElementById('app-view').style.display = 'block';
+        } else {
+            document.getElementById('browser-view').style.display = 'block';
+        }
+    }
+}
+
+// Función para el botón de instalar del medio
+function triggerInstall() {
+    if (deferredPrompt) {
+        deferredPrompt.prompt();
+    } else {
+        alert("Para instalar: \n1. Toca el botón de compartir (iOS) o los 3 puntos (Android).\n2. Elige 'Añadir a pantalla de inicio'.");
+    }
+}
         function cargarManual() { let input = document.getElementById('code-input').value; if (!input) return alert("Pega el código"); procesarDatos(input.includes('data=') ? input.split('data=')[1] : input); }
         
         function procesarDatos(rawData) {
@@ -466,15 +509,15 @@ async function generarReporteProfe() {
     } catch(e) { alert("Error al generar PDF: " + e.message); }
 }
 
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            // Solo mostrar si es un dispositivo móvil
-            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-            if (isMobile) {
-                document.getElementById('install-banner').style.display = 'block';
-            }
-        });
+ window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    // Mostramos el banner de abajo también por si acaso
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    if (isMobile) {
+        document.getElementById('install-banner').style.display = 'block';
+    }
+});
 
         document.getElementById('install-banner').addEventListener('click', async () => {
             if (deferredPrompt) {
@@ -497,3 +540,4 @@ function toggleNotas(idx) {
     </script>
 </body>
 </html>
+
