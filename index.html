@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>LR WorkApp</title>
     
-    <link rel="manifest" href="manifest.json?v=8">
+    <link rel="manifest" href="manifest.json?v=9">
     <meta name="theme-color" content="#000000">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -82,7 +82,6 @@
         .custom-modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:10000; justify-content:center; align-items:center; }
         .modal-content { background:#161b22; width:85%; max-width:320px; padding:25px; border-radius:20px; border:1px solid #30363d; text-align:center; }
         
-        #install-banner { display: none; position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: white; color: #000; padding: 18px 30px; border-radius: 50px; z-index: 9999; box-shadow: 0 10px 25px rgba(255,255,255,0.2); font-weight: 900; text-transform: uppercase; font-size: 0.8rem; width: 85%; text-align: center; border: none; }
         #hidden-canvases { position: absolute; left: -9999px; top: 0; visibility: hidden; }
 /* Botón de indicaciones súper llamativo */
 .info-btn {
@@ -196,8 +195,6 @@
     <footer class="footer-sign">
     DESARROLLADO POR <a href="https://www.linkedin.com/in/nicolas-yabichino/" target="_blank"><span>NICOYABI</span></a>
 </footer>
-
-    <button id="install-banner">📲 INSTALAR EN MI CELULAR</button>
 
     <div id="hidden-canvases">
         <canvas id="chartMusculos" width="800" height="400"></canvas>
@@ -509,26 +506,55 @@ async function generarReporteProfe() {
     } catch(e) { alert("Error al generar PDF: " + e.message); }
 }
 
- window.addEventListener('beforeinstallprompt', (e) => {
+// Variable global para capturar el evento de instalación
+let deferredPrompt;
+
+// 1. Detectamos el evento de instalación
+window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     deferredPrompt = e;
-    // Mostramos el banner de abajo también por si acaso
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-    if (isMobile) {
-        document.getElementById('install-banner').style.display = 'block';
-    }
+    // Si estamos en el navegador, el botón de "browser-view" ya está visible por el init()
+    console.log("Evento de instalación capturado");
 });
 
-        document.getElementById('install-banner').addEventListener('click', async () => {
-            if (deferredPrompt) {
-                deferredPrompt.prompt();
-                const { outcome } = await deferredPrompt.userChoice;
-                deferredPrompt = null;
-                document.getElementById('install-banner').style.display = outcome === 'accepted' ? 'none' : 'block';
-            }
-        });
+// 2. Función para el botón central "INSTALAR APP AHORA"
+async function triggerInstall() {
+    if (deferredPrompt) {
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === 'accepted') {
+            deferredPrompt = null;
+            // Opcional: recargar o cambiar de vista
+            location.reload();
+        }
+    } else {
+        // Instrucciones manuales si el navegador no lanza el prompt automáticamente
+        alert("Para instalar:\n\nEn Android: Toca los 3 puntos arriba a la derecha y 'Instalar aplicación'.\n\nEn iOS (iPhone): Toca el botón central de 'Compartir' y elige 'Añadir a pantalla de inicio'.");
+    }
+}
 
-        init();
+// 3. Modificamos el init() para que decida qué vista mostrar
+function init() { 
+    const isPWA = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+    const dSaved = localStorage.getItem('routine_data_raw'); 
+    
+    if (dSaved) {
+        // Si ya hay rutina guardada, entramos directo
+        procesarDatos(dSaved); 
+    } else {
+        // Si no hay rutina, mostramos una vista según el acceso
+        if (isPWA) {
+            document.getElementById('app-view').style.display = 'block';
+            document.getElementById('browser-view').style.display = 'none';
+        } else {
+            document.getElementById('browser-view').style.display = 'block';
+            document.getElementById('app-view').style.display = 'none';
+        }
+    }
+}
+
+// Asegurate de llamar al init al final
+init();
 function toggleNotas(idx) {
     const el = document.getElementById(`notas-${idx}`);
     if (el.style.display === 'block') {
@@ -540,4 +566,5 @@ function toggleNotas(idx) {
     </script>
 </body>
 </html>
+
 
