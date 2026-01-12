@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>LR WorkApp</title>
     
-    <link rel="manifest" href="manifest.json?v=6">
+    <link rel="manifest" href="manifest.json?v=7">
     <meta name="theme-color" content="#000000">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -84,6 +84,56 @@
         
         #install-banner { display: none; position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: white; color: #000; padding: 18px 30px; border-radius: 50px; z-index: 9999; box-shadow: 0 10px 25px rgba(255,255,255,0.2); font-weight: 900; text-transform: uppercase; font-size: 0.8rem; width: 85%; text-align: center; border: none; }
         #hidden-canvases { position: absolute; left: -9999px; top: 0; visibility: hidden; }
+/* Botón de indicaciones súper llamativo */
+.info-btn {
+    background: var(--accent); /* Azul Eléctrico */
+    color: #000; /* Texto negro para contraste */
+    border: none;
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 0.7rem;
+    font-weight: 900;
+    cursor: pointer;
+    margin-left: 10px;
+    letter-spacing: 1px;
+    box-shadow: 0 0 10px rgba(0, 212, 255, 0.4);
+    animation: pulse-info 2s infinite; /* Hace que el botón "brille" */
+}
+
+@keyframes pulse-info {
+    0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(0, 212, 255, 0.7); }
+    70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(0, 212, 255, 0); }
+    100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(0, 212, 255, 0); }
+}
+
+.ex-notas-display {
+    display: none;
+    background: #1a1300;
+    color: #ffd700; /* Dorado brillante para las notas */
+    padding: 12px;
+    font-size: 0.85rem;
+    border: 1px dashed var(--accent);
+    margin: 10px;
+    border-radius: 8px;
+    line-height: 1.4;
+    text-align: left;
+}
+.ex-feedback-input {
+    width: calc(100% - 20px);
+    margin: 10px;
+    background: #000;
+    border: 1px solid #333;
+    color: #888;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    outline: none;
+    transition: 0.3s;
+}
+.ex-feedback-input:focus {
+    border-color: var(--primary);
+    color: white;
+}
     </style>
 </head>
 <body>
@@ -178,37 +228,64 @@
             } catch (e) { alert("Código no válido"); }
         }
 
-        function loadSession(id) {
-            const s = rutinaFull.sesiones[id];
-            document.getElementById('workout-content').innerHTML = s.ejercicios.map((ex, exIdx) => {
-                const rA = ex.reps_obj.split(',').map(x => x.trim());
-                const pA = ex.peso_obj.split(',').map(x => x.trim());
-                return `<div class="exercise-card">
-                    <div class="ex-header">
-                        <div><strong>${ex.nombre}</strong><br><small style="color:var(--accent)">${ex.grupo}</small></div>
-                        ${ex.video ? `<a href="${ex.video}" target="_blank" class="yt-icon">▶ VIDEO</a>` : ''}
-                    </div>
-                    <div class="grid-header"><div>Set</div><div>Objetivo</div><div>Reps</div><div>Kg</div><div>RPE/RIR</div><div>Ok</div></div>
-                    ${Array.from({length: ex.series}).map((_, sIdx) => {
-                        const saved = getSavedData(id, exIdx, sIdx);
-                        const oR = rA[sIdx] || rA[rA.length-1] || ex.reps_obj;
-                        const oK = pA[sIdx] || pA[pA.length-1] || ex.peso_obj;
-                        return `<div class="set-row ${saved.done ? 'done' : ''}" id="row-${exIdx}-${sIdx}">
-                            <div style="text-align:center;font-weight:bold;">${sIdx+1}</div>
-                            <div class="obj-cell" data-obj-reps="${oR}" data-obj-peso="${oK}">Rep:${oR}<br>Kg:${oK}</div>
-                            <div><input type="number" oninput="saveData('${id}',${exIdx},${sIdx})" value="${saved.reps || ''}" inputmode="numeric"></div>
-                            <div><input type="number" oninput="saveData('${id}',${exIdx},${sIdx})" value="${saved.peso || ''}" inputmode="decimal"></div>
-                            <div><input type="number" oninput="saveData('${id}',${exIdx},${sIdx})" value="${saved.rpe || ''}" inputmode="numeric"></div>
-                            <div><button class="check-btn ${saved.done ? 'active' : ''}" onclick="markSet('${id}', ${exIdx}, ${sIdx}, ${ex.series})">✓</button></div>
-                        </div>`;
-                    }).join('')}
+function loadSession(id) {
+    const s = rutinaFull.sesiones[id];
+    document.getElementById('workout-content').innerHTML = s.ejercicios.map((ex, exIdx) => {
+        const rA = ex.reps_obj.split(',').map(x => x.trim());
+        const pA = ex.peso_obj.split(',').map(x => x.trim());
+        
+        const tieneNotas = ex.notas && ex.notas.trim() !== "";
+        const btnInfo = tieneNotas ? `<button class="info-btn" onclick="toggleNotas(${exIdx})">⚠️ Indicaciones</button>` : '';
+        const divNotas = tieneNotas ? `<div id="notas-${exIdx}" class="ex-notas-display">${ex.notas}</div>` : '';
+
+        // Obtenemos feedback guardado si existe
+        const savedFeedback = localStorage.getItem(`feedback_${id}_${exIdx}`) || '';
+
+        return `<div class="exercise-card">
+            <div class="ex-header">
+                <div><strong>${ex.nombre}</strong><br><small style="color:var(--accent)">${ex.grupo}</small> ${btnInfo}</div>
+                ${ex.video ? `<a href="${ex.video}" target="_blank" class="yt-icon">▶ VIDEO</a>` : ''}
+            </div>
+            ${divNotas}
+            <div class="grid-header"><div>Set</div><div>Objetivo</div><div>Reps</div><div>Kg</div><div>RPE</div><div>Ok</div></div>
+            ${Array.from({length: ex.series}).map((_, sIdx) => {
+                const saved = getSavedData(id, exIdx, sIdx);
+                const oR = rA[sIdx] || rA[rA.length-1] || ex.reps_obj;
+                const oK = pA[sIdx] || pA[pA.length-1] || ex.peso_obj;
+                return `<div class="set-row ${saved.done ? 'done' : ''}" id="row-${exIdx}-${sIdx}">
+                    <div style="text-align:center;font-weight:bold;">${sIdx+1}</div>
+                    <div class="obj-cell">Rep:${oR}<br>Kg:${oK}</div>
+                    <div><input type="number" oninput="saveData('${id}',${exIdx},${sIdx})" value="${saved.reps || ''}" inputmode="numeric"></div>
+                    <div><input type="number" oninput="saveData('${id}',${exIdx},${sIdx})" value="${saved.peso || ''}" inputmode="decimal"></div>
+                    <div><input type="number" oninput="saveData('${id}',${exIdx},${sIdx})" value="${saved.rpe || ''}" inputmode="numeric"></div>
+                    <div><button class="check-btn ${saved.done ? 'active' : ''}" onclick="markSet('${id}', ${exIdx}, ${sIdx}, ${ex.series})">✓</button></div>
                 </div>`;
-            }).join('');
-        }
+            }).join('')}
+            <input type="text" class="ex-feedback-input" placeholder="Observaciones (ej: dolor de muñeca...)" 
+                   value="${savedFeedback}" 
+                   oninput="localStorage.setItem('feedback_${id}_${exIdx}', this.value)">
+        </div>`;
+    }).join('');
+}
 
         function saveData(sessId, exIdx, sIdx) { const row = document.getElementById(`row-${exIdx}-${sIdx}`); const inputs = row.querySelectorAll('input'); const done = row.querySelector('.check-btn').classList.contains('active'); localStorage.setItem(`workout_${sessId}_${exIdx}_${sIdx}`, JSON.stringify({reps: inputs[0].value, peso: inputs[1].value, rpe: inputs[2].value, done: done})); }
         function getSavedData(sessId, exIdx, sIdx) { const saved = localStorage.getItem(`workout_${sessId}_${exIdx}_${sIdx}`); return saved ? JSON.parse(saved) : { reps: '', peso: '', rpe: '', done: false }; }
-        function markSet(sessId, exIdx, sIdx, totalSets) { const row = document.getElementById(`row-${exIdx}-${sIdx}`); const btn = row.querySelector('.check-btn'); row.classList.toggle('done'); btn.classList.toggle('active'); saveData(sessId, exIdx, sIdx); if(row.classList.contains('done')) { const isLast = (sIdx === totalSets - 1); startTimer(isLast ? rutinaFull.sesiones[sessId].descanso_e : rutinaFull.sesiones[sessId].descanso_s); } }
+        function markSet(sessId, exIdx, sIdx, totalSets) { 
+    const row = document.getElementById(`row-${exIdx}-${sIdx}`); 
+    const btn = row.querySelector('.check-btn'); 
+    row.classList.toggle('done'); 
+    btn.classList.toggle('active'); 
+    saveData(sessId, exIdx, sIdx); 
+    
+    if(row.classList.contains('done')) { 
+        // Obtenemos el ejercicio actual de la rutina
+        const ejercicioActual = rutinaFull.sesiones[sessId].ejercicios[exIdx];
+        // Usamos el descanso que viene del Admin, si no existe por algún motivo, usa 90
+        const tiempoDescanso = ejercicioActual.descanso || 90;
+        
+        startTimer(tiempoDescanso); 
+    } 
+}
         function startTimer(sec) { clearInterval(timerInt); let t = sec; timerInt = setInterval(() => { let m = Math.floor(t/60); let s = t%60; document.getElementById('display').innerText = `${m}:${s.toString().padStart(2,'0')}`; if(t <= 0) { clearInterval(timerInt); playBeep(); } t--; }, 1000); }
         
         
@@ -291,79 +368,103 @@ function cerrarConfirm(aceptado) {
         }
 
 async function generarReporteProfe() {
-            try {
-                const { jsPDF } = window.jspdf;
-                const doc = new jsPDF('p', 'mm', 'a4');
-                let cM = {}, cS = {};
-                
-                Object.keys(rutinaFull.sesiones).forEach(sId => {
-                    let tS = 0;
-                    rutinaFull.sesiones[sId].ejercicios.forEach((ex, exIdx) => {
-                        for(let sIdx=0; sIdx < ex.series; sIdx++) {
-                            const saved = getSavedData(sId, exIdx, sIdx);
-                            if(saved.done) {
-                                const m = (ex.grupo || "OTRO").toUpperCase();
-                                cM[m] = (cM[m] || 0) + 1;
-                                tS++;
-                            }
-                        }
-                    });
-                    cS[rutinaFull.sesiones[sId].nombre] = tS;
-                });
-
-                doc.setFillColor(0, 0, 0); doc.rect(0, 0, 210, 297, 'F');
-                doc.setTextColor(255, 255, 255); doc.setFontSize(22);
-                doc.text(`REPORTE SEMANA ${rutinaFull.semana || "-"}`, 105, 15, { align: 'center' });
-                doc.setTextColor(0, 212, 255); doc.setFontSize(14);
-                doc.text(`ALUMNO: ${rutinaFull.alumno.toUpperCase()}`, 105, 23, { align: 'center' });
-
-                if (Object.keys(cM).length > 0) {
-                    const i1 = await crearImgGrafico('chartMusculos', Object.keys(cM), Object.values(cM), 20, 'Series', "Estimulo semanal de grupos musculares");
-                    doc.setDrawColor(59, 130, 246); doc.rect(12, 35, 186, 80); 
-                    doc.addImage(i1, 'PNG', 15, 38, 180, 74);
+    try {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF('p', 'mm', 'a4');
+        let cM = {}, cS = {};
+        
+        Object.keys(rutinaFull.sesiones).forEach(sId => {
+            let tS = 0;
+            rutinaFull.sesiones[sId].ejercicios.forEach((ex, exIdx) => {
+                for(let sIdx=0; sIdx < ex.series; sIdx++) {
+                    const saved = getSavedData(sId, exIdx, sIdx);
+                    if(saved.done) {
+                        const m = (ex.grupo || "OTRO").toUpperCase();
+                        cM[m] = (cM[m] || 0) + 1;
+                        tS++;
+                    }
                 }
-                if (Object.keys(cS).length > 0) {
-                    const i2 = await crearImgGrafico('chartSesiones', Object.keys(cS), Object.values(cS), 30, 'Series', "Numero de series por entrenamiento");
-                    doc.setDrawColor(59, 130, 246); doc.rect(12, 125, 186, 80); 
-                    doc.addImage(i2, 'PNG', 15, 128, 180, 74);
-                }
+            });
+            cS[rutinaFull.sesiones[sId].nombre] = tS;
+        });
 
-                let tableBody = [];
-                Object.keys(rutinaFull.sesiones).forEach(sId => {
-                    rutinaFull.sesiones[sId].ejercicios.forEach((ex, exIdx) => {
-                        const rA = ex.reps_obj.split(',').map(x => x.trim());
-                        const pA = ex.peso_obj.split(',').map(x => x.trim());
-                        for(let sIdx=0; sIdx < ex.series; sIdx++) {
-                            const saved = getSavedData(sId, exIdx, sIdx);
-                            if(saved.done) {
-                                const objR = rA[sIdx] || rA[rA.length-1] || ex.reps_obj;
-                                const objK = pA[sIdx] || pA[pA.length-1] || ex.peso_obj;
-                                tableBody.push([ex.nombre, `Set ${sIdx+1}`, `${objR}Rep / ${objK}Kg`, `${saved.reps || '-'}Rep / ${saved.peso || '-'}Kg`, saved.rpe || '-']);
-                            }
-                        }
-                    });
-                });
+        doc.setFillColor(0, 0, 0); doc.rect(0, 0, 210, 297, 'F');
+        doc.setTextColor(255, 255, 255); doc.setFontSize(22);
+        doc.text(`REPORTE SEMANA ${rutinaFull.semana || "-"}`, 105, 15, { align: 'center' });
+        doc.setTextColor(0, 212, 255); doc.setFontSize(14);
+        doc.text(`ALUMNO: ${rutinaFull.alumno.toUpperCase()}`, 105, 23, { align: 'center' });
 
-                if (tableBody.length > 0) {
-                    doc.autoTable({ startY: 215, head: [['EJERCICIO', 'SET', 'OBJETIVO (Rep/Kg)', 'REALIZADO (Rep/Kg)', 'RPE/RIR']], body: tableBody, theme: 'grid', styles: { fillColor: [20, 20, 20], textColor: 255, fontSize: 7, halign: 'center' }, headStyles: { fillColor: [59, 130, 246], fontSize: 8, halign: 'center' }, columnStyles: { 0: { halign: 'left', cellWidth: 50 } } });
-                }
-
-             // Guardamos el PDF
-                doc.save(`Reporte_${rutinaFull.alumno}_Semana${rutinaFull.semana}.pdf`);
-
-                // En lugar de alert, usamos nuestro modal estético
-                setTimeout(() => {
-                    modoModal = "FIN";
-                    document.getElementById('modal-title').innerText = "¡REPORTE GENERADO!";
-                    document.getElementById('modal-text').innerText = "Se descargó tu progreso. La app se reiniciará para que puedas cargar la nueva rutina de la semana.";
-                    document.getElementById('modal-confirm-btn').style.background = "var(--primary)";
-                    document.getElementById('modal-confirm-btn').innerText = "ENTENDIDO";
-                    document.getElementById('modal-cancel-btn').style.display = "none"; // Ocultamos el botón 'No'
-                    document.getElementById('custom-confirm').style.display = 'flex';
-                }, 1500);
-
-            } catch(e) { alert("Error al generar PDF: " + e.message); }
+        if (Object.keys(cM).length > 0) {
+            const i1 = await crearImgGrafico('chartMusculos', Object.keys(cM), Object.values(cM), 20, 'Series', "Estimulo semanal de grupos musculares");
+            doc.setDrawColor(59, 130, 246); doc.rect(12, 35, 186, 80); 
+            doc.addImage(i1, 'PNG', 15, 38, 180, 74);
         }
+        if (Object.keys(cS).length > 0) {
+            const i2 = await crearImgGrafico('chartSesiones', Object.keys(cS), Object.values(cS), 30, 'Series', "Numero de series por entrenamiento");
+            doc.setDrawColor(59, 130, 246); doc.rect(12, 125, 186, 80); 
+            doc.addImage(i2, 'PNG', 15, 128, 180, 74);
+        }
+
+        let tableBody = [];
+        Object.keys(rutinaFull.sesiones).forEach(sId => {
+            rutinaFull.sesiones[sId].ejercicios.forEach((ex, exIdx) => {
+                const rA = ex.reps_obj.split(',').map(x => x.trim());
+                const pA = ex.peso_obj.split(',').map(x => x.trim());
+                
+                // Obtenemos el feedback del alumno para este ejercicio
+                const feedback = localStorage.getItem(`feedback_${sId}_${exIdx}`) || '';
+
+                for(let sIdx=0; sIdx < ex.series; sIdx++) {
+                    const saved = getSavedData(sId, exIdx, sIdx);
+                    if(saved.done) {
+                        const objR = rA[sIdx] || rA[rA.length-1] || ex.reps_obj;
+                        const objK = pA[sIdx] || pA[pA.length-1] || ex.peso_obj;
+                        
+                        // Solo ponemos la observación en la fila del primer Set realizado para que no se repita
+                        const obsAMostrar = (sIdx === 0 || tableBody.filter(row => row[0] === ex.nombre).length === 0) ? feedback : "";
+
+                        tableBody.push([
+                            ex.nombre, 
+                            `Set ${sIdx+1}`, 
+                            `${objR}Rep / ${objK}Kg`, 
+                            `${saved.reps || '-'}Rep / ${saved.peso || '-'}Kg`, 
+                            saved.rpe || '-',
+                            obsAMostrar // Nueva columna en el cuerpo
+                        ]);
+                    }
+                }
+            });
+        });
+
+        if (tableBody.length > 0) {
+            doc.autoTable({ 
+                startY: 215, 
+                head: [['EJERCICIO', 'SET', 'OBJETIVO', 'REALIZADO', 'RPE/RIR', 'OBSERVACIONES']], // Agregado encabezado
+                body: tableBody, 
+                theme: 'grid', 
+                styles: { fillColor: [20, 20, 20], textColor: 255, fontSize: 6.5, halign: 'center' }, 
+                headStyles: { fillColor: [59, 130, 246], fontSize: 7, halign: 'center' }, 
+                columnStyles: { 
+                    0: { halign: 'left', cellWidth: 40 },
+                    5: { halign: 'left', cellWidth: 45, textColor: [234, 179, 8] } // Estilo dorado para tus notas
+                } 
+            });
+        }
+
+        doc.save(`Reporte_${rutinaFull.alumno}_Semana${rutinaFull.semana}.pdf`);
+
+        setTimeout(() => {
+            modoModal = "FIN";
+            document.getElementById('modal-title').innerText = "¡REPORTE GENERADO!";
+            document.getElementById('modal-text').innerText = "Se descargó tu progreso. La app se reiniciará para que puedas cargar la nueva rutina de la semana.";
+            document.getElementById('modal-confirm-btn').style.background = "var(--primary)";
+            document.getElementById('modal-confirm-btn').innerText = "ENTENDIDO";
+            document.getElementById('modal-cancel-btn').style.display = "none";
+            document.getElementById('custom-confirm').style.display = 'flex';
+        }, 1500);
+
+    } catch(e) { alert("Error al generar PDF: " + e.message); }
+}
 
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
@@ -385,6 +486,14 @@ async function generarReporteProfe() {
         });
 
         init();
+function toggleNotas(idx) {
+    const el = document.getElementById(`notas-${idx}`);
+    if (el.style.display === 'block') {
+        el.style.display = 'none';
+    } else {
+        el.style.display = 'block';
+    }
+}
     </script>
 </body>
 </html>
