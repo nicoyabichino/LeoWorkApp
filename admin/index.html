@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Panel Profe - Control Total</title>
     
-  <link rel="manifest" href="manifest-admin.json?v=9">
+  <link rel="manifest" href="manifest-admin.json?v=8">
     <meta name="theme-color" content="#0b0f1a">
     
     <style>
@@ -111,9 +111,13 @@
     PANEL PROFE <a><span>LEO RODRIGUEZ</span></a>
 </footer>
 
-    <div class="card">
+<div class="card">
         <label>Nombre del Alumno</label><input type="text" id="alumno-nombre" placeholder="Ej: Juan Pérez">
         <label>Semana #</label><input type="text" id="semana-nro" placeholder="Ej: 1">
+        <hr style="border: 0.5px solid #333; margin: 15px 0;">
+        <button onclick="importarRutina()" style="background: transparent; color: var(--accent); border: 1px dashed var(--accent); width: 100%; padding: 10px; border-radius: 8px; font-size: 0.8rem; cursor: pointer;">
+            🔄 MODIFICAR RUTINA EXISTENTE (PEGAR CÓDIGO)
+        </button>
     </div>
 
     <div id="rutina-container"></div>
@@ -153,64 +157,63 @@
         "DORSALES": ["Dominadas supina", "Dominadas pronacion", "Jalon al pecho supino", "Jalon al pecho prono", "Jalon al pecho agarre cerrado (triangulo)", "Remo bajo ancho", "Remo bajo cerrado", "Remo bajo unilateral", "Remo con mancuerna biilateral / unilateral", "Remo con barra codo abierto", "Remo con barra codo cerrado", "Pullover", "Remo dorian"],
         "BICEPS / TRICEPS / DELTOIDES": ["Curl biceps con barra", "Curl biceps con mancuerna", "Curl biceps sentado con mancuerna", "Curl bicepspredicador con barra", "Curl biceps predicador con mancuerna", "Curl biceps en polea", "Curl biceps bayessian", "Curl biceps martillo", "Triceps polea alta bilat / unilat", "Triceps trasnuca bilat / unilat", "Press frances", "Fondo en paralela", "Press vertical barra / mancuerna (deltoides)", "Vuelo lateral", "Vuelo frontal", "Vuelo posterior", "Peck deck inverso."]
     };
+function agregarSesion() {
+    contadorSesiones++;
+    const div = document.createElement('div');
+    div.className = 'card sesion';
+    div.id = `sesion-${contadorSesiones}`;
+    div.innerHTML = `
+        <div class="dia-label">DÍA CONFIGURADO</div>
+        <div style="display:flex; justify-content:space-between; margin-bottom:15px; align-items:center;">
+            <input type="text" placeholder="Ej: Lunes" class="nombre-sesion" style="width:80%; margin:0; font-weight:bold;">
+            <button style="background:var(--danger); border:none; color:white; padding:5px 10px; border-radius:5px;" onclick="this.parentElement.parentElement.remove()">X</button>
+        </div>
+        <div class="ejercicios-container"></div>
+        <button class="btn-add-ex" onclick="agregarEjercicio(${contadorSesiones})">+ Añadir Ejercicio</button>
+    `;
+    document.getElementById('rutina-container').appendChild(div);
+    agregarEjercicio(contadorSesiones);
+}
 
-    function agregarSesion() {
-        contadorSesiones++;
-        const div = document.createElement('div');
-        div.className = 'card sesion';
-        div.id = `sesion-${contadorSesiones}`;
-        div.innerHTML = `
-            <div class="dia-label">DÍA CONFIGURADO</div>
-            <div style="display:flex; justify-content:space-between; margin-bottom:15px; align-items:center;">
-                <input type="text" placeholder="Ej: Lunes" class="nombre-sesion" style="width:70%; margin:0; font-weight:bold;">
-                <button style="background:var(--danger); border:none; color:white; padding:5px 10px; border-radius:5px;" onclick="this.parentElement.parentElement.remove()">X</button>
-            </div>
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px;">
-                <div><label>Descanso Set (seg)</label><input type="number" class="descanso-series" value="90"></div>
-                <div><label>Descanso Ejerc. (seg)</label><input type="number" class="descanso-ejercicios" value="180"></div>
-            </div>
-            <div class="ejercicios-container"></div>
-            <button class="btn-add-ex" onclick="agregarEjercicio(${contadorSesiones})">+ Añadir Ejercicio</button>
-        `;
-        document.getElementById('rutina-container').appendChild(div);
-        agregarEjercicio(contadorSesiones);
-    }
-
-    function agregarEjercicio(sId) {
-        const container = document.querySelector(`#sesion-${sId} .ejercicios-container`);
-        const div = document.createElement('div');
-        div.className = 'ex-item';
-        
-        const gruposHtml = Object.keys(DATA_EJERCICIOS).map(g => `<option value="${g}">${g}</option>`).join('');
-        
-        div.innerHTML = `
-            <div style="display:grid; grid-template-columns: 1fr; gap: 8px;">
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-                    <div>
-                        <label>Grupo Muscular</label>
-                        <select class="ex-grupo" onchange="actualizarEjercicios(this)">
-                            ${gruposHtml}
-                        </select>
-                    </div>
-                    <div>
-                        <label>Ejercicio</label>
-                        <select class="ex-nombre"></select>
-                    </div>
-                </div>
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-                    <div><label>Sets</label><input type="number" class="ex-series" value="4"></div>
-                    <div><label>Rep (Obj)</label><input type="text" class="ex-reps" placeholder="Ej: 12,12,10"></div>
-                </div>
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-                    <div><label>Kg (Obj)</label><input type="text" class="ex-peso" placeholder="Ej: 50,55,60"></div>
-                    <div><label>Link Video</label><input type="text" class="ex-video" placeholder="YouTube Link"></div>
-                </div>
-            </div>
-            <button onclick="this.parentElement.remove()" style="background:none; color:#da3633; border:none; font-size:0.7rem; cursor:pointer; width:100%; text-align:right; margin-top:5px;">Eliminar Ejercicio</button>
-        `;
-        container.appendChild(div);
-        actualizarEjercicios(div.querySelector('.ex-grupo'));
-    }
+function agregarEjercicio(sId) {
+    const container = document.querySelector(`#sesion-${sId} .ejercicios-container`);
+    const div = document.createElement('div');
+    div.className = 'ex-item';
+    
+    const gruposHtml = Object.keys(DATA_EJERCICIOS).map(g => `<option value="${g}">${g}</option>`).join('');
+    
+    div.innerHTML = `
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom:8px;">
+            <div><label>Grupo</label><select class="ex-grupo" onchange="actualizarEjercicios(this)">${gruposHtml}</select></div>
+            <div><label>Ejercicio</label><select class="ex-nombre"></select></div>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-bottom:8px;">
+            <div><label>Sets</label><input type="number" class="ex-series" value="4"></div>
+            <div><label>Rep (Obj)</label><input type="text" class="ex-reps" placeholder="12,10"></div>
+            <div><label>Kg (Obj)</label><input type="text" class="ex-peso" placeholder="50,60"></div>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+<div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+    <div>
+        <label>Descanso entre Sets (seg)</label>
+        <input type="number" class="ex-descanso" value="90" style="border: 1px solid var(--accent);">
+    </div>
+    <div>
+        <label>Descanso al terminar Ej. (seg)</label>
+        <input type="number" class="ex-descanso-final" value="120" style="border: 1px solid var(--electric-blue);">
+    </div>
+</div>
+            <div><label>Link Video</label><input type="text" class="ex-video" placeholder="YouTube"></div>
+        </div>
+        <div style="margin-top:5px;">
+            <label style="color:var(--electric-blue)">Indicaciones / Notas</label>
+            <textarea class="ex-notas" placeholder="Ej: Pausa de 2 seg abajo..." style="width:100%; height:50px; background:#0d1117; color:white; border:1px solid #30363d; border-radius:8px; padding:8px; font-size:0.8rem;"></textarea>
+        </div>
+        <button onclick="this.parentElement.remove()" style="background:none; color:#da3633; border:none; font-size:0.7rem; cursor:pointer; width:100%; text-align:right; margin-top:5px;">Eliminar Ejercicio</button>
+    `;
+    container.appendChild(div);
+    actualizarEjercicios(div.querySelector('.ex-grupo'));
+}
 
     function actualizarEjercicios(selectGrupo) {
         const grupo = selectGrupo.value;
@@ -220,45 +223,38 @@
     }
 
 function generarLink() {
-        const nombre = document.getElementById('alumno-nombre').value;
-        const semana = document.getElementById('semana-nro').value;
-        if(!nombre) return alert("Falta nombre del alumno");
-        
-        const rutina = { alumno: nombre, semana: semana, sesiones: {} };
-        document.querySelectorAll('.sesion').forEach((s, idx) => {
-            const ejercicios = [];
-            s.querySelectorAll('.ex-item').forEach(item => {
-                ejercicios.push({
-                    nombre: item.querySelector('.ex-nombre').value,
-                    grupo: item.querySelector('.ex-grupo').value,
-                    series: parseInt(item.querySelector('.ex-series').value),
-                    reps_obj: item.querySelector('.ex-reps').value,
-                    peso_obj: item.querySelector('.ex-peso').value,
-                    video: item.querySelector('.ex-video').value
-                });
+    const nombre = document.getElementById('alumno-nombre').value;
+    const semana = document.getElementById('semana-nro').value;
+    if(!nombre) return alert("Falta nombre del alumno");
+    
+    const rutina = { alumno: nombre, semana: semana, sesiones: {} };
+    document.querySelectorAll('.sesion').forEach((s, idx) => {
+        const ejercicios = [];
+        s.querySelectorAll('.ex-item').forEach(item => {
+            ejercicios.push({
+                nombre: item.querySelector('.ex-nombre').value,
+                grupo: item.querySelector('.ex-grupo').value,
+                series: parseInt(item.querySelector('.ex-series').value),
+                reps_obj: item.querySelector('.ex-reps').value,
+                peso_obj: item.querySelector('.ex-peso').value,
+                descanso: parseInt(item.querySelector('.ex-descanso').value) || 90,
+                descanso_final: parseInt(item.querySelector('.ex-descanso-final').value) || 120, // Captura el individual
+                video: item.querySelector('.ex-video').value,
+                notas: item.querySelector('.ex-notas').value
             });
-            rutina.sesiones[idx + 1] = {
-                nombre: s.querySelector('.nombre-sesion').value || `Día ${idx+1}`,
-                descanso_s: parseInt(s.querySelector('.descanso-series').value),
-                descanso_e: parseInt(s.querySelector('.descanso-ejercicios').value),
-                ejercicios: ejercicios
-            };
         });
+        rutina.sesiones[idx + 1] = {
+            nombre: s.querySelector('.nombre-sesion').value || `Día ${idx+1}`,
+            ejercicios: ejercicios
+        };
+    });
 
-        // Generamos el base64
-        const base64 = btoa(unescape(encodeURIComponent(JSON.stringify(rutina))));
-        
-        // --- CAMBIOS VISUALES AQUÍ ---
-        document.getElementById('target-alumno').innerText = nombre.toUpperCase();
-        document.getElementById('linkFinal').innerText = base64;
-        document.getElementById('resultado').style.display = "block";
-        
-        // Scroll suave hacia el resultado
-        window.scrollTo({
-            top: document.getElementById('resultado').offsetTop - 20,
-            behavior: 'smooth'
-        });
-    }
+    const base64 = btoa(unescape(encodeURIComponent(JSON.stringify(rutina))));
+    document.getElementById('target-alumno').innerText = nombre.toUpperCase();
+    document.getElementById('linkFinal').innerText = base64;
+    document.getElementById('resultado').style.display = "block";
+    window.scrollTo({ top: document.getElementById('resultado').offsetTop - 20, behavior: 'smooth' });
+}
 
 function copiarLink(event) { // <--- Agregamos 'event' aquí
     const text = document.getElementById("linkFinal").innerText;
@@ -290,27 +286,90 @@ if ('serviceWorker' in navigator) {
 }
 
     agregarSesion();
-function verificarAcceso(){var _0x5071=['UmlvMjAyNg==','admin-pass','value','error-msg','block','none','admin_auth','true','display','style','getItem','setItem'];const _0x4704=document['getElementById'](_0x5071[1])[_0x5071[2]];const _0x1a2b=btoa(unescape(encodeURIComponent(_0x4704)));if(_0x1a2b===_0x5071[0]){document['getElementById']('access-screen')[_0x5071[9]][_0x5071[8]]=_0x5071[5];localStorage[_0x5071[11]](_0x5071[6],_0x5071[7]);}else{document['getElementById'](_0x5071[3])[_0x5071[9]][_0x5071[8]]=_0x5071[4];document['getElementById'](_0x5071[1])[_0x5071[2]]='';}}
+function verificarAcceso() {
+    const pass = document.getElementById('admin-pass').value;
+    
+    // La clave "Rio2026" escondida en Base64
+    const CLAVE_ESCONDIDA = "UmlvMjAyNg=="; 
 
-// Al cargar la página, chequeamos el localStorage
+    // Convertimos lo que ingresó el usuario a Base64 para comparar
+    const passCifrado = btoa(unescape(encodeURIComponent(pass)));
+
+    if(passCifrado === CLAVE_ESCONDIDA) {
+        document.getElementById('access-screen').style.display = 'none';
+        sessionStorage.setItem('admin_auth', 'true');
+    } else {
+        document.getElementById('error-msg').style.display = 'block';
+        document.getElementById('admin-pass').value = '';
+    }
+}
+
+// Al cargar la página, si ya entró antes en esta sesión, ocultamos el bloqueo
 window.addEventListener('DOMContentLoaded', () => {
-    if(localStorage.getItem('admin_auth') === 'true') {
+    if(sessionStorage.getItem('admin_auth') === 'true') {
         document.getElementById('access-screen').style.display = 'none';
     }
 });
-    // Permite entrar al panel apretando la tecla "Enter"
-document.getElementById('admin-pass').addEventListener('keypress', function (e) {
-    if (e.key === 'Enter') {
-        verificarAcceso();
+function importarRutina() {
+    const codigo = prompt("Pega aquí el código Base64 de la rutina que quieres modificar:");
+    if (!codigo) return;
+
+    try {
+        const data = JSON.parse(decodeURIComponent(escape(atob(codigo.trim()))));
+        
+        // 1. Limpiar el contenedor actual
+        document.getElementById('rutina-container').innerHTML = "";
+        contadorSesiones = 0;
+
+        // 2. Cargar datos generales
+        document.getElementById('alumno-nombre').value = data.alumno || "";
+        document.getElementById('semana-nro').value = data.semana || "";
+
+        // 3. Reconstruir cada Sesión
+        Object.keys(data.sesiones).forEach(sKey => {
+            const s = data.sesiones[sKey];
+            agregarSesion(); // Esto crea la sesión y 1 ejercicio por defecto
+            
+            const sesionDiv = document.getElementById(`sesion-${contadorSesiones}`);
+            sesionDiv.querySelector('.nombre-sesion').value = s.nombre;
+            
+            // IMPORTANTE: Limpiamos el ejercicio por defecto para cargar los reales del JSON
+            sesionDiv.querySelector('.ejercicios-container').innerHTML = "";
+
+            s.ejercicios.forEach(ex => {
+                agregarEjercicio(contadorSesiones);
+                const exItems = sesionDiv.querySelectorAll('.ex-item');
+                const lastEx = exItems[exItems.length - 1];
+
+                // Cargamos los valores en los inputs del ejercicio
+                lastEx.querySelector('.ex-grupo').value = ex.grupo;
+                actualizarEjercicios(lastEx.querySelector('.ex-grupo')); // Para que cargue el select de nombres
+                
+                lastEx.querySelector('.ex-nombre').value = ex.nombre;
+                lastEx.querySelector('.ex-series').value = ex.series;
+                lastEx.querySelector('.ex-reps').value = ex.reps_obj;
+                lastEx.querySelector('.ex-peso').value = ex.peso_obj;
+                
+                // Carga de los dos descansos
+                lastEx.querySelector('.ex-descanso').value = ex.descanso || 90;
+                
+                // Usamos un selector específico para el descanso final por ejercicio
+                if(lastEx.querySelector('.ex-descanso-final')) {
+                    lastEx.querySelector('.ex-descanso-final').value = ex.descanso_final || 120;
+                }
+                
+                lastEx.querySelector('.ex-video').value = ex.video || "";
+                lastEx.querySelector('.ex-notas').value = ex.notas || "";
+            });
+        });
+        
+        alert("¡Rutina importada! Ahora podés corregir los errores y volver a generar el código.");
+        
+    } catch (e) {
+        alert("Error al importar: El código no es válido o está incompleto.");
+        console.error("Error detallado:", e);
     }
-});
+}
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
