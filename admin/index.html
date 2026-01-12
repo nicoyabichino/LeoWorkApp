@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Panel Profe - Control Total</title>
     
-  <link rel="manifest" href="manifest-admin.json?v=10">
+  <link rel="manifest" href="manifest-admin.json?v=11">
     <meta name="theme-color" content="#0b0f1a">
     
     <style>
@@ -140,7 +140,15 @@
         </div>
         <textarea id="temp-copy" style="position: absolute; left: -9999px;"></textarea>
     </div>
-
+<div id="modal-importar" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:10000; padding:20px; flex-direction:column; justify-content:center;">
+    <div class="card" style="border: 1px solid var(--primary);">
+        <label>PEGÁ TU CÓDIGO AQUÍ:</label>
+        <textarea id="input-importar" style="width:100%; height:200px; background:#0d1117; color:white; border:1px solid #30363d; border-radius:8px; padding:10px; font-family:monospace; font-size:0.7rem; margin-bottom:15px;"></textarea>
+        
+        <button onclick="procesarImportacion()" class="btn-gen">CARGAR RUTINA</button>
+        <button onclick="document.getElementById('modal-importar').style.display='none'" style="background:transparent; color:white; border:none; width:100%; margin-top:10px; font-size:0.8rem;">CANCELAR</button>
+    </div>
+</div>
     <footer class="footer-sign">
     DESARROLLADO POR <a href="https://www.linkedin.com/in/nicolas-yabichino/" target="_blank"><span>NICOYABI</span></a>
 </footer>
@@ -311,14 +319,21 @@ window.addEventListener('DOMContentLoaded', () => {
     }
 });
 function importarRutina() {
-    let codigo = prompt("Pega aquí el código de la rutina:");
+    // En lugar de un prompt, abrimos nuestra propia ventana
+    document.getElementById('modal-importar').style.display = 'flex';
+    document.getElementById('input-importar').value = ''; // Limpiamos
+    document.getElementById('input-importar').focus();
+}
+
+function procesarImportacion() {
+    let codigo = document.getElementById('input-importar').value;
     if (!codigo) return;
 
     try {
-        // 1. Limpieza extrema: quitamos espacios, saltos de línea y caracteres invisibles
+        // Limpieza de espacios
         codigo = codigo.trim().replace(/\s+/g, '');
 
-        // 2. Decodificación segura para móviles (Soporta emojis, tildes y textos largos)
+        // Decodificación
         const base64Decoded = atob(codigo);
         const bytes = new Uint8Array(base64Decoded.length);
         for (let i = 0; i < base64Decoded.length; i++) {
@@ -327,17 +342,15 @@ function importarRutina() {
         const decodedText = new TextDecoder().decode(bytes);
         const data = JSON.parse(decodedText);
         
-        // --- A partir de aquí el proceso de carga ---
+        // --- Proceso de carga ---
         document.getElementById('rutina-container').innerHTML = "";
         contadorSesiones = 0;
-
         document.getElementById('alumno-nombre').value = data.alumno || "";
         document.getElementById('semana-nro').value = data.semana || "";
 
         Object.keys(data.sesiones).forEach(sKey => {
             const s = data.sesiones[sKey];
             agregarSesion(); 
-            
             const sesionDiv = document.getElementById(`sesion-${contadorSesiones}`);
             sesionDiv.querySelector('.nombre-sesion').value = s.nombre;
             sesionDiv.querySelector('.ejercicios-container').innerHTML = "";
@@ -346,34 +359,33 @@ function importarRutina() {
                 agregarEjercicio(contadorSesiones);
                 const exItems = sesionDiv.querySelectorAll('.ex-item');
                 const lastEx = exItems[exItems.length - 1];
-
                 lastEx.querySelector('.ex-grupo').value = ex.grupo;
                 actualizarEjercicios(lastEx.querySelector('.ex-grupo')); 
-                
                 lastEx.querySelector('.ex-nombre').value = ex.nombre;
                 lastEx.querySelector('.ex-series').value = ex.series;
                 lastEx.querySelector('.ex-reps').value = ex.reps_obj;
                 lastEx.querySelector('.ex-peso').value = ex.peso_obj;
                 lastEx.querySelector('.ex-descanso').value = ex.descanso || 90;
-                
                 if(lastEx.querySelector('.ex-descanso-final')) {
                     lastEx.querySelector('.ex-descanso-final').value = ex.descanso_final || 120;
                 }
-                
                 lastEx.querySelector('.ex-video').value = ex.video || "";
                 lastEx.querySelector('.ex-notas').value = ex.notas || "";
             });
         });
-        
+
+        // Cerramos el modal y avisamos
+        document.getElementById('modal-importar').style.display = 'none';
         alert("¡Rutina importada con éxito!");
-        
+
     } catch (e) {
-        alert("ERROR DE FORMATO: El código está incompleto o se copió mal desde el celular. Intentá copiarlo nuevamente desde el botón 'Copiar'.");
-        console.error("Detalle técnico:", e);
+        alert("ERROR: El código sigue incompleto. Asegurate de copiar TODO el texto de WhatsApp.");
+        console.error(e);
     }
 }
 </script>
 </body>
 </html>
+
 
 
