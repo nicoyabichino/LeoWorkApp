@@ -188,8 +188,30 @@
     </div>
 
     <script>
-        let rutinaFull = {}; let timerInt; let deferredPrompt;
+let rutinaFull = {}; let timerInt; let deferredPrompt;
+        
+        // --- SOLUCIÓN TIMER SEGUNDO PLANO ---
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        let silentSource = null;
+
+        function startSilentMode() {
+            if (silentSource) return; 
+            // Crea un bucle de audio silencioso para mantener vivo el proceso en segundo plano
+            const buffer = audioCtx.createBuffer(1, 44100, 44100);
+            silentSource = audioCtx.createBufferSource();
+            silentSource.buffer = buffer;
+            silentSource.loop = true;
+            silentSource.connect(audioCtx.destination);
+            silentSource.start();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+        }
+
+        function stopSilentMode() {
+            if (silentSource) {
+                try { silentSource.stop(); } catch(e) {}
+                silentSource = null;
+            }
+        }
 
         function playBeep() { 
             try { 
@@ -201,17 +223,27 @@
                     gain.connect(audioCtx.destination); 
                     osc.type = 'sine'; 
                     osc.frequency.setValueAtTime(880, audioCtx.currentTime); 
-                    gain.gain.setValueAtTime(0.1, audioCtx.currentTime); 
+                    // VOLUMEN FUERTE (0.5 es bastante alto para Web Audio)
+                    gain.gain.setValueAtTime(0.5, audioCtx.currentTime); 
                     osc.start(); 
                     osc.stop(audioCtx.currentTime + 0.4); 
                     count++;
-                    if (count >= 3) clearInterval(interval);
+                    if (count >= 3) {
+                        clearInterval(interval);
+                        stopSilentMode(); // Liberar motor de audio al terminar
+                    }
                 }, 600);
             } catch(e) {} 
         }
 
         function init() { let dSaved = localStorage.getItem('routine_data_raw'); if (dSaved) procesarDatos(dSaved); }
-        function cargarManual() { let input = document.getElementById('code-input').value; if (!input) return alert("Pega el código"); procesarDatos(input.includes('data=') ? input.split('data=')[1] : input); }
+       function cargarManual() { 
+            let input = document.getElementById('code-input').value; 
+            if (!input) return alert("Pega el código"); 
+            // Desbloquea el audio en móviles con el click del usuario
+            audioCtx.resume(); 
+            procesarDatos(input.includes('data=') ? input.split('data=')[1] : input); 
+        }
         
         function procesarDatos(rawData) {
             try {
@@ -270,22 +302,22 @@ function loadSession(id) {
 
         function saveData(sessId, exIdx, sIdx) { const row = document.getElementById(`row-${exIdx}-${sIdx}`); const inputs = row.querySelectorAll('input'); const done = row.querySelector('.check-btn').classList.contains('active'); localStorage.setItem(`workout_${sessId}_${exIdx}_${sIdx}`, JSON.stringify({reps: inputs[0].value, peso: inputs[1].value, rpe: inputs[2].value, done: done})); }
         function getSavedData(sessId, exIdx, sIdx) { const saved = localStorage.getItem(`workout_${sessId}_${exIdx}_${sIdx}`); return saved ? JSON.parse(saved) : { reps: '', peso: '', rpe: '', done: false }; }
-        function markSet(sessId, exIdx, sIdx, totalSets) { 
-    const row = document.getElementById(`row-${exIdx}-${sIdx}`); 
-    const btn = row.querySelector('.check-btn'); 
-    row.classList.toggle('done'); 
-    btn.classList.toggle('active'); 
-    saveData(sessId, exIdx, sIdx); 
-    
-    if(row.classList.contains('done')) { 
-        // Obtenemos el ejercicio actual de la rutina
-        const ejercicioActual = rutinaFull.sesiones[sessId].ejercicios[exIdx];
-        // Usamos el descanso que viene del Admin, si no existe por algún motivo, usa 90
-        const tiempoDescanso = ejercicioActual.descanso || 90;
-        
-        startTimer(tiempoDescanso); 
-    } 
-}
+function markSet(sessId, exIdx, sIdx, totalSets) { 
+            const row = document.getElementById(`row-${exIdx}-${sIdx}`); 
+            const btn = row.querySelector('.check-btn'); 
+            row.classList.toggle('done'); 
+            btn.classList.toggle('active'); 
+            saveData(sessId, exIdx, sIdx); 
+            
+            if(row.classList.contains('done')) { 
+                const ejercicioActual = rutinaFull.sesiones[sessId].ejercicios[exIdx];
+                const tiempoDescanso = ejercicioActual.descanso || 90;
+                
+                // ESTO ES CLAVE: Activa el audio silencioso para que no se duerma la pantalla
+                startSilentMode(); 
+                startTimer(tiempoDescanso); 
+            } 
+        }
         function startTimer(sec) { clearInterval(timerInt); let t = sec; timerInt = setInterval(() => { let m = Math.floor(t/60); let s = t%60; document.getElementById('display').innerText = `${m}:${s.toString().padStart(2,'0')}`; if(t <= 0) { clearInterval(timerInt); playBeep(); } t--; }, 1000); }
         
         
