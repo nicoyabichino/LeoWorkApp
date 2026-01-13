@@ -97,6 +97,57 @@
     box-shadow: 0 4px 10px rgba(0,0,0,0.8);
     width: 100%;
 }
+/* Botón de indicaciones llamativo */
+.info-btn {
+    background: var(--accent);
+    color: #000;
+    border: none;
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 0.7rem;
+    font-weight: 900;
+    cursor: pointer;
+    margin-left: 10px;
+    letter-spacing: 1px;
+    animation: pulse-info 2s infinite;
+}
+
+@keyframes pulse-info {
+    0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(0, 212, 255, 0.7); }
+    70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(0, 212, 255, 0); }
+    100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(0, 212, 255, 0); }
+}
+
+.ex-notas-display {
+    display: none;
+    background: #1a1300;
+    color: #ffd700;
+    padding: 12px;
+    font-size: 0.85rem;
+    border: 1px dashed var(--accent);
+    margin: 10px;
+    border-radius: 8px;
+    line-height: 1.4;
+    text-align: left;
+}
+
+.ex-feedback-input {
+    width: calc(100% - 20px);
+    margin: 10px;
+    background: #000;
+    border: 1px solid #333;
+    color: #888;
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    outline: none;
+    transition: 0.3s;
+}
+
+.ex-feedback-input:focus {
+    border-color: var(--primary);
+    color: white;
+}
     </style>
 </head>
 <body>
@@ -196,33 +247,49 @@ function playBeepFuerte() {
             } catch (e) { alert("Código no válido"); }
         }
 
-        function loadSession(id) {
-            const s = rutinaFull.sesiones[id];
-            document.getElementById('workout-content').innerHTML = s.ejercicios.map((ex, exIdx) => {
-                const rA = ex.reps_obj.split(',').map(x => x.trim());
-                const pA = ex.peso_obj.split(',').map(x => x.trim());
-                return `<div class="exercise-card">
-                    <div class="ex-header">
-                        <div><strong>${ex.nombre}</strong><br><small style="color:var(--accent)">${ex.grupo}</small></div>
-                        ${ex.video ? `<a href="${ex.video}" target="_blank" class="yt-icon">▶ VIDEO</a>` : ''}
-                    </div>
-                    <div class="grid-header"><div>Set</div><div>Objetivo</div><div>Reps</div><div>Kg</div><div>RPE/RIR</div><div>Ok</div></div>
-                    ${Array.from({length: ex.series}).map((_, sIdx) => {
-                        const saved = getSavedData(id, exIdx, sIdx);
-                        const oR = rA[sIdx] || rA[rA.length-1] || ex.reps_obj;
-                        const oK = pA[sIdx] || pA[pA.length-1] || ex.peso_obj;
-                        return `<div class="set-row ${saved.done ? 'done' : ''}" id="row-${exIdx}-${sIdx}">
-                            <div style="text-align:center;font-weight:bold;">${sIdx+1}</div>
-                            <div class="obj-cell" data-obj-reps="${oR}" data-obj-peso="${oK}">Rep:${oR}<br>Kg:${oK}</div>
-                            <div><input type="number" oninput="saveData('${id}',${exIdx},${sIdx})" value="${saved.reps || ''}" inputmode="numeric"></div>
-                            <div><input type="number" oninput="saveData('${id}',${exIdx},${sIdx})" value="${saved.peso || ''}" inputmode="decimal"></div>
-                            <div><input type="number" oninput="saveData('${id}',${exIdx},${sIdx})" value="${saved.rpe || ''}" inputmode="numeric"></div>
-                            <div><button class="check-btn ${saved.done ? 'active' : ''}" onclick="markSet('${id}', ${exIdx}, ${sIdx}, ${ex.series})">✓</button></div>
-                        </div>`;
-                    }).join('')}
+// Reemplaza el contenido dentro de loadSession con esto:
+function loadSession(id) {
+    const s = rutinaFull.sesiones[id];
+    document.getElementById('workout-content').innerHTML = s.ejercicios.map((ex, exIdx) => {
+        const rA = ex.reps_obj.split(',').map(x => x.trim());
+        const pA = ex.peso_obj.split(',').map(x => x.trim());
+        
+        // Lógica de Indicaciones del Profe
+        const tieneNotas = ex.notas && ex.notas.trim() !== "";
+        const btnInfo = tieneNotas ? `<button class="info-btn" onclick="toggleNotas(${exIdx})">⚠️ Indicaciones</button>` : '';
+        const divNotas = tieneNotas ? `<div id="notas-${exIdx}" class="ex-notas-display">${ex.notas}</div>` : '';
+
+        // Feedback del Alumno (recuperar de LocalStorage)
+        const savedFeedback = localStorage.getItem(`feedback_${id}_${exIdx}`) || '';
+
+        return `<div class="exercise-card">
+            <div class="ex-header">
+                <div><strong>${ex.nombre}</strong><br><small style="color:var(--accent)">${ex.grupo}</small> ${btnInfo}</div>
+                ${ex.video ? `<a href="${ex.video}" target="_blank" class="yt-icon">▶ VIDEO</a>` : ''}
+            </div>
+            ${divNotas}
+            <div class="grid-header"><div>Set</div><div>Objetivo</div><div>Reps</div><div>Kg</div><div>RPE</div><div>Ok</div></div>
+            ${Array.from({length: ex.series}).map((_, sIdx) => {
+                const saved = getSavedData(id, exIdx, sIdx);
+                const oR = rA[sIdx] || rA[rA.length-1] || ex.reps_obj;
+                const oK = pA[sIdx] || pA[pA.length-1] || ex.peso_obj;
+                return `<div class="set-row ${saved.done ? 'done' : ''}" id="row-${exIdx}-${sIdx}">
+                    <div style="text-align:center;font-weight:bold;">${sIdx+1}</div>
+                    <div class="obj-cell">Rep:${oR}<br>Kg:${oK}</div>
+                    <div><input type="number" oninput="saveData('${id}',${exIdx},${sIdx})" value="${saved.reps || ''}" inputmode="numeric"></div>
+                    <div><input type="number" oninput="saveData('${id}',${exIdx},${sIdx})" value="${saved.peso || ''}" inputmode="decimal"></div>
+                    <div><input type="number" oninput="saveData('${id}',${exIdx},${sIdx})" value="${saved.rpe || ''}" inputmode="numeric"></div>
+                    <div><button class="check-btn ${saved.done ? 'active' : ''}" onclick="markSet('${id}', ${exIdx}, ${sIdx}, ${ex.series})">✓</button></div>
                 </div>`;
-            }).join('');
-        }
+            }).join('')}
+            
+            <input type="text" class="ex-feedback-input" 
+                   placeholder="Agregar observación al profe..." 
+                   value="${savedFeedback}" 
+                   oninput="localStorage.setItem('feedback_${id}_${exIdx}', this.value)">
+        </div>`;
+    }).join('');
+}
 
         function saveData(sessId, exIdx, sIdx) { const row = document.getElementById(`row-${exIdx}-${sIdx}`); const inputs = row.querySelectorAll('input'); const done = row.querySelector('.check-btn').classList.contains('active'); localStorage.setItem(`workout_${sessId}_${exIdx}_${sIdx}`, JSON.stringify({reps: inputs[0].value, peso: inputs[1].value, rpe: inputs[2].value, done: done})); }
         function getSavedData(sessId, exIdx, sIdx) { const saved = localStorage.getItem(`workout_${sessId}_${exIdx}_${sIdx}`); return saved ? JSON.parse(saved) : { reps: '', peso: '', rpe: '', done: false }; }
@@ -344,7 +411,7 @@ async function generarReporteProfe() {
         const doc = new jsPDF('p', 'mm', 'a4');
         let cM = {}, cS = {};
         
-        // --- RECOLECCIÓN DE DATOS (Se mantiene igual) ---
+        // --- RECOLECCIÓN DE DATOS ---
         Object.keys(rutinaFull.sesiones).forEach(sId => {
             let tS = 0;
             rutinaFull.sesiones[sId].ejercicios.forEach((ex, exIdx) => {
@@ -360,7 +427,7 @@ async function generarReporteProfe() {
             cS[rutinaFull.sesiones[sId].nombre] = tS;
         });
 
-        // --- DISEÑO DEL PDF (Se mantiene igual) ---
+        // --- DISEÑO DEL PDF ---
         doc.setFillColor(0, 0, 0); doc.rect(0, 0, 210, 297, 'F');
         doc.setTextColor(255, 255, 255); doc.setFontSize(22);
         doc.text(`REPORTE SEMANA ${rutinaFull.semana || "-"}`, 105, 15, { align: 'center' });
@@ -378,61 +445,76 @@ async function generarReporteProfe() {
             doc.addImage(i2, 'PNG', 15, 128, 180, 74);
         }
 
+        // --- CONSTRUCCIÓN DE LA TABLA CON OBSERVACIONES ---
         let tableBody = [];
         Object.keys(rutinaFull.sesiones).forEach(sId => {
             rutinaFull.sesiones[sId].ejercicios.forEach((ex, exIdx) => {
                 const rA = ex.reps_obj.split(',').map(x => x.trim());
                 const pA = ex.peso_obj.split(',').map(x => x.trim());
+                
+                // Recuperamos lo que el alumno escribió en el campo de texto
+                const feedbackAlumno = localStorage.getItem(`feedback_${sId}_${exIdx}`) || '';
+
                 for(let sIdx=0; sIdx < ex.series; sIdx++) {
                     const saved = getSavedData(sId, exIdx, sIdx);
                     if(saved.done) {
                         const objR = rA[sIdx] || rA[rA.length-1] || ex.reps_obj;
                         const objK = pA[sIdx] || pA[pA.length-1] || ex.peso_obj;
-                        tableBody.push([ex.nombre, `Set ${sIdx+1}`, `${objR}Rep / ${objK}Kg`, `${saved.reps || '-'}Rep / ${saved.peso || '-'}Kg`, saved.rpe || '-']);
+                        
+                        // Solo ponemos la observación en la primera fila de cada ejercicio para no saturar
+                        const mostrarObs = (sIdx === 0) ? feedbackAlumno : "";
+
+                        tableBody.push([
+                            ex.nombre, 
+                            `Set ${sIdx+1}`, 
+                            `${objR}R / ${objK}K`, 
+                            `${saved.reps || '-'}R / ${saved.peso || '-'}K`, 
+                            saved.rpe || '-',
+                            mostrarObs
+                        ]);
                     }
                 }
             });
         });
 
         if (tableBody.length > 0) {
-            doc.autoTable({ startY: 215, head: [['EJERCICIO', 'SET', 'OBJETIVO (Rep/Kg)', 'REALIZADO (Rep/Kg)', 'RPE/RIR']], body: tableBody, theme: 'grid', styles: { fillColor: [20, 20, 20], textColor: 255, fontSize: 7, halign: 'center' }, headStyles: { fillColor: [59, 130, 246], fontSize: 8, halign: 'center' }, columnStyles: { 0: { halign: 'left', cellWidth: 50 } } });
+            doc.autoTable({ 
+                startY: 215, 
+                head: [['EJERCICIO', 'SET', 'OBJETIVO', 'REALIZADO', 'RPE', 'OBSERVACIONES DEL ALUMNO']], 
+                body: tableBody, 
+                theme: 'grid', 
+                styles: { fillColor: [20, 20, 20], textColor: 255, fontSize: 6.5, halign: 'center', valign: 'middle' }, 
+                headStyles: { fillColor: [59, 130, 246], fontSize: 7, halign: 'center' }, 
+                columnStyles: { 
+                    0: { halign: 'left', cellWidth: 35 }, // Nombre Ejercicio
+                    5: { halign: 'left', cellWidth: 50, textColor: [0, 212, 255] } // Observaciones en color celeste accent
+                } 
+            });
         }
 
-        // --- NUEVA LÓGICA DE DESCARGA Y ENVÍO ---
-
-        // Generamos fecha actual para el nombre del archivo (Evita que se pisen)
+        // --- LÓGICA DE DESCARGA Y ENVÍO ---
         const hoy = new Date().toISOString().split('T')[0]; 
         const nombreArchivo = `Reporte_${rutinaFull.alumno.replace(/\s+/g, '_')}_S${rutinaFull.semana}_${hoy}.pdf`;
         
-        const numeroLeo = "5493884862686"; // <--- REEMPLAZAR POR EL REAL
-        const mensajeWA = `¡Hola Profe Leo! Acabo de terminar la Semana ${rutinaFull.semana}. Te adjunto el PDF de mi progreso (${hoy}).`;
+        const numeroLeo = "5493884862686"; 
+        const mensajeWA = `¡Hola Profe Leo! Acabo de terminar la Semana ${rutinaFull.semana}. Te adjunto el PDF de mi progreso.`;
         const urlWA = `https://api.whatsapp.com/send?phone=${numeroLeo}&text=${encodeURIComponent(mensajeWA)}`;
 
-        // Mostramos el modal de confirmación final
         modoModal = "FIN";
         document.getElementById('modal-title').innerText = "¡REPORTE LISTO!";
-        document.getElementById('modal-text').innerText = "Primero se descargará el PDF y luego se abrirá WhatsApp. Asegúrate de aceptar la descarga.";
+        document.getElementById('modal-text').innerText = "Se descargará el PDF y luego se abrirá el WhatsApp de Leo para que se lo envíes.";
         document.getElementById('modal-confirm-btn').innerText = "DESCARGAR Y ENVIAR";
         document.getElementById('modal-confirm-btn').style.background = "var(--success)";
         document.getElementById('modal-cancel-btn').style.display = "none";
         document.getElementById('custom-confirm').style.display = 'flex';
 
-        // Re-definimos la acción del botón para asegurar el orden
         document.getElementById('modal-confirm-btn').onclick = function() {
-            // 1. Ejecutamos la descarga del PDF
             doc.save(nombreArchivo);
-            
-            // 2. Cambiamos el texto del botón para que el usuario sepa qué pasa
             this.innerText = "Abriendo WhatsApp...";
-            this.style.opacity = "0.5";
             this.disabled = true;
 
-            // 3. Esperamos 2.5 segundos. Tiempo suficiente para que el usuario 
-            // interactúe con el cartel de descarga del navegador si es necesario.
             setTimeout(() => {
                 window.open(urlWA, '_blank');
-                
-                // 4. Reiniciamos la app después de abrir el chat
                 setTimeout(() => {
                     localStorage.clear();
                     location.reload();
@@ -463,9 +545,14 @@ async function generarReporteProfe() {
         });
 
         init();
+function toggleNotas(idx) {
+    const el = document.getElementById(`notas-${idx}`);
+    el.style.display = (el.style.display === 'block') ? 'none' : 'block';
+}
     </script>
 </body>
 </html>
+
 
 
 
