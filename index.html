@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>LR WorkApp</title>
     
-    <link rel="manifest" href="manifest.json?v=6">
+    <link rel="manifest" href="manifest.json?v=13">
     <meta name="theme-color" content="#000000">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -82,57 +83,18 @@
         .custom-modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:10000; justify-content:center; align-items:center; }
         .modal-content { background:#161b22; width:85%; max-width:320px; padding:25px; border-radius:20px; border:1px solid #30363d; text-align:center; }
         
-        #install-banner { display: none; position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: white; color: #000; padding: 18px 30px; border-radius: 50px; z-index: 9999; box-shadow: 0 10px 25px rgba(255,255,255,0.2); font-weight: 900; text-transform: uppercase; font-size: 0.8rem; width: 85%; text-align: center; border: none; }
-        #hidden-canvases { position: absolute; left: -9999px; top: 0; visibility: hidden; }
-/* Botón de indicaciones súper llamativo */
-.info-btn {
-    background: var(--accent); /* Azul Eléctrico */
-    color: #000; /* Texto negro para contraste */
-    border: none;
-    border-radius: 6px;
-    padding: 4px 10px;
-    font-size: 0.7rem;
-    font-weight: 900;
-    cursor: pointer;
-    margin-left: 10px;
-    letter-spacing: 1px;
-    box-shadow: 0 0 10px rgba(0, 212, 255, 0.4);
-    animation: pulse-info 2s infinite; /* Hace que el botón "brille" */
-}
-
-@keyframes pulse-info {
-    0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(0, 212, 255, 0.7); }
-    70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(0, 212, 255, 0); }
-    100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(0, 212, 255, 0); }
-}
-
-.ex-notas-display {
-    display: none;
-    background: #1a1300;
-    color: #ffd700; /* Dorado brillante para las notas */
-    padding: 12px;
-    font-size: 0.85rem;
-    border: 1px dashed var(--accent);
-    margin: 10px;
-    border-radius: 8px;
-    line-height: 1.4;
-    text-align: left;
-}
-.ex-feedback-input {
-    width: calc(100% - 20px);
-    margin: 10px;
+              #hidden-canvases { position: absolute; left: -9999px; top: 0; visibility: hidden; }
+/* Reemplaza o agrega esto en tu <style> */
+#display.timer-val {
+    position: sticky;
+    top: 0; /* Se queda pegado al header */
     background: #000;
-    border: 1px solid #333;
-    color: #888;
-    padding: 8px 12px;
-    border-radius: 8px;
-    font-size: 0.8rem;
-    outline: none;
-    transition: 0.3s;
-}
-.ex-feedback-input:focus {
-    border-color: var(--primary);
-    color: white;
+    z-index: 1000;
+    text-align: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #222;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.8);
+    width: 100%;
 }
     </style>
 </head>
@@ -148,14 +110,31 @@
     </header>
 
     <main id="app-container">
-        <div id="welcome-screen">
-            <div class="welcome-card">
-                <img src="logo.png?v=2" alt="Leo Rodriguez Entrenamiento Personal" class="logo-welcome">
-                <p style="font-size: 0.9rem; color: #888; margin-top: 10px;">COPIÁ EL CODIGO DE RUTINA QUE TE ENVIÉ</p>
-                <textarea id="code-input" placeholder="Pega el código aquí..."></textarea>
-                <button class="btn-stats" onclick="cargarManual()">EMPEZAR A ENTRENAR</button>
-            </div>
+      <div id="welcome-screen">
+    <div class="welcome-card">
+        <img src="logo.png?v=2" alt="Leo Rodriguez" class="logo-welcome">
+        
+        <div id="browser-view" style="display: none;">
+            <h2 style="color: var(--accent); margin-bottom: 15px;">📲 EXPERIENCIA MEJORADA</h2>
+            <p style="font-size: 0.95rem; color: #ccc; line-height: 1.5; margin-bottom: 25px;">
+                Para una mejor experiencia y poder registrar tus entrenamientos sin interrupciones, 
+                <strong style="color: white;">instala la App en tu celular</strong>.
+            </p>
+            <button class="btn-stats" onclick="triggerInstall()" style="background: white; color: black; box-shadow: 0 0 20px rgba(255,255,255,0.2);">
+                INSTALAR APP AHORA
+            </button>
+            <p style="font-size: 0.7rem; color: #555; margin-top: 20px; text-transform: uppercase; letter-spacing: 1px;">
+                Leo Rodriguez Entrenamiento Personal
+            </p>
         </div>
+
+        <div id="app-view" style="display: none;">
+            <p style="font-size: 0.9rem; color: #888; margin-top: 10px;">COPIÁ EL CÓDIGO DE RUTINA QUE TE ENVIÉ</p>
+            <textarea id="code-input" placeholder="Pega el código aquí..."></textarea>
+            <button class="btn-stats" onclick="cargarManual()">EMPEZAR A ENTRENAR</button>
+        </div>
+    </div>
+</div>
 
         <div id="app-content" style="display:none;">
             <select id="session-picker" class="session-selector" onchange="loadSession(this.value)"></select>
@@ -180,7 +159,6 @@
     DESARROLLADO POR <a href="https://www.linkedin.com/in/nicolas-yabichino/" target="_blank"><span>NICOYABI</span></a>
 </footer>
 
-    <button id="install-banner">📲 INSTALAR EN MI CELULAR</button>
 
     <div id="hidden-canvases">
         <canvas id="chartMusculos" width="800" height="400"></canvas>
@@ -188,29 +166,60 @@
     </div>
 
     <script>
+        // Este es un "motor" de silencio que mantiene viva la App en segundo plano
+const audioSilencio = new Audio("data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA==");
+audioSilencio.loop = true;
         let rutinaFull = {}; let timerInt; let deferredPrompt;
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
-        function playBeep() { 
-            try { 
-                let count = 0;
-                const interval = setInterval(() => {
-                    const osc = audioCtx.createOscillator(); 
-                    const gain = audioCtx.createGain(); 
-                    osc.connect(gain); 
-                    gain.connect(audioCtx.destination); 
-                    osc.type = 'sine'; 
-                    osc.frequency.setValueAtTime(880, audioCtx.currentTime); 
-                    gain.gain.setValueAtTime(0.1, audioCtx.currentTime); 
-                    osc.start(); 
-                    osc.stop(audioCtx.currentTime + 0.4); 
-                    count++;
-                    if (count >= 3) clearInterval(interval);
-                }, 600);
-            } catch(e) {} 
-        }
+let endTime; // Nueva variable global necesaria
 
-        function init() { let dSaved = localStorage.getItem('routine_data_raw'); if (dSaved) procesarDatos(dSaved); }
+function playBeepFuerte() { 
+    try { 
+        let count = 0;
+        const interval = setInterval(() => {
+            const osc = audioCtx.createOscillator(); 
+            const gain = audioCtx.createGain(); 
+            osc.connect(gain); 
+            gain.connect(audioCtx.destination); 
+            osc.type = 'square'; // Sonido más agresivo para el gimnasio
+            osc.frequency.setValueAtTime(1000, audioCtx.currentTime); 
+            gain.gain.setValueAtTime(0.5, audioCtx.currentTime); // Volumen más alto
+            osc.start(); 
+            osc.stop(audioCtx.currentTime + 0.2); 
+            count++;
+            if (count >= 4) clearInterval(interval);
+        }, 300);
+    } catch(e) {} 
+}
+
+        function init() { 
+    // Detectar si está en modo App instalada
+    const isPWA = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone || document.referrer.includes('android-app://');
+    
+    const dSaved = localStorage.getItem('routine_data_raw'); 
+    
+    if (dSaved) {
+        // Si ya hay una rutina cargada, entramos directo (no importa si es navegador o app)
+        procesarDatos(dSaved); 
+    } else {
+        // Si no hay rutina, decidimos qué mostrar según el modo
+        if (isPWA) {
+            document.getElementById('app-view').style.display = 'block';
+        } else {
+            document.getElementById('browser-view').style.display = 'block';
+        }
+    }
+}
+
+// Función para el botón de instalar del medio
+function triggerInstall() {
+    if (deferredPrompt) {
+        deferredPrompt.prompt();
+    } else {
+        alert("Para instalar: \n1. Toca el botón de compartir (iOS) o los 3 puntos (Android).\n2. Elige 'Añadir a pantalla de inicio'.");
+    }
+}
         function cargarManual() { let input = document.getElementById('code-input').value; if (!input) return alert("Pega el código"); procesarDatos(input.includes('data=') ? input.split('data=')[1] : input); }
         
         function procesarDatos(rawData) {
@@ -228,65 +237,68 @@
             } catch (e) { alert("Código no válido"); }
         }
 
-function loadSession(id) {
-    const s = rutinaFull.sesiones[id];
-    document.getElementById('workout-content').innerHTML = s.ejercicios.map((ex, exIdx) => {
-        const rA = ex.reps_obj.split(',').map(x => x.trim());
-        const pA = ex.peso_obj.split(',').map(x => x.trim());
-        
-        const tieneNotas = ex.notas && ex.notas.trim() !== "";
-        const btnInfo = tieneNotas ? `<button class="info-btn" onclick="toggleNotas(${exIdx})">⚠️ Indicaciones</button>` : '';
-        const divNotas = tieneNotas ? `<div id="notas-${exIdx}" class="ex-notas-display">${ex.notas}</div>` : '';
-
-        // Obtenemos feedback guardado si existe
-        const savedFeedback = localStorage.getItem(`feedback_${id}_${exIdx}`) || '';
-
-        return `<div class="exercise-card">
-            <div class="ex-header">
-                <div><strong>${ex.nombre}</strong><br><small style="color:var(--accent)">${ex.grupo}</small> ${btnInfo}</div>
-                ${ex.video ? `<a href="${ex.video}" target="_blank" class="yt-icon">▶ VIDEO</a>` : ''}
-            </div>
-            ${divNotas}
-            <div class="grid-header"><div>Set</div><div>Objetivo</div><div>Reps</div><div>Kg</div><div>RPE</div><div>Ok</div></div>
-            ${Array.from({length: ex.series}).map((_, sIdx) => {
-                const saved = getSavedData(id, exIdx, sIdx);
-                const oR = rA[sIdx] || rA[rA.length-1] || ex.reps_obj;
-                const oK = pA[sIdx] || pA[pA.length-1] || ex.peso_obj;
-                return `<div class="set-row ${saved.done ? 'done' : ''}" id="row-${exIdx}-${sIdx}">
-                    <div style="text-align:center;font-weight:bold;">${sIdx+1}</div>
-                    <div class="obj-cell">Rep:${oR}<br>Kg:${oK}</div>
-                    <div><input type="number" oninput="saveData('${id}',${exIdx},${sIdx})" value="${saved.reps || ''}" inputmode="numeric"></div>
-                    <div><input type="number" oninput="saveData('${id}',${exIdx},${sIdx})" value="${saved.peso || ''}" inputmode="decimal"></div>
-                    <div><input type="number" oninput="saveData('${id}',${exIdx},${sIdx})" value="${saved.rpe || ''}" inputmode="numeric"></div>
-                    <div><button class="check-btn ${saved.done ? 'active' : ''}" onclick="markSet('${id}', ${exIdx}, ${sIdx}, ${ex.series})">✓</button></div>
+        function loadSession(id) {
+            const s = rutinaFull.sesiones[id];
+            document.getElementById('workout-content').innerHTML = s.ejercicios.map((ex, exIdx) => {
+                const rA = ex.reps_obj.split(',').map(x => x.trim());
+                const pA = ex.peso_obj.split(',').map(x => x.trim());
+                return `<div class="exercise-card">
+                    <div class="ex-header">
+                        <div><strong>${ex.nombre}</strong><br><small style="color:var(--accent)">${ex.grupo}</small></div>
+                        ${ex.video ? `<a href="${ex.video}" target="_blank" class="yt-icon">▶ VIDEO</a>` : ''}
+                    </div>
+                    <div class="grid-header"><div>Set</div><div>Objetivo</div><div>Reps</div><div>Kg</div><div>RPE/RIR</div><div>Ok</div></div>
+                    ${Array.from({length: ex.series}).map((_, sIdx) => {
+                        const saved = getSavedData(id, exIdx, sIdx);
+                        const oR = rA[sIdx] || rA[rA.length-1] || ex.reps_obj;
+                        const oK = pA[sIdx] || pA[pA.length-1] || ex.peso_obj;
+                        return `<div class="set-row ${saved.done ? 'done' : ''}" id="row-${exIdx}-${sIdx}">
+                            <div style="text-align:center;font-weight:bold;">${sIdx+1}</div>
+                            <div class="obj-cell" data-obj-reps="${oR}" data-obj-peso="${oK}">Rep:${oR}<br>Kg:${oK}</div>
+                            <div><input type="number" oninput="saveData('${id}',${exIdx},${sIdx})" value="${saved.reps || ''}" inputmode="numeric"></div>
+                            <div><input type="number" oninput="saveData('${id}',${exIdx},${sIdx})" value="${saved.peso || ''}" inputmode="decimal"></div>
+                            <div><input type="number" oninput="saveData('${id}',${exIdx},${sIdx})" value="${saved.rpe || ''}" inputmode="numeric"></div>
+                            <div><button class="check-btn ${saved.done ? 'active' : ''}" onclick="markSet('${id}', ${exIdx}, ${sIdx}, ${ex.series})">✓</button></div>
+                        </div>`;
+                    }).join('')}
                 </div>`;
-            }).join('')}
-            <input type="text" class="ex-feedback-input" placeholder="Observaciones (ej: dolor de muñeca...)" 
-                   value="${savedFeedback}" 
-                   oninput="localStorage.setItem('feedback_${id}_${exIdx}', this.value)">
-        </div>`;
-    }).join('');
-}
+            }).join('');
+        }
 
         function saveData(sessId, exIdx, sIdx) { const row = document.getElementById(`row-${exIdx}-${sIdx}`); const inputs = row.querySelectorAll('input'); const done = row.querySelector('.check-btn').classList.contains('active'); localStorage.setItem(`workout_${sessId}_${exIdx}_${sIdx}`, JSON.stringify({reps: inputs[0].value, peso: inputs[1].value, rpe: inputs[2].value, done: done})); }
         function getSavedData(sessId, exIdx, sIdx) { const saved = localStorage.getItem(`workout_${sessId}_${exIdx}_${sIdx}`); return saved ? JSON.parse(saved) : { reps: '', peso: '', rpe: '', done: false }; }
-        function markSet(sessId, exIdx, sIdx, totalSets) { 
-    const row = document.getElementById(`row-${exIdx}-${sIdx}`); 
-    const btn = row.querySelector('.check-btn'); 
-    row.classList.toggle('done'); 
-    btn.classList.toggle('active'); 
-    saveData(sessId, exIdx, sIdx); 
+        function markSet(sessId, exIdx, sIdx, totalSets) { const row = document.getElementById(`row-${exIdx}-${sIdx}`); const btn = row.querySelector('.check-btn'); row.classList.toggle('done'); btn.classList.toggle('active'); saveData(sessId, exIdx, sIdx); if(row.classList.contains('done')) { const isLast = (sIdx === totalSets - 1); startTimer(isLast ? rutinaFull.sesiones[sessId].descanso_e : rutinaFull.sesiones[sessId].descanso_s); } }
+function startTimer(sec) { 
+    clearInterval(timerInt); 
+    const display = document.getElementById('display');
     
-    if(row.classList.contains('done')) { 
-        // Obtenemos el ejercicio actual de la rutina
-        const ejercicioActual = rutinaFull.sesiones[sessId].ejercicios[exIdx];
-        // Usamos el descanso que viene del Admin, si no existe por algún motivo, usa 90
-        const tiempoDescanso = ejercicioActual.descanso || 90;
-        
-        startTimer(tiempoDescanso); 
-    } 
+    // IMPORTANTE: Play al silencio para que el sistema no congele la app al bloquear
+    audioSilencio.play().catch(e => console.log("Audio iniciado tras interacción"));
+
+    endTime = Date.now() + (sec * 1000); 
+
+    timerInt = setInterval(() => { 
+        const ahora = Date.now();
+        const faltan = Math.round((endTime - ahora) / 1000);
+
+        if(faltan <= 0) { 
+            clearInterval(timerInt); 
+            display.innerText = "00:00";
+            
+            // Suena el Beep real
+            playBeepFuerte(); 
+            
+            // Apagamos el motor de silencio para no gastar batería de más
+            audioSilencio.pause();
+            audioSilencio.currentTime = 0;
+            return;
+        } 
+
+        let m = Math.floor(faltan / 60); 
+        let s = faltan % 60; 
+        display.innerText = `${m}:${s.toString().padStart(2,'0')}`; 
+    }, 1000); 
 }
-        function startTimer(sec) { clearInterval(timerInt); let t = sec; timerInt = setInterval(() => { let m = Math.floor(t/60); let s = t%60; document.getElementById('display').innerText = `${m}:${s.toString().padStart(2,'0')}`; if(t <= 0) { clearInterval(timerInt); playBeep(); } t--; }, 1000); }
         
         
       let modoModal = ""; // Variable para saber si estamos borrando o reportando
@@ -373,6 +385,7 @@ async function generarReporteProfe() {
         const doc = new jsPDF('p', 'mm', 'a4');
         let cM = {}, cS = {};
         
+        // --- RECOLECCIÓN DE DATOS (Se mantiene igual) ---
         Object.keys(rutinaFull.sesiones).forEach(sId => {
             let tS = 0;
             rutinaFull.sesiones[sId].ejercicios.forEach((ex, exIdx) => {
@@ -388,6 +401,7 @@ async function generarReporteProfe() {
             cS[rutinaFull.sesiones[sId].nombre] = tS;
         });
 
+        // --- DISEÑO DEL PDF (Se mantiene igual) ---
         doc.setFillColor(0, 0, 0); doc.rect(0, 0, 210, 297, 'F');
         doc.setTextColor(255, 255, 255); doc.setFontSize(22);
         doc.text(`REPORTE SEMANA ${rutinaFull.semana || "-"}`, 105, 15, { align: 'center' });
@@ -410,71 +424,75 @@ async function generarReporteProfe() {
             rutinaFull.sesiones[sId].ejercicios.forEach((ex, exIdx) => {
                 const rA = ex.reps_obj.split(',').map(x => x.trim());
                 const pA = ex.peso_obj.split(',').map(x => x.trim());
-                
-                // Obtenemos el feedback del alumno para este ejercicio
-                const feedback = localStorage.getItem(`feedback_${sId}_${exIdx}`) || '';
-
                 for(let sIdx=0; sIdx < ex.series; sIdx++) {
                     const saved = getSavedData(sId, exIdx, sIdx);
                     if(saved.done) {
                         const objR = rA[sIdx] || rA[rA.length-1] || ex.reps_obj;
                         const objK = pA[sIdx] || pA[pA.length-1] || ex.peso_obj;
-                        
-                        // Solo ponemos la observación en la fila del primer Set realizado para que no se repita
-                        const obsAMostrar = (sIdx === 0 || tableBody.filter(row => row[0] === ex.nombre).length === 0) ? feedback : "";
-
-                        tableBody.push([
-                            ex.nombre, 
-                            `Set ${sIdx+1}`, 
-                            `${objR}Rep / ${objK}Kg`, 
-                            `${saved.reps || '-'}Rep / ${saved.peso || '-'}Kg`, 
-                            saved.rpe || '-',
-                            obsAMostrar // Nueva columna en el cuerpo
-                        ]);
+                        tableBody.push([ex.nombre, `Set ${sIdx+1}`, `${objR}Rep / ${objK}Kg`, `${saved.reps || '-'}Rep / ${saved.peso || '-'}Kg`, saved.rpe || '-']);
                     }
                 }
             });
         });
 
         if (tableBody.length > 0) {
-            doc.autoTable({ 
-                startY: 215, 
-                head: [['EJERCICIO', 'SET', 'OBJETIVO', 'REALIZADO', 'RPE', 'OBSERVACIONES']], // Agregado encabezado
-                body: tableBody, 
-                theme: 'grid', 
-                styles: { fillColor: [20, 20, 20], textColor: 255, fontSize: 6.5, halign: 'center' }, 
-                headStyles: { fillColor: [59, 130, 246], fontSize: 7, halign: 'center' }, 
-                columnStyles: { 
-                    0: { halign: 'left', cellWidth: 40 },
-                    5: { halign: 'left', cellWidth: 45, textColor: [234, 179, 8] } // Estilo dorado para tus notas
-                } 
-            });
+            doc.autoTable({ startY: 215, head: [['EJERCICIO', 'SET', 'OBJETIVO (Rep/Kg)', 'REALIZADO (Rep/Kg)', 'RPE/RIR']], body: tableBody, theme: 'grid', styles: { fillColor: [20, 20, 20], textColor: 255, fontSize: 7, halign: 'center' }, headStyles: { fillColor: [59, 130, 246], fontSize: 8, halign: 'center' }, columnStyles: { 0: { halign: 'left', cellWidth: 50 } } });
         }
 
-        doc.save(`Reporte_${rutinaFull.alumno}_Semana${rutinaFull.semana}.pdf`);
+        // --- NUEVA LÓGICA DE DESCARGA Y ENVÍO ---
 
-        setTimeout(() => {
-            modoModal = "FIN";
-            document.getElementById('modal-title').innerText = "¡REPORTE GENERADO!";
-            document.getElementById('modal-text').innerText = "Se descargó tu progreso. La app se reiniciará para que puedas cargar la nueva rutina de la semana.";
-            document.getElementById('modal-confirm-btn').style.background = "var(--primary)";
-            document.getElementById('modal-confirm-btn').innerText = "ENTENDIDO";
-            document.getElementById('modal-cancel-btn').style.display = "none";
-            document.getElementById('custom-confirm').style.display = 'flex';
-        }, 1500);
+        // Generamos fecha actual para el nombre del archivo (Evita que se pisen)
+        const hoy = new Date().toISOString().split('T')[0]; 
+        const nombreArchivo = `Reporte_${rutinaFull.alumno.replace(/\s+/g, '_')}_S${rutinaFull.semana}_${hoy}.pdf`;
+        
+        const numeroLeo = "5493884862686"; // <--- REEMPLAZAR POR EL REAL
+        const mensajeWA = `¡Hola Profe Leo! Acabo de terminar la Semana ${rutinaFull.semana}. Te adjunto el PDF de mi progreso (${hoy}).`;
+        const urlWA = `https://api.whatsapp.com/send?phone=${numeroLeo}&text=${encodeURIComponent(mensajeWA)}`;
 
-    } catch(e) { alert("Error al generar PDF: " + e.message); }
+        // Mostramos el modal de confirmación final
+        modoModal = "FIN";
+        document.getElementById('modal-title').innerText = "¡REPORTE LISTO!";
+        document.getElementById('modal-text').innerText = "Primero se descargará el PDF y luego se abrirá WhatsApp. Asegúrate de aceptar la descarga.";
+        document.getElementById('modal-confirm-btn').innerText = "DESCARGAR Y ENVIAR";
+        document.getElementById('modal-confirm-btn').style.background = "var(--success)";
+        document.getElementById('modal-cancel-btn').style.display = "none";
+        document.getElementById('custom-confirm').style.display = 'flex';
+
+        // Re-definimos la acción del botón para asegurar el orden
+        document.getElementById('modal-confirm-btn').onclick = function() {
+            // 1. Ejecutamos la descarga del PDF
+            doc.save(nombreArchivo);
+            
+            // 2. Cambiamos el texto del botón para que el usuario sepa qué pasa
+            this.innerText = "Abriendo WhatsApp...";
+            this.style.opacity = "0.5";
+            this.disabled = true;
+
+            // 3. Esperamos 2.5 segundos. Tiempo suficiente para que el usuario 
+            // interactúe con el cartel de descarga del navegador si es necesario.
+            setTimeout(() => {
+                window.open(urlWA, '_blank');
+                
+                // 4. Reiniciamos la app después de abrir el chat
+                setTimeout(() => {
+                    localStorage.clear();
+                    location.reload();
+                }, 1000);
+            }, 2500); 
+        };
+
+    } catch(e) { alert("Error al preparar reporte: " + e.message); }
 }
 
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            // Solo mostrar si es un dispositivo móvil
-            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-            if (isMobile) {
-                document.getElementById('install-banner').style.display = 'block';
-            }
-        });
+       window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    // Mostramos el banner de abajo también por si acaso
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    if (isMobile) {
+        document.getElementById('install-banner').style.display = 'block';
+    }
+});
 
         document.getElementById('install-banner').addEventListener('click', async () => {
             if (deferredPrompt) {
@@ -486,14 +504,7 @@ async function generarReporteProfe() {
         });
 
         init();
-function toggleNotas(idx) {
-    const el = document.getElementById(`notas-${idx}`);
-    if (el.style.display === 'block') {
-        el.style.display = 'none';
-    } else {
-        el.style.display = 'block';
-    }
-}
     </script>
 </body>
 </html>
+
