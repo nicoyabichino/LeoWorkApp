@@ -498,7 +498,7 @@ async function generarReporteProfe() {
         if (tableBody.length > 0) {
             doc.autoTable({ 
                 startY: 215, 
-                head: [['EJERCICIO', 'SET', 'OBJETIVO', 'REALIZADO', 'RPE', 'OBSERVACIONES']], // Agregado encabezado
+                head: [['EJERCICIO', 'SET', 'OBJETIVO', 'REALIZADO', 'RPE/RIR', 'OBSERVACIONES']], // Agregado encabezado
                 body: tableBody, 
                 theme: 'grid', 
                 styles: { fillColor: [20, 20, 20], textColor: 255, fontSize: 6.5, halign: 'center' }, 
@@ -556,4 +556,5 @@ function toggleNotas(idx) {
     </script>
 </body>
 </html>
+
 
