@@ -329,13 +329,18 @@ function markSet(sessId, exIdx, sIdx, totalSets) {
     
     if(row.classList.contains('done')) { 
         const sesionActual = rutinaFull.sesiones[sessId];
+        const ejercicioActual = sesionActual.ejercicios[exIdx];
+
+        // 1. Intentamos sacar el tiempo del ejercicio, si no existe usamos el de la sesión, 
+        // y si no, un valor por defecto (60 seg) para que NUNCA de NaN.
+        const d_serie = ejercicioActual.descanso_s || sesionActual.descanso_s || 60;
+        const d_ejercicio = ejercicioActual.descanso_e || sesionActual.descanso_e || 90;
         
-        // Verificamos si es la última serie del ejercicio
+        // 2. Verificamos si es la última serie del ejercicio
         const esUltimaSerie = (sIdx === totalSets - 1);
         
-        // Si es la última serie, usa descanso_e (entre ejercicios)
-        // Si NO es la última, usa descanso_s (entre series)
-        const tiempoDescanso = esUltimaSerie ? sesionActual.descanso_e : sesionActual.descanso_s;
+        // 3. Elegimos el tiempo (asegurándonos de que sea un número entero)
+        const tiempoDescanso = parseInt(esUltimaSerie ? d_ejercicio : d_serie);
         
         startTimer(tiempoDescanso); 
     } 
