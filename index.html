@@ -83,7 +83,8 @@
         .custom-modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:10000; justify-content:center; align-items:center; }
         .modal-content { background:#161b22; width:85%; max-width:320px; padding:25px; border-radius:20px; border:1px solid #30363d; text-align:center; }
         
-              #hidden-canvases { position: absolute; left: -9999px; top: 0; visibility: hidden; }
+        #install-banner { display: none; position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: white; color: #000; padding: 18px 30px; border-radius: 50px; z-index: 9999; box-shadow: 0 10px 25px rgba(255,255,255,0.2); font-weight: 900; text-transform: uppercase; font-size: 0.8rem; width: 85%; text-align: center; border: none; }
+        #hidden-canvases { position: absolute; left: -9999px; top: 0; visibility: hidden; }
 /* Reemplaza o agrega esto en tu <style> */
 #display.timer-val {
     position: sticky;
@@ -110,31 +111,14 @@
     </header>
 
     <main id="app-container">
-      <div id="welcome-screen">
-    <div class="welcome-card">
-        <img src="logo.png?v=2" alt="Leo Rodriguez" class="logo-welcome">
-        
-        <div id="browser-view" style="display: none;">
-            <h2 style="color: var(--accent); margin-bottom: 15px;">📲 EXPERIENCIA MEJORADA</h2>
-            <p style="font-size: 0.95rem; color: #ccc; line-height: 1.5; margin-bottom: 25px;">
-                Para una mejor experiencia y poder registrar tus entrenamientos sin interrupciones, 
-                <strong style="color: white;">instala la App en tu celular</strong>.
-            </p>
-            <button class="btn-stats" onclick="triggerInstall()" style="background: white; color: black; box-shadow: 0 0 20px rgba(255,255,255,0.2);">
-                INSTALAR APP AHORA
-            </button>
-            <p style="font-size: 0.7rem; color: #555; margin-top: 20px; text-transform: uppercase; letter-spacing: 1px;">
-                Leo Rodriguez Entrenamiento Personal
-            </p>
+        <div id="welcome-screen">
+            <div class="welcome-card">
+                <img src="logo.png?v=2" alt="Leo Rodriguez Entrenamiento Personal" class="logo-welcome">
+                <p style="font-size: 0.9rem; color: #888; margin-top: 10px;">COPIÁ EL CODIGO DE RUTINA QUE TE ENVIÉ</p>
+                <textarea id="code-input" placeholder="Pega el código aquí..."></textarea>
+                <button class="btn-stats" onclick="cargarManual()">EMPEZAR A ENTRENAR</button>
+            </div>
         </div>
-
-        <div id="app-view" style="display: none;">
-            <p style="font-size: 0.9rem; color: #888; margin-top: 10px;">COPIÁ EL CÓDIGO DE RUTINA QUE TE ENVIÉ</p>
-            <textarea id="code-input" placeholder="Pega el código aquí..."></textarea>
-            <button class="btn-stats" onclick="cargarManual()">EMPEZAR A ENTRENAR</button>
-        </div>
-    </div>
-</div>
 
         <div id="app-content" style="display:none;">
             <select id="session-picker" class="session-selector" onchange="loadSession(this.value)"></select>
@@ -159,6 +143,7 @@
     DESARROLLADO POR <a href="https://www.linkedin.com/in/nicolas-yabichino/" target="_blank"><span>NICOYABI</span></a>
 </footer>
 
+    <button id="install-banner">📲 INSTALAR EN MI CELULAR</button>
 
     <div id="hidden-canvases">
         <canvas id="chartMusculos" width="800" height="400"></canvas>
@@ -193,33 +178,7 @@ function playBeepFuerte() {
     } catch(e) {} 
 }
 
-        function init() { 
-    // Detectar si está en modo App instalada
-    const isPWA = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone || document.referrer.includes('android-app://');
-    
-    const dSaved = localStorage.getItem('routine_data_raw'); 
-    
-    if (dSaved) {
-        // Si ya hay una rutina cargada, entramos directo (no importa si es navegador o app)
-        procesarDatos(dSaved); 
-    } else {
-        // Si no hay rutina, decidimos qué mostrar según el modo
-        if (isPWA) {
-            document.getElementById('app-view').style.display = 'block';
-        } else {
-            document.getElementById('browser-view').style.display = 'block';
-        }
-    }
-}
-
-// Función para el botón de instalar del medio
-function triggerInstall() {
-    if (deferredPrompt) {
-        deferredPrompt.prompt();
-    } else {
-        alert("Para instalar: \n1. Toca el botón de compartir (iOS) o los 3 puntos (Android).\n2. Elige 'Añadir a pantalla de inicio'.");
-    }
-}
+        function init() { let dSaved = localStorage.getItem('routine_data_raw'); if (dSaved) procesarDatos(dSaved); }
         function cargarManual() { let input = document.getElementById('code-input').value; if (!input) return alert("Pega el código"); procesarDatos(input.includes('data=') ? input.split('data=')[1] : input); }
         
         function procesarDatos(rawData) {
@@ -484,57 +443,29 @@ async function generarReporteProfe() {
     } catch(e) { alert("Error al preparar reporte: " + e.message); }
 }
 
-    // Variable global para capturar el evento de instalación
-let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            // Solo mostrar si es un dispositivo móvil
+            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+            if (isMobile) {
+                document.getElementById('install-banner').style.display = 'block';
+            }
+        });
 
-// 1. Detectamos el evento de instalación
-window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault();
-    deferredPrompt = e;
-    // Si estamos en el navegador, el botón de "browser-view" ya está visible por el init()
-    console.log("Evento de instalación capturado");
-});
+        document.getElementById('install-banner').addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                deferredPrompt = null;
+                document.getElementById('install-banner').style.display = outcome === 'accepted' ? 'none' : 'block';
+            }
+        });
 
-// 2. Función para el botón central "INSTALAR APP AHORA"
-async function triggerInstall() {
-    if (deferredPrompt) {
-        deferredPrompt.prompt();
-        const { outcome } = await deferredPrompt.userChoice;
-        if (outcome === 'accepted') {
-            deferredPrompt = null;
-            // Opcional: recargar o cambiar de vista
-            location.reload();
-        }
-    } else {
-        // Instrucciones manuales si el navegador no lanza el prompt automáticamente
-        alert("Para instalar:\n\nEn Android: Toca los 3 puntos arriba a la derecha y 'Instalar aplicación'.\n\nEn iOS (iPhone): Toca el botón central de 'Compartir' y elige 'Añadir a pantalla de inicio'.");
-    }
-}
-
-// 3. Modificamos el init() para que decida qué vista mostrar
-function init() { 
-    const isPWA = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
-    const dSaved = localStorage.getItem('routine_data_raw'); 
-    
-    if (dSaved) {
-        // Si ya hay rutina guardada, entramos directo
-        procesarDatos(dSaved); 
-    } else {
-        // Si no hay rutina, mostramos una vista según el acceso
-        if (isPWA) {
-            document.getElementById('app-view').style.display = 'block';
-            document.getElementById('browser-view').style.display = 'none';
-        } else {
-            document.getElementById('browser-view').style.display = 'block';
-            document.getElementById('app-view').style.display = 'none';
-        }
-    }
-}
-
-// Asegurate de llamar al init al final
-init();
+        init();
     </script>
 </body>
 </html>
+
 
 
