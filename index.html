@@ -320,7 +320,7 @@ function startTimer(sec) {
 
         function saveData(sessId, exIdx, sIdx) { const row = document.getElementById(`row-${exIdx}-${sIdx}`); const inputs = row.querySelectorAll('input'); const done = row.querySelector('.check-btn').classList.contains('active'); localStorage.setItem(`workout_${sessId}_${exIdx}_${sIdx}`, JSON.stringify({reps: inputs[0].value, peso: inputs[1].value, rpe: inputs[2].value, done: done})); }
         function getSavedData(sessId, exIdx, sIdx) { const saved = localStorage.getItem(`workout_${sessId}_${exIdx}_${sIdx}`); return saved ? JSON.parse(saved) : { reps: '', peso: '', rpe: '', done: false }; }
-        function markSet(sessId, exIdx, sIdx, totalSets) { 
+function markSet(sessId, exIdx, sIdx, totalSets) { 
     const row = document.getElementById(`row-${exIdx}-${sIdx}`); 
     const btn = row.querySelector('.check-btn'); 
     row.classList.toggle('done'); 
@@ -328,10 +328,14 @@ function startTimer(sec) {
     saveData(sessId, exIdx, sIdx); 
     
     if(row.classList.contains('done')) { 
-        // Obtenemos el ejercicio actual de la rutina
-        const ejercicioActual = rutinaFull.sesiones[sessId].ejercicios[exIdx];
-        // Usamos el descanso que viene del Admin, si no existe por algún motivo, usa 90
-        const tiempoDescanso = ejercicioActual.descanso || 90;
+        const sesionActual = rutinaFull.sesiones[sessId];
+        
+        // Verificamos si es la última serie del ejercicio
+        const esUltimaSerie = (sIdx === totalSets - 1);
+        
+        // Si es la última serie, usa descanso_e (entre ejercicios)
+        // Si NO es la última, usa descanso_s (entre series)
+        const tiempoDescanso = esUltimaSerie ? sesionActual.descanso_e : sesionActual.descanso_s;
         
         startTimer(tiempoDescanso); 
     } 
@@ -547,3 +551,4 @@ function toggleNotas(idx) {
     </script>
 </body>
 </html>
+
