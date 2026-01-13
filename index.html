@@ -484,27 +484,57 @@ async function generarReporteProfe() {
     } catch(e) { alert("Error al preparar reporte: " + e.message); }
 }
 
-       window.addEventListener('beforeinstallprompt', (e) => {
+    // Variable global para capturar el evento de instalación
+let deferredPrompt;
+
+// 1. Detectamos el evento de instalación
+window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     deferredPrompt = e;
-    // Mostramos el banner de abajo también por si acaso
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-    if (isMobile) {
-        document.getElementById('install-banner').style.display = 'block';
-    }
+    // Si estamos en el navegador, el botón de "browser-view" ya está visible por el init()
+    console.log("Evento de instalación capturado");
 });
 
-        document.getElementById('install-banner').addEventListener('click', async () => {
-            if (deferredPrompt) {
-                deferredPrompt.prompt();
-                const { outcome } = await deferredPrompt.userChoice;
-                deferredPrompt = null;
-                document.getElementById('install-banner').style.display = outcome === 'accepted' ? 'none' : 'block';
-            }
-        });
+// 2. Función para el botón central "INSTALAR APP AHORA"
+async function triggerInstall() {
+    if (deferredPrompt) {
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === 'accepted') {
+            deferredPrompt = null;
+            // Opcional: recargar o cambiar de vista
+            location.reload();
+        }
+    } else {
+        // Instrucciones manuales si el navegador no lanza el prompt automáticamente
+        alert("Para instalar:\n\nEn Android: Toca los 3 puntos arriba a la derecha y 'Instalar aplicación'.\n\nEn iOS (iPhone): Toca el botón central de 'Compartir' y elige 'Añadir a pantalla de inicio'.");
+    }
+}
 
-        init();
+// 3. Modificamos el init() para que decida qué vista mostrar
+function init() { 
+    const isPWA = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+    const dSaved = localStorage.getItem('routine_data_raw'); 
+    
+    if (dSaved) {
+        // Si ya hay rutina guardada, entramos directo
+        procesarDatos(dSaved); 
+    } else {
+        // Si no hay rutina, mostramos una vista según el acceso
+        if (isPWA) {
+            document.getElementById('app-view').style.display = 'block';
+            document.getElementById('browser-view').style.display = 'none';
+        } else {
+            document.getElementById('browser-view').style.display = 'block';
+            document.getElementById('app-view').style.display = 'none';
+        }
+    }
+}
+
+// Asegurate de llamar al init al final
+init();
     </script>
 </body>
 </html>
+
 
