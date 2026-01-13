@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Panel Profe - Control Total</title>
     
-  <link rel="manifest" href="manifest-admin.json?v=11">
+  <link rel="manifest" href="manifest-admin.json?v=12">
     <meta name="theme-color" content="#0b0f1a">
     
     <style>
@@ -156,15 +156,15 @@
 <script>
     let contadorSesiones = 0;
 
-    const DATA_EJERCICIOS = {
-        "MOVILIDAD": ["Rotacion de columna", "Movilidad de cadera", "Movilidad de rodilla", "Rotacion de hombros", "Gato malo/bueno"],
-        "ABDOMEN / CORE": ["Plancha frontal", "Plancha lateral", "Planchas dinámicas", "Crunch", "Oblicuos", "Bicho muerto", "Bird-dog", "Abs wheel (ruedita)", "Abs sovieticas", "Leñador ascendente", "Leñador descendente", "Elevacion de piernas"],
-        "TREN INF / CUADRICEPS / GEMELOS": ["Sentadilla con barra alta", "Sentadilla con barra baja", "Sentadilla frontal", "Sentadilla en multipower", "Sentadilla hack", "Sentadilla pendular", "Sentadilla goblet", "Sentadilla bulgara (enfoque cuadriceps)", "Prensa bilateral / unilateral", "Sillon cuadriceps bilateral /unilateral", "Estocada hacia adelante", "Subidas al banco (enfoque cuadriceps)", "Gemelos en prensa", "Gemelos en maquina especifica", "Gemelos con mancuernas", "Gemelos con barra"],
-        "TREN INF / ISQUIOS / GLUTEOS / ADUCTORES": ["Peso muerto convencional", "Peso muerto rumano", "Peso muerto piernas rigidas", "Peso muerto sumo", "Peso muerto unilateral", "Camilla de isquis bilateral / unilateral", "Aductores en maquina", "Abducciones en maquina", "Patada de gluteo en maquina especifica", "Patada de gluteo en polea", "Hip-trust bilateral / unilateral", "Sentadilla bulgara (enfoque gluteo)", "Subida al banco (enfoque gluteo)", "Abducciones con banda"],
-        "PECTORAL": ["Press plano barra / mancuerna / multipower", "Press inclinado barra / mancuenra / multipower", "Press declinado con mancuerna", "Press en polea altura media", "Peck deck", "Apertura con mancuernas", "Flexiones de brazos", "Poleas cruzadas"],
-        "DORSALES": ["Dominadas supina", "Dominadas pronacion", "Jalon al pecho supino", "Jalon al pecho prono", "Jalon al pecho agarre cerrado (triangulo)", "Remo bajo ancho", "Remo bajo cerrado", "Remo bajo unilateral", "Remo con mancuerna biilateral / unilateral", "Remo con barra codo abierto", "Remo con barra codo cerrado", "Pullover", "Remo dorian"],
-        "BICEPS / TRICEPS / DELTOIDES": ["Curl biceps con barra", "Curl biceps con mancuerna", "Curl biceps sentado con mancuerna", "Curl bicepspredicador con barra", "Curl biceps predicador con mancuerna", "Curl biceps en polea", "Curl biceps bayessian", "Curl biceps martillo", "Triceps polea alta bilat / unilat", "Triceps trasnuca bilat / unilat", "Press frances", "Fondo en paralela", "Press vertical barra / mancuerna (deltoides)", "Vuelo lateral", "Vuelo frontal", "Vuelo posterior", "Peck deck inverso."]
-    };
+const DATA_EJERCICIOS = {
+    "MOVILIDAD": ["Rotacion de columna", "Movilidad de cadera", "Movilidad de rodilla", "Rotacion de hombros", "Gato malo/bueno"],
+    "ABDOMEN / CORE": ["Plancha frontal", "Plancha lateral", "Planchas dinámicas", "Crunch", "Oblicuos", "Bicho muerto", "Bird-dog", "Abs wheel (ruedita)", "Abs sovieticas", "Leñador ascendente", "Leñador descendente", "Elevacion de piernas"],
+    "TREN INF / CUADRICEPS / GEMELOS": ["Sentadilla con barra alta", "Sentadilla con barra baja", "Sentadilla frontal", "Sentadilla en multipower", "Sentadilla hack", "Sentadilla pendular", "Sentadilla goblet", "Sentadilla bulgara (enfoque cuadriceps)", "Prensa bilateral", "Prensa unilateral", "Sillon cuadriceps bilateral", "Sillon cuadriceps unilateral", "Estocada hacia adelante", "Subidas al banco (enfoque cuadriceps)", "Gemelos en prensa", "Gemelos en maquina especifica", "Gemelos con mancuernas", "Gemelos con barra"],
+    "TREN INF / ISQUIOS / GLUTEOS / ADUCTORES": ["Peso muerto convencional", "Peso muerto rumano", "Peso muerto piernas rigidas", "Peso muerto sumo", "Peso muerto unilateral", "Camilla de isquis bilateral", "Camilla de isquis unilateral", "Aductores en maquina", "Abducciones en maquina", "Patada de gluteo en maquina especifica", "Patada de gluteo en polea", "Hip-trust bilateral", "Hip-trust unilateral", "Sentadilla bulgara (enfoque gluteo)", "Subida al banco (enfoque gluteo)", "Abducciones con banda"],
+    "PECTORAL": ["Press plano barra", "Press plano mancuerna", "Press plano multipower", "Press inclinado barra", "Press inclinado mancuenra", "Press inclinado multipower", "Press declinado con mancuerna", "Press en polea altura media", "Peck deck", "Apertura con mancuernas", "Flexiones de brazos", "Poleas cruzadas"],
+    "DORSALES": ["Dominadas supina", "Dominadas pronacion", "Jalon al pecho supino", "Jalon al pecho prono", "Jalon al pecho agarre cerrado", "Remo bajo ancho", "Remo bajo cerrado", "Remo bajo unilateral", "Remo con mancuerna bilateral", "Remo con mancuerna unilateral", "Remo con barra codo abierto", "Remo con barra codo cerrado", "Pullover", "Remo dorian"],
+    "BICEPS / TRICEPS / DELTOIDES": ["Curl biceps con barra", "Curl biceps con mancuerna", "Curl biceps sentado con mancuerna", "Curl biceps predicador con barra", "Curl biceps predicador con mancuerna", "Curl biceps en polea", "Curl biceps bayessian", "Curl biceps martillo", "Triceps polea alta bilateral", "Triceps polea alta unilateral", "Triceps trasnuca bilateral", "Triceps trasnuca unilateral", "Press frances", "Fondo en paralela", "Press vertical barra", "Press vertical mancuerna", "Vuelo lateral", "Vuelo frontal", "Vuelo posterior", "Peck deck inverso."]
+};
 function agregarSesion() {
     contadorSesiones++;
     const div = document.createElement('div');
@@ -188,39 +188,68 @@ function agregarEjercicio(sId) {
     const div = document.createElement('div');
     div.className = 'ex-item';
     
+    // Selector para elegir si es normal o superserie
+    const selectorTipo = `
+        <div style="margin-bottom:10px; display:flex; gap:10px;">
+            <select class="ex-tipo" onchange="cambiarModo(this)" style="background:var(--accent); font-weight:bold; height:35px; padding:5px;">
+                <option value="normal">EJERCICIO NORMAL</option>
+                <option value="superserie">SUPERSERIE</option>
+            </select>
+        </div>
+    `;
+
     const gruposHtml = Object.keys(DATA_EJERCICIOS).map(g => `<option value="${g}">${g}</option>`).join('');
     
     div.innerHTML = `
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom:8px;">
-            <div><label>Grupo</label><select class="ex-grupo" onchange="actualizarEjercicios(this)">${gruposHtml}</select></div>
-            <div><label>Ejercicio</label><select class="ex-nombre"></select></div>
+        ${selectorTipo}
+        <div class="sub-ejercicios-container">
+            <div class="sub-ex" style="border-bottom: 1px dashed #444; margin-bottom:10px; padding-bottom:10px;">
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom:8px;">
+                    <div><label>Grupo</label><select class="ex-grupo" onchange="actualizarEjercicios(this)">${gruposHtml}</select></div>
+                    <div><label>Ejercicio</label><select class="ex-nombre"></select></div>
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px;">
+                    <div><label>Sets</label><input type="number" class="ex-series" value="4"></div>
+                    <div><label>Rep (Obj)</label><input type="text" class="ex-reps" placeholder="12,10"></div>
+                    <div><label>Kg (Obj)</label><input type="text" class="ex-peso" placeholder="50,60"></div>
+                </div>
+                <div style="margin-top:5px;"><label>Video</label><input type="text" class="ex-video" placeholder="YouTube"></div>
+            </div>
         </div>
-        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-bottom:8px;">
-            <div><label>Sets</label><input type="number" class="ex-series" value="4"></div>
-            <div><label>Rep (Obj)</label><input type="text" class="ex-reps" placeholder="12,10"></div>
-            <div><label>Kg (Obj)</label><input type="text" class="ex-peso" placeholder="50,60"></div>
+        
+        <button class="btn-add-sub" style="display:none; background:#238636; color:white; border:none; padding:5px; border-radius:4px; font-size:0.7rem; margin-bottom:10px;" onclick="agregarSubEjercicio(this)">+ Acompañar Superserie</button>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; background: #000; padding: 10px; border-radius: 8px;">
+            <div><label>Descanso Sets</label><input type="number" class="ex-descanso" value="90"></div>
+            <div><label>Descanso Final</label><input type="number" class="ex-descanso-final" value="120"></div>
         </div>
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-<div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-    <div>
-        <label>Descanso entre Sets (seg)</label>
-        <input type="number" class="ex-descanso" value="90" style="border: 1px solid var(--accent);">
-    </div>
-    <div>
-        <label>Descanso al terminar Ej. (seg)</label>
-        <input type="number" class="ex-descanso-final" value="120" style="border: 1px solid var(--electric-blue);">
-    </div>
-</div>
-            <div><label>Link Video</label><input type="text" class="ex-video" placeholder="YouTube"></div>
-        </div>
-        <div style="margin-top:5px;">
-            <label style="color:var(--electric-blue)">Indicaciones / Notas</label>
-            <textarea class="ex-notas" placeholder="Ej: Pausa de 2 seg abajo..." style="width:100%; height:50px; background:#0d1117; color:white; border:1px solid #30363d; border-radius:8px; padding:8px; font-size:0.8rem;"></textarea>
-        </div>
-        <button onclick="this.parentElement.remove()" style="background:none; color:#da3633; border:none; font-size:0.7rem; cursor:pointer; width:100%; text-align:right; margin-top:5px;">Eliminar Ejercicio</button>
+        <textarea class="ex-notas" placeholder="Indicaciones..." style="width:100%; height:40px; margin-top:5px;"></textarea>
+        <button onclick="this.parentElement.remove()" style="color:var(--danger); border:none; background:none; font-size:0.7rem; width:100%; text-align:right;">Eliminar Bloque</button>
     `;
     container.appendChild(div);
     actualizarEjercicios(div.querySelector('.ex-grupo'));
+}
+
+function cambiarModo(select) {
+    const parent = select.parentElement.parentElement;
+    const btnAddSub = parent.querySelector('.btn-add-sub');
+    if(select.value === 'superserie') {
+        btnAddSub.style.display = 'block';
+        parent.style.borderLeft = '4px solid gold';
+    } else {
+        btnAddSub.style.display = 'none';
+        parent.style.borderLeft = '3px solid var(--primary)';
+        // Opcional: limpiar los extras si vuelve a normal
+    }
+}
+
+function agregarSubEjercicio(btn) {
+    const container = btn.parentElement.querySelector('.sub-ejercicios-container');
+    const firstSub = container.querySelector('.sub-ex');
+    const nuevoSub = firstSub.cloneNode(true);
+    // Limpiar valores del clon
+    nuevoSub.querySelector('.ex-video').value = "";
+    container.appendChild(nuevoSub);
 }
 
     function actualizarEjercicios(selectGrupo) {
@@ -238,19 +267,27 @@ function generarLink() {
     const rutina = { alumno: nombre, semana: semana, sesiones: {} };
     document.querySelectorAll('.sesion').forEach((s, idx) => {
         const ejercicios = [];
-        s.querySelectorAll('.ex-item').forEach(item => {
-            ejercicios.push({
-                nombre: item.querySelector('.ex-nombre').value,
-                grupo: item.querySelector('.ex-grupo').value,
-                series: parseInt(item.querySelector('.ex-series').value),
-                reps_obj: item.querySelector('.ex-reps').value,
-                peso_obj: item.querySelector('.ex-peso').value,
-                descanso: parseInt(item.querySelector('.ex-descanso').value) || 90,
-                descanso_final: parseInt(item.querySelector('.ex-descanso-final').value) || 120, // Captura el individual
-                video: item.querySelector('.ex-video').value,
-                notas: item.querySelector('.ex-notas').value
-            });
+     // Dentro de generarLink() en el ADMIN:
+s.querySelectorAll('.ex-item').forEach(item => {
+    const subEjs = [];
+    item.querySelectorAll('.sub-ex').forEach(sub => {
+        subEjs.push({
+            nombre: sub.querySelector('.ex-nombre').value,
+            grupo: sub.querySelector('.ex-grupo').value,
+            series: parseInt(sub.querySelector('.ex-series').value),
+            reps_obj: sub.querySelector('.ex-reps').value,
+            peso_obj: sub.querySelector('.ex-peso').value,
+            video: sub.querySelector('.ex-video').value,
+            notas: item.querySelector('.ex-notas').value // Notas por bloque
         });
+    });
+
+    ejercicios.push({
+        sub_ejercicios: subEjs,
+        descanso: parseInt(item.querySelector('.ex-descanso').value) || 90,
+        descanso_final: parseInt(item.querySelector('.ex-descanso-final').value) || 120
+    });
+});
         rutina.sesiones[idx + 1] = {
             nombre: s.querySelector('.nombre-sesion').value || `Día ${idx+1}`,
             ejercicios: ejercicios
@@ -330,10 +367,7 @@ function procesarImportacion() {
     if (!codigo) return;
 
     try {
-        // Limpieza de espacios
         codigo = codigo.trim().replace(/\s+/g, '');
-
-        // Decodificación
         const base64Decoded = atob(codigo);
         const bytes = new Uint8Array(base64Decoded.length);
         for (let i = 0; i < base64Decoded.length; i++) {
@@ -342,7 +376,6 @@ function procesarImportacion() {
         const decodedText = new TextDecoder().decode(bytes);
         const data = JSON.parse(decodedText);
         
-        // --- Proceso de carga ---
         document.getElementById('rutina-container').innerHTML = "";
         contadorSesiones = 0;
         document.getElementById('alumno-nombre').value = data.alumno || "";
@@ -351,41 +384,62 @@ function procesarImportacion() {
         Object.keys(data.sesiones).forEach(sKey => {
             const s = data.sesiones[sKey];
             agregarSesion(); 
-            const sesionDiv = document.getElementById(`sesion-${contadorSesiones}`);
+            const sIdActual = contadorSesiones;
+            const sesionDiv = document.getElementById(`sesion-${sIdActual}`);
             sesionDiv.querySelector('.nombre-sesion').value = s.nombre;
             sesionDiv.querySelector('.ejercicios-container').innerHTML = "";
 
-            s.ejercicios.forEach(ex => {
-                agregarEjercicio(contadorSesiones);
+            s.ejercicios.forEach(bloque => {
+                // 1. Agregamos el bloque base
+                agregarEjercicio(sIdActual);
                 const exItems = sesionDiv.querySelectorAll('.ex-item');
-                const lastEx = exItems[exItems.length - 1];
-                lastEx.querySelector('.ex-grupo').value = ex.grupo;
-                actualizarEjercicios(lastEx.querySelector('.ex-grupo')); 
-                lastEx.querySelector('.ex-nombre').value = ex.nombre;
-                lastEx.querySelector('.ex-series').value = ex.series;
-                lastEx.querySelector('.ex-reps').value = ex.reps_obj;
-                lastEx.querySelector('.ex-peso').value = ex.peso_obj;
-                lastEx.querySelector('.ex-descanso').value = ex.descanso || 90;
-                if(lastEx.querySelector('.ex-descanso-final')) {
-                    lastEx.querySelector('.ex-descanso-final').value = ex.descanso_final || 120;
+                const lastExItem = exItems[exItems.length - 1];
+                
+                // 2. Identificamos si es estructura nueva (sub_ejercicios) o vieja
+                const listaSubs = bloque.sub_ejercicios || [bloque];
+                
+                // 3. Si tiene más de un sub_ejercicio, activamos modo superserie
+                if (listaSubs.length > 1) {
+                    const selector = lastExItem.querySelector('.ex-tipo');
+                    selector.value = 'superserie';
+                    cambiarModo(selector);
+                    // Creamos los campos necesarios para los ejercicios extra
+                    for (let i = 1; i < listaSubs.length; i++) {
+                        agregarSubEjercicio(lastExItem.querySelector('.btn-add-sub'));
+                    }
                 }
-                lastEx.querySelector('.ex-video').value = ex.video || "";
-                lastEx.querySelector('.ex-notas').value = ex.notas || "";
+
+                // 4. Llenamos los datos de cada sub-ejercicio
+                const subDivs = lastExItem.querySelectorAll('.sub-ex');
+                listaSubs.forEach((datosEx, idx) => {
+                    const div = subDivs[idx];
+                    div.querySelector('.ex-grupo').value = datosEx.grupo || "MOVILIDAD";
+                    actualizarEjercicios(div.querySelector('.ex-grupo')); 
+                    div.querySelector('.ex-nombre').value = datosEx.nombre || "";
+                    div.querySelector('.ex-series').value = datosEx.series || 4;
+                    div.querySelector('.ex-reps').value = datosEx.reps_obj || "";
+                    div.querySelector('.ex-peso').value = datosEx.peso_obj || "";
+                    div.querySelector('.ex-video').value = datosEx.video || "";
+                });
+
+                // 5. Datos generales del bloque (descansos y notas)
+                lastExItem.querySelector('.ex-descanso').value = bloque.descanso || 90;
+                if(lastExItem.querySelector('.ex-descanso-final')) {
+                    lastExItem.querySelector('.ex-descanso-final').value = bloque.descanso_final || 120;
+                }
+                // Las notas suelen estar en el primer sub-ejercicio o en el bloque
+                lastExItem.querySelector('.ex-notas').value = listaSubs[0].notas || bloque.notas || "";
             });
         });
 
-        // Cerramos el modal y avisamos
         document.getElementById('modal-importar').style.display = 'none';
         alert("¡Rutina importada con éxito!");
 
     } catch (e) {
-        alert("ERROR: El código sigue incompleto. Asegurate de copiar TODO el texto de WhatsApp.");
+        alert("ERROR: El código es inválido o incompatible.");
         console.error(e);
     }
 }
 </script>
 </body>
 </html>
-
-
-
