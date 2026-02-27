@@ -215,6 +215,10 @@ function agregarEjercicio(sId) {
                     <div><label>Kg (Obj)</label><input type="text" class="ex-peso" placeholder="50,60"></div>
                 </div>
                 <div style="margin-top:5px;"><label>Video</label><input type="text" class="ex-video" placeholder="YouTube"></div>
+                <div style="margin-top:5px;">
+    <label style="color: var(--electric-blue);">🔄 Variante (si la máquina está ocupada)</label>
+    <input type="text" class="ex-variante" placeholder="Ej: Prensa a 45° o Sentadilla Hack">
+</div>
             </div>
         </div>
         
@@ -282,6 +286,7 @@ subEjs.push({
             reps_obj: sub.querySelector('.ex-reps').value,
             peso_obj: sub.querySelector('.ex-peso').value,
             video: sub.querySelector('.ex-video').value,
+            variante: sub.querySelector('.ex-variante').value,
             notas: item.querySelector('.ex-notas').value // Notas por bloque
         });
     });
@@ -439,6 +444,7 @@ function procesarImportacion() {
                     div.querySelector('.ex-reps').value = datosEx.reps_obj || "";
                     div.querySelector('.ex-peso').value = datosEx.peso_obj || "";
                     div.querySelector('.ex-video').value = datosEx.video || "";
+                    div.querySelector('.ex-variante').value = datosEx.variante || "";
                 });
 
                 // 5. Descansos y Notas
@@ -472,5 +478,6 @@ function procesarImportacion() {
 </script>
 </body>
 </html>
+
 
 
