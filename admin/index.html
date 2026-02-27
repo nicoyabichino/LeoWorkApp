@@ -204,32 +204,39 @@ function agregarEjercicio(sId) {
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom:8px;">
                     <div><label>Grupo</label><select class="ex-grupo" onchange="actualizarEjercicios(this)">${gruposHtml}</select></div>
                     <div>
-                        <label>Ejercicio</label>
+                        <label>Ejercicio Principal</label>
                         <select class="ex-nombre" onchange="verificarOtro(this)"></select>
-                        <input type="text" class="ex-nombre-otro" placeholder="Nombre del ejercicio..." style="display:none; margin-top:5px; border-color:var(--accent);">
+                        <input type="text" class="ex-nombre-otro" placeholder="Nombre..." style="display:none; margin-top:5px;">
                     </div>
                 </div>
-                <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px;">
+                <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-bottom:8px;">
                     <div><label>Sets</label><input type="number" class="ex-series" value="4"></div>
                     <div><label>Rep (Obj)</label><input type="text" class="ex-reps" placeholder="12,10"></div>
                     <div><label>Kg (Obj)</label><input type="text" class="ex-peso" placeholder="50,60"></div>
                 </div>
-                <div style="margin-top:5px;"><label>Video</label><input type="text" class="ex-video" placeholder="YouTube"></div>
-                <div style="margin-top:5px;">
-    <label style="color: var(--electric-blue);">🔄 Variante (si la máquina está ocupada)</label>
-    <input type="text" class="ex-variante" placeholder="Ej: Prensa a 45° o Sentadilla Hack">
-</div>
+                <div style="margin-bottom:10px;"><label>Video Principal</label><input type="text" class="ex-video" placeholder="Link YouTube"></div>
+
+                <div style="background: rgba(0, 212, 255, 0.05); padding: 10px; border-radius: 8px; border: 1px solid rgba(0, 212, 255, 0.2);">
+                    <label style="color: var(--accent); font-weight: bold;">🔄 VARIANTE (OPCIONAL)</label>
+                    <input type="text" class="ex-variante" placeholder="Nombre del ejercicio alternativo..." style="margin-bottom:8px;">
+                    
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom:8px;">
+                        <div><label>Reps Alt.</label><input type="text" class="ex-variante-reps" placeholder="Ej: 15,12"></div>
+                        <div><label>Kg Alt.</label><input type="text" class="ex-variante-peso" placeholder="Ej: 30,25"></div>
+                    </div>
+                    <div><label>Video Variante</label><input type="text" class="ex-variante-video" placeholder="Link YouTube variante"></div>
+                </div>
             </div>
         </div>
         
         <button class="btn-add-sub" style="display:none; background:#238636; color:white; border:none; padding:5px; border-radius:4px; font-size:0.7rem; margin-bottom:10px;" onclick="agregarSubEjercicio(this)">+ Acompañar Superserie</button>
 
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; background: #000; padding: 10px; border-radius: 8px;">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; background: #000; padding: 10px; border-radius: 8px; margin-top:10px;">
             <div><label>Descanso Sets</label><input type="number" class="ex-descanso" value="90"></div>
             <div><label>Descanso Final</label><input type="number" class="ex-descanso-final" value="120"></div>
         </div>
-        <textarea class="ex-notas" placeholder="Indicaciones..." style="width:100%; height:40px; margin-top:5px;"></textarea>
-        <button onclick="this.parentElement.remove()" style="color:var(--danger); border:none; background:none; font-size:0.7rem; width:100%; text-align:right;">Eliminar Bloque</button>
+        <textarea class="ex-notas" placeholder="Indicaciones generales..." style="width:100%; height:40px; margin-top:5px;"></textarea>
+        <button onclick="this.parentElement.remove()" style="color:var(--danger); border:none; background:none; font-size:0.7rem; width:100%; text-align:right; cursor:pointer;">Eliminar Bloque</button>
     `;
     container.appendChild(div);
     actualizarEjercicios(div.querySelector('.ex-grupo'));
@@ -250,11 +257,44 @@ function cambiarModo(select) {
 
 function agregarSubEjercicio(btn) {
     const container = btn.parentElement.querySelector('.sub-ejercicios-container');
-    const firstSub = container.querySelector('.sub-ex');
-    const nuevoSub = firstSub.cloneNode(true);
-    // Limpiar valores del clon
-    nuevoSub.querySelector('.ex-video').value = "";
-    container.appendChild(nuevoSub);
+    const div = document.createElement('div');
+    div.className = 'sub-ex';
+    div.style = 'border-top: 1px dashed #444; margin-top:10px; padding-top:10px;';
+
+    const gruposHtml = Object.keys(DATA_EJERCICIOS).map(g => `<option value="${g}">${g}</option>`).join('');
+
+    div.innerHTML = `
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom:8px;">
+            <div><label>Grupo</label><select class="ex-grupo" onchange="actualizarEjercicios(this)">${gruposHtml}</select></div>
+            <div>
+                <label>Ejercicio Principal</label>
+                <select class="ex-nombre" onchange="verificarOtro(this)"></select>
+                <input type="text" class="ex-nombre-otro" placeholder="Nombre..." style="display:none; margin-top:5px;">
+            </div>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-bottom:8px;">
+            <div><label>Sets</label><input type="number" class="ex-series" value="4" readonly style="opacity:0.5;"></div>
+            <div><label>Rep (Obj)</label><input type="text" class="ex-reps" placeholder="12,10"></div>
+            <div><label>Kg (Obj)</label><input type="text" class="ex-peso" placeholder="50,60"></div>
+        </div>
+        <div style="margin-bottom:10px;"><label>Video Principal</label><input type="text" class="ex-video" placeholder="Link YouTube"></div>
+
+        <div style="background: rgba(0, 212, 255, 0.05); padding: 10px; border-radius: 8px; border: 1px solid rgba(0, 212, 255, 0.2);">
+            <label style="color: var(--accent); font-weight: bold;">🔄 VARIANTE (OPCIONAL)</label>
+            <input type="text" class="ex-variante" placeholder="Nombre del alternativo..." style="margin-bottom:8px;">
+            
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom:8px;">
+                <div><label>Reps Alt.</label><input type="text" class="ex-variante-reps" placeholder="Ej: 15,12"></div>
+                <div><label>Kg Alt.</label><input type="text" class="ex-variante-peso" placeholder="Ej: 30,25"></div>
+            </div>
+            <div><label>Video Variante</label><input type="text" class="ex-variante-video" placeholder="Link YouTube variante"></div>
+        </div>
+
+        <button onclick="this.parentElement.remove()" style="color:var(--danger); border:none; background:none; font-size:0.7rem; width:100%; text-align:right; margin-top:5px; cursor:pointer;">- Quitar de Superserie</button>
+    `;
+
+    container.appendChild(div);
+    actualizarEjercicios(div.querySelector('.ex-grupo'));
 }
 
     function actualizarEjercicios(selectGrupo) {
@@ -279,16 +319,22 @@ s.querySelectorAll('.ex-item').forEach(item => {
 const selectNombre = sub.querySelector('.ex-nombre').value;
 const inputOtro = sub.querySelector('.ex-nombre-otro').value;
 
+// Dentro del bucle de ejercicios en generarLink():
 subEjs.push({
-    nombre: selectNombre === "OTRO" ? inputOtro : selectNombre, // Si es OTRO, usa el input
+    nombre: selectNombre === "OTRO" ? inputOtro : selectNombre,
     grupo: sub.querySelector('.ex-grupo').value,
-            series: parseInt(sub.querySelector('.ex-series').value),
-            reps_obj: sub.querySelector('.ex-reps').value,
-            peso_obj: sub.querySelector('.ex-peso').value,
-            video: sub.querySelector('.ex-video').value,
-            variante: sub.querySelector('.ex-variante').value,
-            notas: item.querySelector('.ex-notas').value // Notas por bloque
-        });
+    series: parseInt(sub.querySelector('.ex-series').value),
+    reps_obj: sub.querySelector('.ex-reps').value,
+    peso_obj: sub.querySelector('.ex-peso').value,
+    video: sub.querySelector('.ex-video').value,
+    // --- NUEVOS CAMPOS ---
+    variante: sub.querySelector('.ex-variante').value,
+    variante_reps: sub.querySelector('.ex-variante-reps').value,
+    variante_peso: sub.querySelector('.ex-variante-peso').value,
+    variante_video: sub.querySelector('.ex-variante-video').value,
+    // ---------------------
+    notas: item.querySelector('.ex-notas').value
+});
     });
 
     ejercicios.push({
@@ -445,6 +491,11 @@ function procesarImportacion() {
                     div.querySelector('.ex-peso').value = datosEx.peso_obj || "";
                     div.querySelector('.ex-video').value = datosEx.video || "";
                     div.querySelector('.ex-variante').value = datosEx.variante || "";
+                    // Dentro de procesarImportacion (el forEach de sub-ejercicios):
+div.querySelector('.ex-variante').value = datosEx.variante || "";
+div.querySelector('.ex-variante-reps').value = datosEx.variante_reps || "";
+div.querySelector('.ex-variante-peso').value = datosEx.variante_peso || "";
+div.querySelector('.ex-variante-video').value = datosEx.variante_video || "";
                 });
 
                 // 5. Descansos y Notas
@@ -478,6 +529,7 @@ function procesarImportacion() {
 </script>
 </body>
 </html>
+
 
 
 
