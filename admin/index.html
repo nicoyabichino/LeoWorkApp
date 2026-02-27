@@ -154,18 +154,17 @@
 </footer>
 
 <script>
-let contadorSesiones = 0;
+    let contadorSesiones = 0;
 
 const DATA_EJERCICIOS = {
-    "MOVILIDAD": ["Rotacion de columna", "Movilidad de cadera", "Movilidad de rodilla", "Rotacion de hombros", "Gato malo/bueno", "OTRO"],
-    "ABDOMEN / CORE": ["Plancha frontal", "Plancha lateral", "Planchas dinámicas", "Crunch", "Oblicuos", "Bicho muerto", "Bird-dog", "Abs wheel (ruedita)", "Abs sovieticas", "Leñador ascendente", "Leñador descendente", "Elevacion de piernas", "OTRO"],
-    "TREN INF / CUADRICEPS / GEMELOS": ["Sentadilla con barra alta", "Sentadilla con barra baja", "Sentadilla frontal", "Sentadilla en multipower", "Sentadilla hack", "Sentadilla pendular", "Sentadilla goblet", "Sentadilla bulgara (enfoque cuadriceps)", "Prensa bilateral", "Prensa unilateral", "Sillon cuadriceps bilateral", "Sillon cuadriceps unilateral", "Estocada hacia adelante", "Subidas al banco (enfoque cuadriceps)", "Gemelos en prensa", "Gemelos en maquina especifica", "Gemelos con mancuernas", "Gemelos con barra", "OTRO"],
-    "TREN INF / ISQUIOS / GLUTEOS / ADUCTORES": ["Peso muerto convencional", "Peso muerto rumano", "Peso muerto piernas rigidas", "Peso muerto sumo", "Peso muerto unilateral", "Camilla de isquis bilateral", "Camilla de isquis unilateral", "Aductores en maquina", "Abducciones en maquina", "Patada de gluteo en maquina especifica", "Patada de gluteo en polea", "Hip-trust bilateral", "Hip-trust unilateral", "Sentadilla bulgara (enfoque gluteo)", "Subida al banco (enfoque gluteo)", "Abducciones con banda", "OTRO"],
-    "PECTORAL": ["Press plano barra", "Press plano mancuerna", "Press plano multipower", "Press inclinado barra", "Press inclinado mancuenra", "Press inclinado multipower", "Press declinado con mancuerna", "Press en polea altura media", "Peck deck", "Apertura con mancuernas", "Flexiones de brazos", "Poleas cruzadas", "OTRO"],
-    "DORSALES": ["Dominadas supina", "Dominadas pronacion", "Jalon al pecho supino", "Jalon al pecho prono", "Jalon al pecho agarre cerrado", "Remo bajo ancho", "Remo bajo cerrado", "Remo bajo unilateral", "Remo con mancuerna bilateral", "Remo con mancuerna unilateral", "Remo con barra codo abierto", "Remo con barra codo cerrado", "Pullover", "Remo dorian", "OTRO"],
-    "BICEPS / TRICEPS / DELTOIDES": ["Curl biceps con barra", "Curl biceps con mancuerna", "Curl biceps sentado con mancuerna", "Curl biceps predicador con barra", "Curl biceps predicador con mancuerna", "Curl biceps en polea", "Curl biceps bayessian", "Curl biceps martillo", "Triceps polea alta bilateral", "Triceps polea alta unilateral", "Triceps trasnuca bilateral", "Triceps trasnuca unilateral", "Press frances", "Fondo en paralela", "Press vertical barra", "Press vertical mancuerna", "Vuelo lateral", "Vuelo frontal", "Vuelo posterior", "Peck deck inverso", "OTRO"]
+    "MOVILIDAD": ["Rotacion de columna", "Movilidad de cadera", "Movilidad de rodilla", "Rotacion de hombros", "Gato malo/bueno"],
+    "ABDOMEN / CORE": ["Plancha frontal", "Plancha lateral", "Planchas dinámicas", "Crunch", "Oblicuos", "Bicho muerto", "Bird-dog", "Abs wheel (ruedita)", "Abs sovieticas", "Leñador ascendente", "Leñador descendente", "Elevacion de piernas"],
+    "TREN INF / CUADRICEPS / GEMELOS": ["Sentadilla con barra alta", "Sentadilla con barra baja", "Sentadilla frontal", "Sentadilla en multipower", "Sentadilla hack", "Sentadilla pendular", "Sentadilla goblet", "Sentadilla bulgara (enfoque cuadriceps)", "Prensa bilateral", "Prensa unilateral", "Sillon cuadriceps bilateral", "Sillon cuadriceps unilateral", "Estocada hacia adelante", "Subidas al banco (enfoque cuadriceps)", "Gemelos en prensa", "Gemelos en maquina especifica", "Gemelos con mancuernas", "Gemelos con barra"],
+    "TREN INF / ISQUIOS / GLUTEOS / ADUCTORES": ["Peso muerto convencional", "Peso muerto rumano", "Peso muerto piernas rigidas", "Peso muerto sumo", "Peso muerto unilateral", "Camilla de isquis bilateral", "Camilla de isquis unilateral", "Aductores en maquina", "Abducciones en maquina", "Patada de gluteo en maquina especifica", "Patada de gluteo en polea", "Hip-trust bilateral", "Hip-trust unilateral", "Sentadilla bulgara (enfoque gluteo)", "Subida al banco (enfoque gluteo)", "Abducciones con banda"],
+    "PECTORAL": ["Press plano barra", "Press plano mancuerna", "Press plano multipower", "Press inclinado barra", "Press inclinado mancuenra", "Press inclinado multipower", "Press declinado con mancuerna", "Press en polea altura media", "Peck deck", "Apertura con mancuernas", "Flexiones de brazos", "Poleas cruzadas"],
+    "DORSALES": ["Dominadas supina", "Dominadas pronacion", "Jalon al pecho supino", "Jalon al pecho prono", "Jalon al pecho agarre cerrado", "Remo bajo ancho", "Remo bajo cerrado", "Remo bajo unilateral", "Remo con mancuerna bilateral", "Remo con mancuerna unilateral", "Remo con barra codo abierto", "Remo con barra codo cerrado", "Pullover", "Remo dorian"],
+    "BICEPS / TRICEPS / DELTOIDES": ["Curl biceps con barra", "Curl biceps con mancuerna", "Curl biceps sentado con mancuerna", "Curl biceps predicador con barra", "Curl biceps predicador con mancuerna", "Curl biceps en polea", "Curl biceps bayessian", "Curl biceps martillo", "Triceps polea alta bilateral", "Triceps polea alta unilateral", "Triceps trasnuca bilateral", "Triceps trasnuca unilateral", "Press frances", "Fondo en paralela", "Press vertical barra", "Press vertical mancuerna", "Vuelo lateral", "Vuelo frontal", "Vuelo posterior", "Peck deck inverso."]
 };
-
 function agregarSesion() {
     contadorSesiones++;
     const div = document.createElement('div');
@@ -189,73 +188,50 @@ function agregarEjercicio(sId) {
     const div = document.createElement('div');
     div.className = 'ex-item';
     
+    // Selector para elegir si es normal o superserie
+    const selectorTipo = `
+        <div style="margin-bottom:10px; display:flex; gap:10px;">
+            <select class="ex-tipo" onchange="cambiarModo(this)" style="background:var(--accent); font-weight:bold; height:35px; padding:5px;">
+                <option value="normal">EJERCICIO NORMAL</option>
+                <option value="superserie">SUPERSERIE</option>
+            </select>
+        </div>
+    `;
+
     const gruposHtml = Object.keys(DATA_EJERCICIOS).map(g => `<option value="${g}">${g}</option>`).join('');
     
     div.innerHTML = `
-        <div style="margin-bottom:15px;">
-            <label>Tipo de Bloque</label>
-            <select class="ex-tipo" onchange="cambiarModo(this)" style="background: var(--accent); color: #000; font-weight: bold;">
-                <option value="normal">EJERCICIO NORMAL</option>
-                <option value="superserie">SUPERSERIE / CIRCUITO</option>
-            </select>
-        </div>
-
+        ${selectorTipo}
         <div class="sub-ejercicios-container">
-            <div class="sub-ex" style="border-bottom: 1px dashed #444; margin-bottom:15px; padding-bottom:15px;">
-                <div style="border-left: 3px solid #fff; padding-left: 10px; margin-bottom: 20px;">
-                    <label style="color: #fff; font-weight: bold; font-size: 0.8rem;">OPCIÓN A (PRINCIPAL)</label>
-                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 8px 0;">
-                        <div><label>Grupo</label><select class="ex-grupo" onchange="actualizarEjercicios(this)">${gruposHtml}</select></div>
-                        <div>
-                            <label>Ejercicio</label>
-                            <select class="ex-nombre" onchange="verificarOtro(this)"></select>
-                            <input type="text" class="ex-nombre-otro" placeholder="Nombre..." style="display:none; margin-top:5px;">
-                        </div>
-                    </div>
-                    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-bottom:8px;">
-                        <div><label>Sets</label><input type="number" class="ex-series" value="4"></div>
-                        <div><label>Reps</label><input type="text" class="ex-reps" placeholder="12,10,8"></div>
-                        <div><label>Kg</label><input type="text" class="ex-peso" placeholder="50"></div>
-                    </div>
-                    <div style="margin-bottom:10px;"><label>Video YouTube</label><input type="text" class="ex-video" placeholder="URL"></div>
+            <div class="sub-ex" style="border-bottom: 1px dashed #444; margin-bottom:10px; padding-bottom:10px;">
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom:8px;">
+                    <div><label>Grupo</label><select class="ex-grupo" onchange="actualizarEjercicios(this)">${gruposHtml}</select></div>
+                    <div><label>Ejercicio</label><select class="ex-nombre"></select></div>
                 </div>
-
-                <div style="border-left: 3px solid var(--accent); padding-left: 10px; background: rgba(0, 212, 255, 0.03); padding-top: 10px; padding-bottom: 10px; border-radius: 0 8px 8px 0;">
-                    <label style="color: var(--accent); font-weight: bold; font-size: 0.8rem;">🔄 OPCIÓN B (VARIANTE)</label>
-                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 8px 0;">
-                        <div><label>Grupo Alt.</label><select class="ex-variante-grupo" onchange="actualizarEjercicios(this, true)">${gruposHtml}</select></div>
-                        <div>
-                            <label>Ejercicio Alt.</label>
-                            <select class="ex-variante-nombre" onchange="verificarOtro(this)"></select>
-                            <input type="text" class="ex-variante-nombre-otro" placeholder="Nombre..." style="display:none; margin-top:5px;">
-                        </div>
-                    </div>
-                    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-bottom:8px;">
-                        <div><label>Sets Alt.</label><input type="number" class="ex-variante-series" value="4"></div>
-                        <div><label>Reps Alt.</label><input type="text" class="ex-variante-reps" placeholder="12,10,8"></div>
-                        <div><label>Kg Alt.</label><input type="text" class="ex-variante-peso" placeholder="40"></div>
-                    </div>
-                    <div><label>Video Variante</label><input type="text" class="ex-variante-video" placeholder="URL"></div>
+                <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px;">
+                    <div><label>Sets</label><input type="number" class="ex-series" value="4"></div>
+                    <div><label>Rep (Obj)</label><input type="text" class="ex-reps" placeholder="12,10"></div>
+                    <div><label>Kg (Obj)</label><input type="text" class="ex-peso" placeholder="50,60"></div>
                 </div>
+                <div style="margin-top:5px;"><label>Video</label><input type="text" class="ex-video" placeholder="YouTube"></div>
             </div>
         </div>
         
-        <button class="btn-add-sub" onclick="agregarSubEjercicio(this)" style="display:none; background:none; border: 1px dashed gold; color:gold; padding:5px; width:100%; margin-bottom:15px; font-size:0.7rem;">+ AGREGAR EJERCICIO A SUPERSERIE</button>
+        <button class="btn-add-sub" style="display:none; background:#238636; color:white; border:none; padding:5px; border-radius:4px; font-size:0.7rem; margin-bottom:10px;" onclick="agregarSubEjercicio(this)">+ Acompañar Superserie</button>
 
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:15px;">
-            <div><label>Descanso</label><input type="number" class="ex-descanso" value="90"></div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; background: #000; padding: 10px; border-radius: 8px;">
+            <div><label>Descanso Sets</label><input type="number" class="ex-descanso" value="90"></div>
             <div><label>Descanso Final</label><input type="number" class="ex-descanso-final" value="120"></div>
         </div>
-        <textarea class="ex-notas" placeholder="Indicaciones generales..." style="width:100%; height:45px; margin-top:10px;"></textarea>
-        <button onclick="this.parentElement.remove()" style="color:var(--danger); border:none; background:none; font-size:0.7rem; width:100%; text-align:right; cursor:pointer; margin-top:10px;">Eliminar Bloque</button>
+        <textarea class="ex-notas" placeholder="Indicaciones..." style="width:100%; height:40px; margin-top:5px;"></textarea>
+        <button onclick="this.parentElement.remove()" style="color:var(--danger); border:none; background:none; font-size:0.7rem; width:100%; text-align:right;">Eliminar Bloque</button>
     `;
     container.appendChild(div);
     actualizarEjercicios(div.querySelector('.ex-grupo'));
-    actualizarEjercicios(div.querySelector('.ex-variante-grupo'), true);
 }
 
 function cambiarModo(select) {
-    const parent = select.closest('.ex-item');
+    const parent = select.parentElement.parentElement;
     const btnAddSub = parent.querySelector('.btn-add-sub');
     if(select.value === 'superserie') {
         btnAddSub.style.display = 'block';
@@ -263,183 +239,210 @@ function cambiarModo(select) {
     } else {
         btnAddSub.style.display = 'none';
         parent.style.borderLeft = '3px solid var(--primary)';
+        // Opcional: limpiar los extras si vuelve a normal
     }
 }
 
 function agregarSubEjercicio(btn) {
     const container = btn.parentElement.querySelector('.sub-ejercicios-container');
-    const div = document.createElement('div');
-    div.className = 'sub-ex';
-    div.style = 'border-top: 2px dashed #444; margin-top:15px; padding-top:15px;';
-    
-    const gruposHtml = Object.keys(DATA_EJERCICIOS).map(g => `<option value="${g}">${g}</option>`).join('');
-
-    div.innerHTML = `
-        <div style="border-left: 3px solid #fff; padding-left: 10px; margin-bottom: 20px;">
-            <label style="color: #fff; font-weight: bold; font-size: 0.8rem;">OPCIÓN A (PRINCIPAL)</label>
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 8px 0;">
-                <div><label>Grupo</label><select class="ex-grupo" onchange="actualizarEjercicios(this)">${gruposHtml}</select></div>
-                <div>
-                    <label>Ejercicio</label>
-                    <select class="ex-nombre" onchange="verificarOtro(this)"></select>
-                    <input type="text" class="ex-nombre-otro" placeholder="Nombre..." style="display:none; margin-top:5px;">
-                </div>
-            </div>
-            <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-bottom:8px;">
-                <div><label>Sets</label><input type="number" class="ex-series" value="4"></div>
-                <div><label>Reps</label><input type="text" class="ex-reps" placeholder="12,10,8"></div>
-                <div><label>Kg</label><input type="text" class="ex-peso" placeholder="50"></div>
-            </div>
-            <div style="margin-bottom:10px;"><label>Video YouTube</label><input type="text" class="ex-video" placeholder="URL"></div>
-        </div>
-
-        <div style="border-left: 3px solid var(--accent); padding-left: 10px; background: rgba(0, 212, 255, 0.03); padding-top: 10px; padding-bottom: 10px; border-radius: 0 8px 8px 0;">
-            <label style="color: var(--accent); font-weight: bold; font-size: 0.8rem;">🔄 OPCIÓN B (VARIANTE)</label>
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 8px 0;">
-                <div><label>Grupo Alt.</label><select class="ex-variante-grupo" onchange="actualizarEjercicios(this, true)">${gruposHtml}</select></div>
-                <div>
-                    <label>Ejercicio Alt.</label>
-                    <select class="ex-variante-nombre" onchange="verificarOtro(this)"></select>
-                    <input type="text" class="ex-variante-nombre-otro" placeholder="Nombre..." style="display:none; margin-top:5px;">
-                </div>
-            </div>
-            <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-bottom:8px;">
-                <div><label>Sets Alt.</label><input type="number" class="ex-variante-series" value="4"></div>
-                <div><label>Reps Alt.</label><input type="text" class="ex-variante-reps" placeholder="12,10,8"></div>
-                <div><label>Kg Alt.</label><input type="text" class="ex-variante-peso" placeholder="40"></div>
-            </div>
-            <div><label>Video Variante</label><input type="text" class="ex-variante-video" placeholder="URL"></div>
-        </div>
-
-        <button onclick="this.parentElement.remove()" style="color:var(--danger); border:none; background:none; font-size:0.7rem; width:100%; text-align:right; margin-top:10px; cursor:pointer;">- Quitar de Superserie</button>
-    `;
-
-    container.appendChild(div);
-    actualizarEjercicios(div.querySelector('.ex-grupo'));
-    actualizarEjercicios(div.querySelector('.ex-variante-grupo'), true);
+    const firstSub = container.querySelector('.sub-ex');
+    const nuevoSub = firstSub.cloneNode(true);
+    // Limpiar valores del clon
+    nuevoSub.querySelector('.ex-video').value = "";
+    container.appendChild(nuevoSub);
 }
 
-function actualizarEjercicios(selectGrupo, esVariante = false) {
-    const grupo = selectGrupo.value;
-    const parentSub = selectGrupo.closest('.sub-ex');
-    const selectorNombre = esVariante ? '.ex-variante-nombre' : '.ex-nombre';
-    const selectNombre = parentSub.querySelector(selectorNombre);
-    
-    const ejercicios = DATA_EJERCICIOS[grupo] || [];
-    let html = ejercicios.map(e => `<option value="${e}">${e}</option>`).join('');
-    selectNombre.innerHTML = html;
-}
-
-function verificarOtro(select) {
-    const parent = select.parentElement;
-    const inputOtro = parent.querySelector('input[type="text"]');
-    if(select.value === "OTRO") {
-        inputOtro.style.display = "block";
-    } else {
-        inputOtro.style.display = "none";
+    function actualizarEjercicios(selectGrupo) {
+        const grupo = selectGrupo.value;
+        const selectEx = selectGrupo.parentElement.parentElement.parentElement.querySelector('.ex-nombre');
+        const ejercicios = DATA_EJERCICIOS[grupo] || [];
+        selectEx.innerHTML = ejercicios.map(e => `<option value="${e}">${e}</option>`).join('');
     }
-}
 
 function generarLink() {
-    const nombreAlumno = document.getElementById('alumno-nombre').value.trim();
-    if (!nombreAlumno) { alert("Ingresa el nombre del alumno."); return; }
-
-    const sesionesRaw = document.querySelectorAll('.sesion');
-    const sesionesFinal = [];
-
-    sesionesRaw.forEach((sCard) => {
-        const sNombre = sCard.querySelector('.nombre-sesion').value;
-        const ejerciciosRaw = sCard.querySelectorAll('.ex-item');
-        const listaEjercicios = [];
-
-        ejerciciosRaw.forEach((item) => {
-            const subExElements = item.querySelectorAll('.sub-ex');
-            const subEjs = [];
-            const descanso = item.querySelector('.ex-descanso').value;
-            const descanso_final = item.querySelector('.ex-descanso-final').value;
-            const notas = item.querySelector('.ex-notas').value;
-
-            subExElements.forEach((sub) => {
-                const nombrePrincipal = sub.querySelector('.ex-nombre').value === "OTRO" ? sub.querySelector('.ex-nombre-otro').value : sub.querySelector('.ex-nombre').value;
-                const nombreVariante = sub.querySelector('.ex-variante-nombre').value === "OTRO" ? sub.querySelector('.ex-variante-nombre-otro').value : sub.querySelector('.ex-variante-nombre').value;
-
-                subEjs.push({
-                    nombre: nombrePrincipal,
-                    grupo: sub.querySelector('.ex-grupo').value,
-                    series: parseInt(sub.querySelector('.ex-series').value) || 0, // <--- CAMBIO AQUÍ
-                    reps_obj: sub.querySelector('.ex-reps').value,
-                    peso_obj: sub.querySelector('.ex-peso').value,
-                    video: sub.querySelector('.ex-video').value,
-                    
-                    variante: nombreVariante,
-                    variante_series: parseInt(sub.querySelector('.ex-variante-series').value) || 0, // <--- NUEVO
-                    variante_reps: sub.querySelector('.ex-variante-reps').value,
-                    variante_peso: sub.querySelector('.ex-variante-peso').value,
-                    variante_video: sub.querySelector('.ex-variante-video').value,
-                    
-                    notas: notas,
-                    descanso: descanso,
-                    descanso_final: descanso_final
-                });
-            });
-
-            if (subEjs.length === 1) {
-                listaEjercicios.push(subEjs[0]);
-            } else {
-                listaEjercicios.push({ sub_ejercicios: subEjs, tipo: "superserie" });
-            }
-        });
-
-        sesionesFinal.push({ nombre: sNombre, ejercicios: listaEjercicios });
-    });
+    const nombre = document.getElementById('alumno-nombre').value;
+    const semana = document.getElementById('semana-nro').value;
+    if(!nombre) return alert("Falta nombre del alumno");
     
-    // ... resto del código de base64 y mostrar link ...
-    const jsonStr = JSON.stringify({ alumno: nombreAlumno, fecha: new Date().toLocaleDateString(), sesiones: sesionesFinal });
-    const base64 = btoa(unescape(encodeURIComponent(jsonStr)));
-    document.getElementById('target-alumno').innerText = nombreAlumno;
+    const rutina = { alumno: nombre, semana: semana, sesiones: {} };
+    document.querySelectorAll('.sesion').forEach((s, idx) => {
+        const ejercicios = [];
+     // Dentro de generarLink() en el ADMIN:
+s.querySelectorAll('.ex-item').forEach(item => {
+    const subEjs = [];
+    item.querySelectorAll('.sub-ex').forEach(sub => {
+        subEjs.push({
+            nombre: sub.querySelector('.ex-nombre').value,
+            grupo: sub.querySelector('.ex-grupo').value,
+            series: parseInt(sub.querySelector('.ex-series').value),
+            reps_obj: sub.querySelector('.ex-reps').value,
+            peso_obj: sub.querySelector('.ex-peso').value,
+            video: sub.querySelector('.ex-video').value,
+            notas: item.querySelector('.ex-notas').value // Notas por bloque
+        });
+    });
+
+    ejercicios.push({
+        sub_ejercicios: subEjs,
+        descanso: parseInt(item.querySelector('.ex-descanso').value) || 90,
+        descanso_final: parseInt(item.querySelector('.ex-descanso-final').value) || 120
+    });
+});
+        rutina.sesiones[idx + 1] = {
+            nombre: s.querySelector('.nombre-sesion').value || `Día ${idx+1}`,
+            ejercicios: ejercicios
+        };
+    });
+
+    const base64 = btoa(unescape(encodeURIComponent(JSON.stringify(rutina))));
+    document.getElementById('target-alumno').innerText = nombre.toUpperCase();
     document.getElementById('linkFinal').innerText = base64;
-    document.getElementById('resultado').style.display = 'block';
+    document.getElementById('resultado').style.display = "block";
+    window.scrollTo({ top: document.getElementById('resultado').offsetTop - 20, behavior: 'smooth' });
 }
 
-function copiarLink(event) {
+function copiarLink(event) { // <--- Agregamos 'event' aquí
     const text = document.getElementById("linkFinal").innerText;
     const tempInput = document.getElementById("temp-copy");
     tempInput.value = text;
     tempInput.select();
     document.execCommand("copy");
     
+    // Feedback visual en el botón
     const btn = event.currentTarget;
+    const originalText = btn.innerHTML;
     btn.style.background = "var(--success)";
     btn.innerHTML = "✅ ¡COPIADO CON ÉXITO!";
+    
     setTimeout(() => {
         btn.style.background = "var(--primary)";
-        btn.innerHTML = "📋 COPIAR CÓDIGO PARA ENVIAR";
+        btn.innerHTML = originalText;
     }, 2000);
 }
 
+    // ÚNICA ADICIÓN EN SCRIPT: REGISTRO DEL SERVICE WORKER
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        // Al estar en la misma carpeta, la ruta es directa
+        navigator.serviceWorker.register('./sw-admin.js')
+            .then(reg => console.log('Admin SW OK'))
+            .catch(err => console.log('Error:', err));
+    });
+}
+
+    agregarSesion();
 function verificarAcceso() {
     const pass = document.getElementById('admin-pass').value;
+    
+    // La clave "Rio2026" escondida en Base64
     const CLAVE_ESCONDIDA = "UmlvMjAyNg=="; 
-    if(btoa(unescape(encodeURIComponent(pass))) === CLAVE_ESCONDIDA) {
+
+    // Convertimos lo que ingresó el usuario a Base64 para comparar
+    const passCifrado = btoa(unescape(encodeURIComponent(pass)));
+
+    if(passCifrado === CLAVE_ESCONDIDA) {
         document.getElementById('access-screen').style.display = 'none';
         sessionStorage.setItem('admin_auth', 'true');
     } else {
         document.getElementById('error-msg').style.display = 'block';
+        document.getElementById('admin-pass').value = '';
     }
 }
 
+// Al cargar la página, si ya entró antes en esta sesión, ocultamos el bloqueo
 window.addEventListener('DOMContentLoaded', () => {
     if(sessionStorage.getItem('admin_auth') === 'true') {
         document.getElementById('access-screen').style.display = 'none';
     }
 });
+function importarRutina() {
+    // En lugar de un prompt, abrimos nuestra propia ventana
+    document.getElementById('modal-importar').style.display = 'flex';
+    document.getElementById('input-importar').value = ''; // Limpiamos
+    document.getElementById('input-importar').focus();
+}
 
-agregarSesion();
+function procesarImportacion() {
+    let codigo = document.getElementById('input-importar').value;
+    if (!codigo) return;
+
+    try {
+        codigo = codigo.trim().replace(/\s+/g, '');
+        const base64Decoded = atob(codigo);
+        const bytes = new Uint8Array(base64Decoded.length);
+        for (let i = 0; i < base64Decoded.length; i++) {
+            bytes[i] = base64Decoded.charCodeAt(i);
+        }
+        const decodedText = new TextDecoder().decode(bytes);
+        const data = JSON.parse(decodedText);
+        
+        document.getElementById('rutina-container').innerHTML = "";
+        contadorSesiones = 0;
+        document.getElementById('alumno-nombre').value = data.alumno || "";
+        document.getElementById('semana-nro').value = data.semana || "";
+
+        Object.keys(data.sesiones).forEach(sKey => {
+            const s = data.sesiones[sKey];
+            agregarSesion(); 
+            const sIdActual = contadorSesiones;
+            const sesionDiv = document.getElementById(`sesion-${sIdActual}`);
+            sesionDiv.querySelector('.nombre-sesion').value = s.nombre;
+            sesionDiv.querySelector('.ejercicios-container').innerHTML = "";
+
+            s.ejercicios.forEach(bloque => {
+                // 1. Agregamos el bloque base
+                agregarEjercicio(sIdActual);
+                const exItems = sesionDiv.querySelectorAll('.ex-item');
+                const lastExItem = exItems[exItems.length - 1];
+                
+                // 2. Identificamos si es estructura nueva (sub_ejercicios) o vieja
+                const listaSubs = bloque.sub_ejercicios || [bloque];
+                
+                // 3. Si tiene más de un sub_ejercicio, activamos modo superserie
+                if (listaSubs.length > 1) {
+                    const selector = lastExItem.querySelector('.ex-tipo');
+                    selector.value = 'superserie';
+                    cambiarModo(selector);
+                    // Creamos los campos necesarios para los ejercicios extra
+                    for (let i = 1; i < listaSubs.length; i++) {
+                        agregarSubEjercicio(lastExItem.querySelector('.btn-add-sub'));
+                    }
+                }
+
+                // 4. Llenamos los datos de cada sub-ejercicio
+                const subDivs = lastExItem.querySelectorAll('.sub-ex');
+                listaSubs.forEach((datosEx, idx) => {
+                    const div = subDivs[idx];
+                    div.querySelector('.ex-grupo').value = datosEx.grupo || "MOVILIDAD";
+                    actualizarEjercicios(div.querySelector('.ex-grupo')); 
+                    div.querySelector('.ex-nombre').value = datosEx.nombre || "";
+                    div.querySelector('.ex-series').value = datosEx.series || 4;
+                    div.querySelector('.ex-reps').value = datosEx.reps_obj || "";
+                    div.querySelector('.ex-peso').value = datosEx.peso_obj || "";
+                    div.querySelector('.ex-video').value = datosEx.video || "";
+                });
+
+                // 5. Datos generales del bloque (descansos y notas)
+                lastExItem.querySelector('.ex-descanso').value = bloque.descanso || 90;
+                if(lastExItem.querySelector('.ex-descanso-final')) {
+                    lastExItem.querySelector('.ex-descanso-final').value = bloque.descanso_final || 120;
+                }
+                // Las notas suelen estar en el primer sub-ejercicio o en el bloque
+                lastExItem.querySelector('.ex-notas').value = listaSubs[0].notas || bloque.notas || "";
+            });
+        });
+
+        document.getElementById('modal-importar').style.display = 'none';
+        alert("¡Rutina importada con éxito!");
+
+    } catch (e) {
+        alert("ERROR: El código es inválido o incompatible.");
+        console.error(e);
+    }
+}
 </script>
 </body>
 </html>
-
-
 
 
 
