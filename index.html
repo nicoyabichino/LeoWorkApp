@@ -258,33 +258,51 @@ function loadSession(id) {
     s.ejercicios.forEach((bloque, exIdx) => {
         const subEjercicios = bloque.sub_ejercicios || [bloque];
         const esSuperserie = subEjercicios.length > 1;
-// Lógica de títulos especiales
+
+        // Lógica de títulos especiales
         let tituloEspecial = "";
         if (subEjercicios.length === 2) tituloEspecial = `<div style="color:var(--accent); font-size:0.7rem; font-weight:bold; margin-bottom:8px; letter-spacing:1px;">⚡ SUPERSERIE</div>`;
         else if (subEjercicios.length === 3) tituloEspecial = `<div style="color:#a855f7; font-size:0.7rem; font-weight:bold; margin-bottom:8px; letter-spacing:1px;">🔥 TRI-SERIE</div>`;
         else if (subEjercicios.length > 3) tituloEspecial = `<div style="color:#ef4444; font-size:0.7rem; font-weight:bold; margin-bottom:8px; letter-spacing:1px;">🌀 CIRCUITO</div>`;
+        
         // 1. Notas Únicas
         const notasUnicas = [...new Set(subEjercicios.map(ex => ex.notas).filter(n => n && n.trim() !== ""))].join(" | ");
         const tieneNotas = notasUnicas !== "";
         const btnInfo = tieneNotas ? `<button class="info-btn" onclick="toggleNotas('${exIdx}')">⚠️ INDICACIONES</button>` : '';
         const divNotas = tieneNotas ? `<div id="notas-${exIdx}" class="ex-notas-display">${notasUnicas}</div>` : '';
 
-        // 2. Cabecera con colores dinámicos por ejercicio
-// 2. Cabecera con colores dinámicos (Solo muestra letras si es Superserie)
+        // 2. Cabecera con colores dinámicos y VARIANTE
         let cabeceraEjerciciosHtml = subEjercicios.map((ex, i) => {
             const color = coloresSS[i % coloresSS.length];
-            // Si es ejercicio normal, no ponemos la letra A ni el fondo
             const etiquetaLetra = esSuperserie ? 
                 `<b style="color:${color}; background:rgba(255,255,255,0.08); padding:2px 6px; border-radius:4px; margin-right:5px; border:1px solid ${color}44">${String.fromCharCode(65+i)}</b>` 
                 : '';
 
+            // Bloque de Variante (solo si existe)
+            let htmlVariante = '';
+            if (ex.variante && ex.variante.trim() !== "") {
+                htmlVariante = `
+                    <div style="margin-top: 5px; padding: 6px 10px; background: rgba(0, 212, 255, 0.08); border-left: 2px solid var(--accent); border-radius: 4px; margin-bottom: 8px;">
+                        <span style="font-size: 0.6rem; font-weight: 900; color: var(--accent); display: block; letter-spacing: 0.5px; text-transform: uppercase;">
+                            🔄 Alternativa si está ocupado:
+                        </span>
+                        <span style="font-size: 0.8rem; color: #cbd5e1; font-style: italic;">
+                            ${ex.variante}
+                        </span>
+                    </div>
+                `;
+            }
+
             return `
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-                    <span style="font-size:0.85rem; line-height:1.2;">
-                        ${etiquetaLetra}
-                        <strong style="color:#fff">${ex.nombre}</strong>
-                    </span>
-                    ${ex.video ? `<a href="${ex.video}" target="_blank" class="yt-icon" style="font-size:0.6rem; padding:2px 5px; white-space:nowrap; margin-left:10px;">▶ VIDEO</a>` : ''}
+                <div style="margin-bottom:10px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+                        <span style="font-size:0.85rem; line-height:1.2;">
+                            ${etiquetaLetra}
+                            <strong style="color:#fff">${ex.nombre}</strong>
+                        </span>
+                        ${ex.video ? `<a href="${ex.video}" target="_blank" class="yt-icon" style="font-size:0.6rem; padding:2px 5px; white-space:nowrap; margin-left:10px;">▶ VIDEO</a>` : ''}
+                    </div>
+                    ${htmlVariante}
                 </div>
             `;
         }).join("");
@@ -301,7 +319,7 @@ function loadSession(id) {
         for(let sIdx = 0; sIdx < numSeries; sIdx++) {
             const saved = getSavedData(id, exIdx, sIdx);
             
-let subFilas = subEjercicios.map((ex, subIdx) => {
+            let subFilas = subEjercicios.map((ex, subIdx) => {
                 const color = coloresSS[subIdx % coloresSS.length];
                 const rA = ex.reps_obj.split(',').map(x => x.trim());
                 const pA = ex.peso_obj.split(',').map(x => x.trim());
@@ -312,7 +330,6 @@ let subFilas = subEjercicios.map((ex, subIdx) => {
                 const valPeso = (saved.peso || "").split("|")[subIdx] || "";
                 const valRpe  = (saved.rpe || "").split("|")[subIdx] || "";
 
-                // CORRECCIÓN AQUÍ: Solo mostrar "A:", "B:", etc. si es Superserie
                 const prefijoLetra = esSuperserie ? `<b style="color:${color}">${String.fromCharCode(65+subIdx)}:</b> ` : '';
 
                 return `
@@ -338,11 +355,10 @@ let subFilas = subEjercicios.map((ex, subIdx) => {
             `;
         }
 
-       card.innerHTML = `
+        card.innerHTML = `
             <div style="padding:15px; background:rgba(255,255,255,0.02);">
-                ${tituloEspecial}  ${cabeceraEjerciciosHtml}
+                ${tituloEspecial} ${cabeceraEjerciciosHtml}
                 <div style="margin-top:10px;">${btnInfo}</div>
-            </div>
             </div>
             ${divNotas}
             <div class="grid-header" style="grid-template-columns: 25px 1fr 40px; padding: 5px 8px;">
@@ -662,3 +678,4 @@ function toggleNotas(id) {
     </script>
 </body>
 </html>
+
