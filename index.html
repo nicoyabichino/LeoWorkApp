@@ -134,29 +134,6 @@
     border-color: var(--primary);
     color: white;
 }
-        .variante-btn {
-    background: #1e293b;
-    color: var(--accent);
-    border: 1px solid var(--accent);
-    border-radius: 6px;
-    padding: 4px 10px;
-    font-size: 0.7rem;
-    font-weight: 900;
-    cursor: pointer;
-    margin-left: 5px;
-    transition: 0.3s;
-}
-.variante-btn.active {
-    background: var(--accent);
-    color: #000;
-}
-        /* Ajuste para que los inputs se adapten si hay muchos ejercicios en una fila */
-.set-row { 
-    grid-template-columns: 25px repeat(auto-fit, minmax(40px, 1fr)) 45px !important; 
-}
-.grid-header { 
-    grid-template-columns: 25px repeat(auto-fit, minmax(40px, 1fr)) 45px !important; 
-}
     </style>
 </head>
 <body>
@@ -270,86 +247,44 @@ function playBeepFuerte() {
             } catch (e) { alert("Código no válido"); }
         }
 
-// Array de colores para identificar sub-ejercicios (A, B, C, D...)
-const coloresSS = ['#3b82f6', '#a855f7', '#22c55e', '#eab308', '#ef4444', '#06b6d4'];
-
-function loadSession(sId) {
-    const sesion = rutinaFull.sesiones[sId];
-    if (!sesion) return;
-
-    const container = document.getElementById('workout-content');
-    container.innerHTML = "";
-
-    sesion.ejercicios.forEach((bloque, exIdx) => {
-        const div = document.createElement('div');
-        div.className = 'exercise-card';
+function loadSession(id) {
+    const s = rutinaFull.sesiones[id];
+    document.getElementById('workout-content').innerHTML = s.ejercicios.map((ex, exIdx) => {
+        const rA = ex.reps_obj.split(',').map(x => x.trim());
+        const pA = ex.peso_obj.split(',').map(x => x.trim());
         
-        // Si el bloque tiene sub_ejercicios, es superserie, si no, lo tratamos como array de 1
-        const subEjercicios = bloque.sub_ejercicios || [bloque];
-        
-        let subHtml = "";
-        subEjercicios.forEach((sub, subIdx) => {
-            const idUnico = `${exIdx}-${subIdx}`;
-            subHtml += `
-                <div class="ex-header" id="ex-header-${idUnico}" style="border-left: 4px solid ${coloresSS[subIdx % coloresSS.length]}">
-                    <div style="flex:1">
-                        <span class="nombre-display" style="font-weight:bold; font-size:0.95rem; display:block; margin-bottom:4px;">${sub.nombre}</span>
-                        <div style="display:flex; gap:10px; align-items:center;">
-                            ${sub.video ? `<a href="${sub.video}" target="_blank" class="yt-icon">VIDEO</a>` : ''}
-                            ${sub.variante ? `<button class="variante-btn" onclick="toggleModoVariante(this, '${sId}', ${exIdx}, ${subIdx})">🔄 VARIANTE</button>` : ''}
-                        </div>
-                    </div>
-                    ${subIdx === 0 ? `<button class="info-btn" onclick="toggleNotas('${exIdx}')">INFO</button>` : ''}
-                </div>
-                <div id="notas-${exIdx}" class="ex-notas-display">${bloque.notas || sub.notas || "Sin indicaciones."}</div>
-            `;
-        });
+        const tieneNotas = ex.notas && ex.notas.trim() !== "";
+        const btnInfo = tieneNotas ? `<button class="info-btn" onclick="toggleNotas(${exIdx})">⚠️ Indicaciones</button>` : '';
+        const divNotas = tieneNotas ? `<div id="notas-${exIdx}" class="ex-notas-display">${ex.notas}</div>` : '';
 
-        subHtml += `
-            <div class="grid-header">
-                <span>SET</span>
-                <span>OBJETIVO</span>
-                <span>REPS</span>
-                <span>PESO</span>
-                <span>RPE</span>
-                <span>OK</span>
+        // Obtenemos feedback guardado si existe
+        const savedFeedback = localStorage.getItem(`feedback_${id}_${exIdx}`) || '';
+
+        return `<div class="exercise-card">
+            <div class="ex-header">
+                <div><strong>${ex.nombre}</strong><br><small style="color:var(--accent)">${ex.grupo}</small> ${btnInfo}</div>
+                ${ex.video ? `<a href="${ex.video}" target="_blank" class="yt-icon">▶ VIDEO</a>` : ''}
             </div>
-            <div id="sets-container-${exIdx}"></div>
-            <input type="text" class="ex-feedback-input" placeholder="Comentarios sobre este bloque..." 
-                   id="feedback-${sId}-${exIdx}" onchange="localStorage.setItem('feedback_${sId}_${exIdx}', this.value)">
-        `;
-
-        div.innerHTML = subHtml;
-        container.appendChild(div);
-        
-        // Cargar el feedback guardado
-        const savedFeedback = localStorage.getItem(`feedback_${sId}_${exIdx}`);
-        if(savedFeedback) document.getElementById(`feedback-${sId}-${exIdx}`).value = savedFeedback;
-
-        renderizarFilas(sId, exIdx, false); // Iniciar siempre en modo normal
-    });
-}
-
-function saveDataSS(sessId, exIdx, sIdx, numSubs) {
-    const row = document.getElementById(`row-${exIdx}-${sIdx}`);
-    const inputs = row.querySelectorAll('input:not(.ex-feedback-input)');
-    const done = row.querySelector('.check-btn').classList.contains('active');
-    
-    let repsArr = [], pesoArr = [], rpeArr = [];
-    
-    for(let i=0; i < numSubs; i++) {
-        // Cada bloque de ejercicio tiene 3 inputs
-        repsArr.push(inputs[i*3].value || "");
-        pesoArr.push(inputs[i*3 + 1].value || "");
-        rpeArr.push(inputs[i*3 + 2].value || "");
-    }
-
-    localStorage.setItem(`workout_${sessId}_${exIdx}_${sIdx}`, JSON.stringify({
-        reps: repsArr.join("|"), 
-        peso: pesoArr.join("|"), 
-        rpe: rpeArr.join("|"), 
-        done: done
-    }));
+            ${divNotas}
+            <div class="grid-header"><div>Set</div><div>Objetivo</div><div>Reps</div><div>Kg</div><div>RPE</div><div>Ok</div></div>
+            ${Array.from({length: ex.series}).map((_, sIdx) => {
+                const saved = getSavedData(id, exIdx, sIdx);
+                const oR = rA[sIdx] || rA[rA.length-1] || ex.reps_obj;
+                const oK = pA[sIdx] || pA[pA.length-1] || ex.peso_obj;
+                return `<div class="set-row ${saved.done ? 'done' : ''}" id="row-${exIdx}-${sIdx}">
+                    <div style="text-align:center;font-weight:bold;">${sIdx+1}</div>
+                    <div class="obj-cell">Rep:${oR}<br>Kg:${oK}</div>
+                    <div><input type="number" oninput="saveData('${id}',${exIdx},${sIdx})" value="${saved.reps || ''}" inputmode="numeric"></div>
+                    <div><input type="number" oninput="saveData('${id}',${exIdx},${sIdx})" value="${saved.peso || ''}" inputmode="decimal"></div>
+                    <div><input type="number" oninput="saveData('${id}',${exIdx},${sIdx})" value="${saved.rpe || ''}" inputmode="numeric"></div>
+                    <div><button class="check-btn ${saved.done ? 'active' : ''}" onclick="markSet('${id}', ${exIdx}, ${sIdx}, ${ex.series})">✓</button></div>
+                </div>`;
+            }).join('')}
+            <input type="text" class="ex-feedback-input" placeholder="Observaciones (ej: dolor de muñeca...)" 
+                   value="${savedFeedback}" 
+                   oninput="localStorage.setItem('feedback_${id}_${exIdx}', this.value)">
+        </div>`;
+    }).join('');
 }
 function startTimer(sec) { 
     clearInterval(timerInt); 
@@ -390,25 +325,28 @@ function markSet(sessId, exIdx, sIdx, totalSets) {
     const btn = row.querySelector('.check-btn'); 
     row.classList.toggle('done'); 
     btn.classList.toggle('active'); 
-    
-    // CORRECCIÓN AQUÍ: Detectar cuántos inputs hay para usar la función de guardado correcta
-    const inputs = row.querySelectorAll('input:not(.ex-feedback-input)');
-    if (inputs.length > 3) {
-        saveDataSS(sessId, exIdx, sIdx, inputs.length / 3);
-    } else {
-        saveData(sessId, exIdx, sIdx);
-    }
+    saveData(sessId, exIdx, sIdx); 
     
     if(row.classList.contains('done')) { 
         const sesionActual = rutinaFull.sesiones[sessId];
         const ejercicioActual = sesionActual.ejercicios[exIdx];
+
+        // Mapeo exacto según el Panel Admin:
+        // 'descanso' es entre series | 'descanso_final' es al terminar el ejercicio
         const tiempoSerie = parseInt(ejercicioActual.descanso) || 90;
         const tiempoEjercicio = parseInt(ejercicioActual.descanso_final) || 120;
+        
+        // Verificamos si es la última serie del ejercicio
         const esUltimaSerie = (sIdx === totalSets - 1);
+        
+        // Si es la última serie, usa el tiempo largo; si no, el corto
         const tiempoDescanso = esUltimaSerie ? tiempoEjercicio : tiempoSerie;
+        
         startTimer(tiempoDescanso); 
     } 
 }
+
+        
         
       let modoModal = ""; // Variable para saber si estamos borrando o reportando
 
@@ -494,33 +432,27 @@ async function generarReporteProfe() {
         const doc = new jsPDF('p', 'mm', 'a4');
         let cM = {}, cS = {};
         
-        // 1. Procesar datos para gráficos
         Object.keys(rutinaFull.sesiones).forEach(sId => {
             let tS = 0;
-            rutinaFull.sesiones[sId].ejercicios.forEach((bloque, exIdx) => {
-                const subEjercicios = bloque.sub_ejercicios || [bloque];
-                for(let sIdx=0; sIdx < subEjercicios[0].series; sIdx++) {
+            rutinaFull.sesiones[sId].ejercicios.forEach((ex, exIdx) => {
+                for(let sIdx=0; sIdx < ex.series; sIdx++) {
                     const saved = getSavedData(sId, exIdx, sIdx);
                     if(saved.done) {
-                        subEjercicios.forEach(ex => {
-                            const m = (ex.grupo || "OTRO").toUpperCase();
-                            cM[m] = (cM[m] || 0) + 1;
-                            tS++;
-                        });
+                        const m = (ex.grupo || "OTRO").toUpperCase();
+                        cM[m] = (cM[m] || 0) + 1;
+                        tS++;
                     }
                 }
             });
             cS[rutinaFull.sesiones[sId].nombre] = tS;
         });
 
-        // 2. Diseño de Cabecera PDF
         doc.setFillColor(0, 0, 0); doc.rect(0, 0, 210, 297, 'F');
         doc.setTextColor(255, 255, 255); doc.setFontSize(22);
         doc.text(`REPORTE SEMANA ${rutinaFull.semana || "-"}`, 105, 15, { align: 'center' });
         doc.setTextColor(0, 212, 255); doc.setFontSize(14);
         doc.text(`ALUMNO: ${rutinaFull.alumno.toUpperCase()}`, 105, 23, { align: 'center' });
 
-        // 3. Gráficos
         if (Object.keys(cM).length > 0) {
             const i1 = await crearImgGrafico('chartMusculos', Object.keys(cM), Object.values(cM), 20, 'Series', "Estimulo semanal de grupos musculares");
             doc.setDrawColor(59, 130, 246); doc.rect(12, 35, 186, 80); 
@@ -532,40 +464,32 @@ async function generarReporteProfe() {
             doc.addImage(i2, 'PNG', 15, 128, 180, 74);
         }
 
-        // 4. Tabla de datos
         let tableBody = [];
         Object.keys(rutinaFull.sesiones).forEach(sId => {
-            rutinaFull.sesiones[sId].ejercicios.forEach((bloque, exIdx) => {
-                const subEjercicios = bloque.sub_ejercicios || [bloque];
+            rutinaFull.sesiones[sId].ejercicios.forEach((ex, exIdx) => {
+                const rA = ex.reps_obj.split(',').map(x => x.trim());
+                const pA = ex.peso_obj.split(',').map(x => x.trim());
+                
+                // Obtenemos el feedback del alumno para este ejercicio
                 const feedback = localStorage.getItem(`feedback_${sId}_${exIdx}`) || '';
 
-                for(let sIdx=0; sIdx < subEjercicios[0].series; sIdx++) {
+                for(let sIdx=0; sIdx < ex.series; sIdx++) {
                     const saved = getSavedData(sId, exIdx, sIdx);
                     if(saved.done) {
-                        subEjercicios.forEach((ex, subIdx) => {
-                            // Aquí está la corrección del SPLIT: leemos de 'ex' que siempre tiene los datos
-                            const rA = (ex.reps_obj || "").toString().split(',').map(x => x.trim());
-                            const pA = (ex.peso_obj || "").toString().split(',').map(x => x.trim());
-                            
-                            const objR = rA[sIdx] || rA[rA.length-1] || ex.reps_obj;
-                            const objK = pA[sIdx] || pA[pA.length-1] || ex.peso_obj;
+                        const objR = rA[sIdx] || rA[rA.length-1] || ex.reps_obj;
+                        const objK = pA[sIdx] || pA[pA.length-1] || ex.peso_obj;
+                        
+                        // Solo ponemos la observación en la fila del primer Set realizado para que no se repita
+                        const obsAMostrar = (sIdx === 0 || tableBody.filter(row => row[0] === ex.nombre).length === 0) ? feedback : "";
 
-                            const sReps = (saved.reps || "").split("|")[subIdx] || saved.reps || "-";
-                            const sPeso = (saved.peso || "").split("|")[subIdx] || saved.peso || "-";
-                            const sRpe = (saved.rpe || "").split("|")[subIdx] || saved.rpe || "-";
-
-                            const nombreAMostrar = subEjercicios.length > 1 ? `${ex.nombre} (${String.fromCharCode(65+subIdx)})` : ex.nombre;
-                            const obsAMostrar = (sIdx === 0 && subIdx === 0) ? feedback : "";
-
-                            tableBody.push([
-                                nombreAMostrar, 
-                                `Set ${sIdx+1}`, 
-                                `${objR}R / ${objK}K`, 
-                                `${sReps}R / ${sPeso}K`, 
-                                sRpe,
-                                obsAMostrar
-                            ]);
-                        });
+                        tableBody.push([
+                            ex.nombre, 
+                            `Set ${sIdx+1}`, 
+                            `${objR}Rep / ${objK}Kg`, 
+                            `${saved.reps || '-'}Rep / ${saved.peso || '-'}Kg`, 
+                            saved.rpe || '-',
+                            obsAMostrar // Nueva columna en el cuerpo
+                        ]);
                     }
                 }
             });
@@ -574,14 +498,14 @@ async function generarReporteProfe() {
         if (tableBody.length > 0) {
             doc.autoTable({ 
                 startY: 215, 
-                head: [['EJERCICIO', 'SET', 'OBJETIVO', 'REALIZADO', 'RPE', 'OBSERVACIONES']], 
+                head: [['EJERCICIO', 'SET', 'OBJETIVO', 'REALIZADO', 'RPE/RIR', 'OBSERVACIONES']], // Agregado encabezado
                 body: tableBody, 
                 theme: 'grid', 
                 styles: { fillColor: [20, 20, 20], textColor: 255, fontSize: 6.5, halign: 'center' }, 
                 headStyles: { fillColor: [59, 130, 246], fontSize: 7, halign: 'center' }, 
                 columnStyles: { 
-                    0: { halign: 'left', cellWidth: 45 },
-                    5: { halign: 'left', cellWidth: 40, textColor: [234, 179, 8] }
+                    0: { halign: 'left', cellWidth: 40 },
+                    5: { halign: 'left', cellWidth: 45, textColor: [234, 179, 8] } // Estilo dorado para tus notas
                 } 
             });
         }
@@ -591,17 +515,14 @@ async function generarReporteProfe() {
         setTimeout(() => {
             modoModal = "FIN";
             document.getElementById('modal-title').innerText = "¡REPORTE GENERADO!";
-            document.getElementById('modal-text').innerText = "Se descargó tu progreso. La app se reiniciará para que puedas cargar la nueva rutina.";
+            document.getElementById('modal-text').innerText = "Se descargó tu progreso. La app se reiniciará para que puedas cargar la nueva rutina de la semana.";
             document.getElementById('modal-confirm-btn').style.background = "var(--primary)";
             document.getElementById('modal-confirm-btn').innerText = "ENTENDIDO";
             document.getElementById('modal-cancel-btn').style.display = "none";
             document.getElementById('custom-confirm').style.display = 'flex';
         }, 1500);
 
-    } catch(e) { 
-        console.error(e);
-        alert("Error al generar PDF: " + e.message); 
-    }
+    } catch(e) { alert("Error al generar PDF: " + e.message); }
 }
 
         window.addEventListener('beforeinstallprompt', (e) => {
@@ -624,95 +545,18 @@ async function generarReporteProfe() {
         });
 
         init();
-function toggleModoVariante(btn, sId, exIdx, subIdx) {
-    const bloque = rutinaFull.sesiones[sId].ejercicios[exIdx];
-    const subEx = (bloque.sub_ejercicios || [bloque])[subIdx];
-    const header = document.getElementById(`ex-header-${exIdx}-${subIdx}`);
-    const nombreLabel = header.querySelector('.nombre-display');
-    
-    btn.classList.toggle('active');
-    const esVariante = btn.classList.contains('active');
-
-    if(esVariante) {
-        nombreLabel.innerText = subEx.variante;
-        nombreLabel.style.color = "var(--accent)";
-        btn.innerText = "🔙 ORIGINAL";
+function toggleNotas(idx) {
+    const el = document.getElementById(`notas-${idx}`);
+    if (el.style.display === 'block') {
+        el.style.display = 'none';
     } else {
-        nombreLabel.innerText = subEx.nombre;
-        nombreLabel.style.color = "#fff";
-        btn.innerText = "🔄 VARIANTE";
+        el.style.display = 'block';
     }
-
-    renderizarFilas(sId, exIdx, esVariante);
-}
-function renderizarFilas(sId, exIdx, esVariante) {
-    const bloque = rutinaFull.sesiones[sId].ejercicios[exIdx];
-    const subEjercicios = bloque.sub_ejercicios || [bloque];
-    const container = document.getElementById(`sets-container-${exIdx}`);
-    container.innerHTML = "";
-
-    // El número de series lo dicta el primer ejercicio del bloque
-    const numSeries = esVariante ? (subEjercicios[0].variante_series || subEjercicios[0].series) : subEjercicios[0].series;
-
-    for (let sIdx = 0; sIdx < numSeries; sIdx++) {
-        const saved = getSavedData(sId, exIdx, sIdx);
-        const row = document.createElement('div');
-        row.className = `set-row ${saved.done ? 'done' : ''}`;
-        row.id = `row-${exIdx}-${sIdx}`;
-
-        let inputsHtml = "";
-        subEjercicios.forEach((sub, subIdx) => {
-            const rA = (esVariante ? sub.variante_reps : sub.reps_obj).toString().split(',').map(x => x.trim());
-            const pA = (esVariante ? sub.variante_peso : sub.peso_obj).toString().split(',').map(x => x.trim());
-            
-            const objR = rA[sIdx] || rA[rA.length-1] || (esVariante ? sub.variante_reps : sub.reps_obj);
-            const objK = pA[sIdx] || pA[pA.length-1] || (esVariante ? sub.variante_peso : sub.peso_obj);
-
-            const valR = (saved.reps || "").split("|")[subIdx] || "";
-            const valK = (saved.peso || "").split("|")[subIdx] || "";
-            const valRPE = (saved.rpe || "").split("|")[subIdx] || "";
-
-            inputsHtml += `
-                <div class="obj-cell">${objR}R<br>${objK}K</div>
-                <input type="text" value="${valR}" placeholder="R" onchange="saveDataSS('${sId}', ${exIdx}, ${sIdx}, ${subEjercicios.length})">
-                <input type="text" value="${valK}" placeholder="Kg" onchange="saveDataSS('${sId}', ${exIdx}, ${sIdx}, ${subEjercicios.length})">
-                <input type="text" value="${valRPE}" placeholder="1-10" onchange="saveDataSS('${sId}', ${exIdx}, ${sIdx}, ${subEjercicios.length})">
-            `;
-        });
-
-        row.innerHTML = `
-            <span style="font-weight:bold; color:var(--primary); font-size:0.8rem;">#${sIdx + 1}</span>
-            ${inputsHtml}
-            <button class="check-btn ${saved.done ? 'active' : ''}" onclick="markSet('${sId}', ${exIdx}, ${sIdx}, ${numSeries})">✓</button>
-        `;
-        container.appendChild(row);
-    }
-}
-
-function toggleModoVariante(btn, sessId, exIdx, subIdx) {
-    const bloque = rutinaFull.sesiones[sessId].ejercicios[exIdx];
-    const subEx = (bloque.sub_ejercicios || [bloque])[subIdx];
-    const header = document.getElementById(`ex-header-${exIdx}-${subIdx}`);
-    const nombreLabel = header.querySelector('.nombre-display');
-    
-    btn.classList.toggle('active');
-    const esVariante = btn.classList.contains('active');
-
-    if(esVariante) {
-        nombreLabel.innerText = subEx.variante;
-        nombreLabel.style.color = "var(--accent)";
-        btn.innerText = "🔙 ORIGINAL";
-    } else {
-        nombreLabel.innerText = subEx.nombre;
-        nombreLabel.style.color = "#fff";
-        btn.innerText = "🔄 VARIANTE";
-    }
-
-    renderizarFilas(sessId, exIdx, esVariante);
 }
     </script>
 </body>
 </html>
+
 
 
 
