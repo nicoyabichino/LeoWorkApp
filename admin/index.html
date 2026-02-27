@@ -271,6 +271,7 @@ function agregarSubEjercicio(btn) {
     const div = document.createElement('div');
     div.className = 'sub-ex';
     div.style = 'border-top: 2px dashed #444; margin-top:15px; padding-top:15px;';
+    
     const gruposHtml = Object.keys(DATA_EJERCICIOS).map(g => `<option value="${g}">${g}</option>`).join('');
 
     div.innerHTML = `
@@ -284,12 +285,14 @@ function agregarSubEjercicio(btn) {
                     <input type="text" class="ex-nombre-otro" placeholder="Nombre..." style="display:none; margin-top:5px;">
                 </div>
             </div>
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:8px;">
-                <div><label>Rep (Obj)</label><input type="text" class="ex-reps" placeholder="12,10,8"></div>
-                <div><label>Kg (Obj)</label><input type="text" class="ex-peso" placeholder="50,60,70"></div>
+            <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-bottom:8px;">
+                <div><label>Sets</label><input type="number" class="ex-series" value="4"></div>
+                <div><label>Reps</label><input type="text" class="ex-reps" placeholder="12,10,8"></div>
+                <div><label>Kg</label><input type="text" class="ex-peso" placeholder="50"></div>
             </div>
-            <div style="margin-bottom:10px;"><label>Video YouTube</label><input type="text" class="ex-video" placeholder="URL del video"></div>
+            <div style="margin-bottom:10px;"><label>Video YouTube</label><input type="text" class="ex-video" placeholder="URL"></div>
         </div>
+
         <div style="border-left: 3px solid var(--accent); padding-left: 10px; background: rgba(0, 212, 255, 0.03); padding-top: 10px; padding-bottom: 10px; border-radius: 0 8px 8px 0;">
             <label style="color: var(--accent); font-weight: bold; font-size: 0.8rem;">🔄 OPCIÓN B (VARIANTE)</label>
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 8px 0;">
@@ -300,14 +303,17 @@ function agregarSubEjercicio(btn) {
                     <input type="text" class="ex-variante-nombre-otro" placeholder="Nombre..." style="display:none; margin-top:5px;">
                 </div>
             </div>
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:8px;">
+            <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-bottom:8px;">
+                <div><label>Sets Alt.</label><input type="number" class="ex-variante-series" value="4"></div>
                 <div><label>Reps Alt.</label><input type="text" class="ex-variante-reps" placeholder="12,10,8"></div>
-                <div><label>Kg Alt.</label><input type="text" class="ex-variante-peso" placeholder="40,45,50"></div>
+                <div><label>Kg Alt.</label><input type="text" class="ex-variante-peso" placeholder="40"></div>
             </div>
-            <div><label>Video Variante</label><input type="text" class="ex-variante-video" placeholder="URL video alternativa"></div>
+            <div><label>Video Variante</label><input type="text" class="ex-variante-video" placeholder="URL"></div>
         </div>
+
         <button onclick="this.parentElement.remove()" style="color:var(--danger); border:none; background:none; font-size:0.7rem; width:100%; text-align:right; margin-top:10px; cursor:pointer;">- Quitar de Superserie</button>
     `;
+
     container.appendChild(div);
     actualizarEjercicios(div.querySelector('.ex-grupo'));
     actualizarEjercicios(div.querySelector('.ex-variante-grupo'), true);
@@ -432,6 +438,7 @@ agregarSesion();
 </script>
 </body>
 </html>
+
 
 
 
