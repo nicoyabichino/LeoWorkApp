@@ -188,27 +188,26 @@ function agregarEjercicio(sId) {
     const div = document.createElement('div');
     div.className = 'ex-item';
     
-    // Selector para elegir si es normal o superserie
-    const selectorTipo = `
-  <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom:8px;">
-    <div><label>Grupo</label><select class="ex-grupo" onchange="actualizarEjercicios(this)">${gruposHtml}</select></div>
-    <div>
-        <label>Ejercicio</label>
-        <select class="ex-nombre" onchange="verificarOtro(this)"></select>
-        <input type="text" class="ex-nombre-otro" placeholder="Nombre del ejercicio..." style="display:none; margin-top:5px; border-color:var(--accent);">
-    </div>
-</div>
-    `;
-
     const gruposHtml = Object.keys(DATA_EJERCICIOS).map(g => `<option value="${g}">${g}</option>`).join('');
     
     div.innerHTML = `
-        ${selectorTipo}
+        <div style="margin-bottom:10px;">
+            <label>Tipo de Bloque</label>
+            <select class="ex-tipo" onchange="cambiarModo(this)">
+                <option value="normal">EJERCICIO NORMAL</option>
+                <option value="superserie">SUPERSERIE (BI-SERIE)</option>
+            </select>
+        </div>
+
         <div class="sub-ejercicios-container">
             <div class="sub-ex" style="border-bottom: 1px dashed #444; margin-bottom:10px; padding-bottom:10px;">
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom:8px;">
                     <div><label>Grupo</label><select class="ex-grupo" onchange="actualizarEjercicios(this)">${gruposHtml}</select></div>
-                    <div><label>Ejercicio</label><select class="ex-nombre"></select></div>
+                    <div>
+                        <label>Ejercicio</label>
+                        <select class="ex-nombre" onchange="verificarOtro(this)"></select>
+                        <input type="text" class="ex-nombre-otro" placeholder="Nombre del ejercicio..." style="display:none; margin-top:5px; border-color:var(--accent);">
+                    </div>
                 </div>
                 <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px;">
                     <div><label>Sets</label><input type="number" class="ex-series" value="4"></div>
@@ -271,6 +270,8 @@ function generarLink() {
         const ejercicios = [];
      // Dentro de generarLink() en el ADMIN:
 s.querySelectorAll('.ex-item').forEach(item => {
+    const subEjs = []; // <--- TE FALTA ESTA LÍNEA
+    item.querySelectorAll('.sub-ex').forEach(sub => {
 const selectNombre = sub.querySelector('.ex-nombre').value;
 const inputOtro = sub.querySelector('.ex-nombre-otro').value;
 
@@ -458,14 +459,6 @@ function procesarImportacion() {
     }
 }
 
-        document.getElementById('modal-importar').style.display = 'none';
-        alert("¡Rutina importada con éxito!");
-
-    } catch (e) {
-        alert("ERROR: El código es inválido o incompatible.");
-        console.error(e);
-    }
-}
     function verificarOtro(select) {
     const inputOtro = select.parentElement.querySelector('.ex-nombre-otro');
     if (select.value === "OTRO") {
@@ -479,4 +472,5 @@ function procesarImportacion() {
 </script>
 </body>
 </html>
+
 
