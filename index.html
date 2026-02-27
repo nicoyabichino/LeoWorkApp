@@ -259,36 +259,38 @@ function loadSession(id) {
         const subEjercicios = bloque.sub_ejercicios || [bloque];
         const esSuperserie = subEjercicios.length > 1;
 
-        // Lógica de títulos especiales
         let tituloEspecial = "";
         if (subEjercicios.length === 2) tituloEspecial = `<div style="color:var(--accent); font-size:0.7rem; font-weight:bold; margin-bottom:8px; letter-spacing:1px;">⚡ SUPERSERIE</div>`;
         else if (subEjercicios.length === 3) tituloEspecial = `<div style="color:#a855f7; font-size:0.7rem; font-weight:bold; margin-bottom:8px; letter-spacing:1px;">🔥 TRI-SERIE</div>`;
         else if (subEjercicios.length > 3) tituloEspecial = `<div style="color:#ef4444; font-size:0.7rem; font-weight:bold; margin-bottom:8px; letter-spacing:1px;">🌀 CIRCUITO</div>`;
         
-        // 1. Notas Únicas
         const notasUnicas = [...new Set(subEjercicios.map(ex => ex.notas).filter(n => n && n.trim() !== ""))].join(" | ");
         const tieneNotas = notasUnicas !== "";
         const btnInfo = tieneNotas ? `<button class="info-btn" onclick="toggleNotas('${exIdx}')">⚠️ INDICACIONES</button>` : '';
         const divNotas = tieneNotas ? `<div id="notas-${exIdx}" class="ex-notas-display">${notasUnicas}</div>` : '';
 
-        // 2. Cabecera con colores dinámicos y VARIANTE
+        // 2. Cabecera con EJERCICIO PRINCIPAL y VARIANTE DETALLADA
         let cabeceraEjerciciosHtml = subEjercicios.map((ex, i) => {
             const color = coloresSS[i % coloresSS.length];
             const etiquetaLetra = esSuperserie ? 
                 `<b style="color:${color}; background:rgba(255,255,255,0.08); padding:2px 6px; border-radius:4px; margin-right:5px; border:1px solid ${color}44">${String.fromCharCode(65+i)}</b>` 
                 : '';
 
-            // Bloque de Variante (solo si existe)
+            // --- BLOQUE DE VARIANTE DETALLADA ---
             let htmlVariante = '';
             if (ex.variante && ex.variante.trim() !== "") {
                 htmlVariante = `
-                    <div style="margin-top: 5px; padding: 6px 10px; background: rgba(0, 212, 255, 0.08); border-left: 2px solid var(--accent); border-radius: 4px; margin-bottom: 8px;">
-                        <span style="font-size: 0.6rem; font-weight: 900; color: var(--accent); display: block; letter-spacing: 0.5px; text-transform: uppercase;">
-                            🔄 Alternativa si está ocupado:
-                        </span>
-                        <span style="font-size: 0.8rem; color: #cbd5e1; font-style: italic;">
-                            ${ex.variante}
-                        </span>
+                    <div style="margin: 8px 0 12px 0; padding: 10px; background: rgba(0, 212, 255, 0.05); border: 1px dashed rgba(0, 212, 255, 0.3); border-radius: 8px;">
+                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 5px;">
+                            <span style="font-size: 0.65rem; font-weight: 900; color: var(--accent); text-transform: uppercase;">
+                                🔄 Opción Alternativa:
+                            </span>
+                            ${ex.variante_video ? `<a href="${ex.variante_video}" target="_blank" class="yt-icon" style="font-size: 0.55rem; padding: 1px 4px; color: #ff4444; border-color: #ff4444;">▶ VIDEO ALT</a>` : ''}
+                        </div>
+                        <div style="color: #fff; font-size: 0.85rem; font-weight: bold; margin-bottom: 4px;">${ex.variante}</div>
+                        <div style="font-size: 0.7rem; color: #eab308; background: rgba(234, 179, 8, 0.1); padding: 4px 8px; border-radius: 4px; display: inline-block;">
+                            🎯 Objetivo Alt: <b>${ex.variante_reps || ex.reps_obj} Reps</b> | <b>${ex.variante_peso || ex.peso_obj} Kg</b>
+                        </div>
                     </div>
                 `;
             }
@@ -296,7 +298,7 @@ function loadSession(id) {
             return `
                 <div style="margin-bottom:10px;">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
-                        <span style="font-size:0.85rem; line-height:1.2;">
+                        <span style="font-size:0.9rem; line-height:1.2;">
                             ${etiquetaLetra}
                             <strong style="color:#fff">${ex.nombre}</strong>
                         </span>
@@ -309,27 +311,23 @@ function loadSession(id) {
 
         const numSeries = subEjercicios[0].series;
         const savedFeedback = localStorage.getItem(`feedback_${id}_${exIdx}`) || '';
-
         const card = document.createElement('div');
         card.className = 'exercise-card';
         if(esSuperserie) card.style.borderLeft = `4px solid #f1c40f`; 
 
-        // 3. Filas por Set
+        // 3. Filas por Set (Igual que antes para mantener compatibilidad)
         let filasHtml = "";
         for(let sIdx = 0; sIdx < numSeries; sIdx++) {
             const saved = getSavedData(id, exIdx, sIdx);
-            
             let subFilas = subEjercicios.map((ex, subIdx) => {
                 const color = coloresSS[subIdx % coloresSS.length];
                 const rA = ex.reps_obj.split(',').map(x => x.trim());
                 const pA = ex.peso_obj.split(',').map(x => x.trim());
                 const oR = rA[sIdx] || rA[rA.length-1];
                 const oK = pA[sIdx] || pA[pA.length-1];
-                
                 const valReps = (saved.reps || "").split("|")[subIdx] || "";
                 const valPeso = (saved.peso || "").split("|")[subIdx] || "";
                 const valRpe  = (saved.rpe || "").split("|")[subIdx] || "";
-
                 const prefijoLetra = esSuperserie ? `<b style="color:${color}">${String.fromCharCode(65+subIdx)}:</b> ` : '';
 
                 return `
@@ -678,4 +676,5 @@ function toggleNotas(id) {
     </script>
 </body>
 </html>
+
 
