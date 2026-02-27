@@ -644,7 +644,7 @@ function toggleNotas(id) {
     const bloque = rutinaFull.sesiones[sessId].ejercicios[exIdx];
     const subEjercicios = bloque.sub_ejercicios || [bloque];
     const container = document.getElementById(`filas-container-${exIdx}`);
-    const numSeries = subEjercicios[0].series;
+    const numSeries = esVariante ? (ej.variante_series || ej.series) : ej.series;
     
     let filasHtml = "";
     for(let sIdx = 0; sIdx < numSeries; sIdx++) {
@@ -713,6 +713,7 @@ function toggleModoVariante(btn, sessId, exIdx, subIdx) {
     </script>
 </body>
 </html>
+
 
 
 
