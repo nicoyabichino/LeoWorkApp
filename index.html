@@ -588,6 +588,9 @@ async function generarReporteProfe() {
         // 4. Tabla de datos
         let tableBody = [];
         Object.keys(rutinaFull.sesiones).forEach(sId => {
+            // Buscamos el contenedor de la sesión actual para ver los selects de alternativas
+            const sessionIndex = Object.keys(rutinaFull.sesiones).indexOf(sId);
+            
             rutinaFull.sesiones[sId].ejercicios.forEach((bloque, exIdx) => {
                 const subEjercicios = bloque.sub_ejercicios || [bloque];
                 const feedback = localStorage.getItem(`feedback_${sId}_${exIdx}`) || '';
@@ -596,34 +599,41 @@ async function generarReporteProfe() {
                     const saved = getSavedData(sId, exIdx, sIdx);
                     if(saved.done) {
                         subEjercicios.forEach((ex, subIdx) => {
-                            // Aquí está la corrección del SPLIT: leemos de 'ex' que siempre tiene los datos
-                            const rA = (ex.reps_obj || "").toString().split(',').map(x => x.trim());
-                            const pA = (ex.peso_obj || "").toString().split(',').map(x => x.trim());
+                            // Detectamos si el alumno eligió la alternativa en la UI
+                            const selectorAlt = document.querySelectorAll('.exercise-card')[exIdx]?.querySelectorAll('.ex-alt-selector')[subIdx];
+                            const usaAlternativa = selectorAlt && selectorAlt.value === 'alternativa';
                             
-                            const objR = rA[sIdx] || rA[rA.length-1] || ex.reps_obj;
-                            const objK = pA[sIdx] || pA[pA.length-1] || ex.peso_obj;
+                            // Elegimos el objeto de datos (Principal o Alternativo)
+                            const dataActiva = usaAlternativa ? ex.alternativa : ex;
+
+                            const rA = (dataActiva.reps_obj || "").toString().split(',').map(x => x.trim());
+                            const pA = (dataActiva.peso_obj || "").toString().split(',').map(x => x.trim());
+                            
+                            const objR = rA[sIdx] || rA[rA.length-1] || dataActiva.reps_obj;
+                            const objK = pA[sIdx] || pA[pA.length-1] || dataActiva.peso_obj;
 
                             const sReps = (saved.reps || "").split("|")[subIdx] || saved.reps || "-";
                             const sPeso = (saved.peso || "").split("|")[subIdx] || saved.peso || "-";
                             const sRpe = (saved.rpe || "").split("|")[subIdx] || saved.rpe || "-";
 
-                     let nombreFinal = ex.nombre; 
+                            // Lógica de nombre para "OTRO" o "ALTERNATIVA"
+                            let nombreFinal = dataActiva.nombre;
+                            if (usaAlternativa) nombreFinal = `ALT: ${dataActiva.nombre}`;
 
-// 2. Si es superserie/triserie, le agregamos la letra para que el profe ubique cuál es
-const nombreAMostrar = subEjercicios.length > 1 
-    ? `${nombreFinal} (${String.fromCharCode(65+subIdx)})` 
-    : nombreFinal;
+                            const nombreAMostrar = subEjercicios.length > 1 
+                                ? `${nombreFinal} (${String.fromCharCode(65+subIdx)})` 
+                                : nombreFinal;
 
-const obsAMostrar = (sIdx === 0 && subIdx === 0) ? feedback : "";
+                            const obsAMostrar = (sIdx === 0 && subIdx === 0) ? feedback : "";
 
-tableBody.push([
-    nombreAMostrar, 
-    `Set ${sIdx+1}`, 
-    `${objR}R / ${objK}K`, 
-    `${sReps}R / ${sPeso}K`, 
-    sRpe,
-    obsAMostrar
-]);
+                            tableBody.push([
+                                nombreAMostrar, 
+                                `Set ${sIdx+1}`, 
+                                `${objR}R / ${objK}K`, 
+                                `${sReps}R / ${sPeso}K`, 
+                                sRpe,
+                                obsAMostrar
+                            ]);
                         });
                     }
                 }
@@ -710,6 +720,16 @@ tableBody.push([
         document.querySelectorAll('.ex-notas-display').forEach(n => n.style.display = 'none');
         div.style.display = 'block';
     }
+}
+        function obtenerNombreEjercicio(contenedor) {
+    const select = contenedor.querySelector('.ex-nombre');
+    const inputOtro = contenedor.querySelector('.ex-nombre-otro');
+    
+    // Si el select es "Otro", devolvemos el valor del input manual
+    if (select.value.toUpperCase() === 'OTRO') {
+        return inputOtro.value || "Otro";
+    }
+    return select.value;
 }
     </script>
 </body>
