@@ -277,18 +277,20 @@ let cabeceraEjerciciosHtml = subEjercicios.map((ex, i) => {
         `<b style="color:${color}; background:rgba(255,255,255,0.08); padding:2px 6px; border-radius:4px; margin-right:5px; border:1px solid ${color}44">${String.fromCharCode(65+i)}</b>` 
         : '';
 
-    // --- CAMBIO PARA ALTERNATIVOS ---
-    let nombreRender = `<strong style="color:#fff">${ex.nombre}</strong>`;
-    
-    // Si el profe mandó alternativas para este ejercicio
-    if (ex.alternativos && ex.alternativos.length > 0) {
+// --- LÓGICA PARA MOSTRAR PRINCIPAL O ALTERNATIVO ---
+    let nombreRender = "";
+    const tieneAlt = ex.alternativa && ex.alternativa.nombre && ex.alternativa.nombre !== "OTRO";
+
+    if (tieneAlt) {
         nombreRender = `
             <select class="ex-alt-selector" 
                     style="background:#222; color:#00d4ff; border:1px solid #444; border-radius:4px; font-size:0.8rem; padding:2px;"
-                    onchange="updateAltName(${exIdx}, ${i}, this.value)">
-                <option value="${ex.nombre}">${ex.nombre}</option>
-                ${ex.alternativos.map(alt => `<option value="${alt}">${alt}</option>`).join('')}
+                    onchange="cambiarEjercicioActivo(${exIdx}, ${i}, this.value)">
+                <option value="principal">${ex.nombre}</option>
+                <option value="alternativa">ALT: ${ex.alternativa.nombre}</option>
             </select>`;
+    } else {
+        nombreRender = `<strong style="color:#fff">${ex.nombre}</strong>`;
     }
 
     return `
@@ -435,7 +437,6 @@ function markSet(sessId, exIdx, sIdx, totalSets) {
     row.classList.toggle('done'); 
     btn.classList.toggle('active'); 
     
-    // CORRECCIÓN AQUÍ: Detectar cuántos inputs hay para usar la función de guardado correcta
     const inputs = row.querySelectorAll('input:not(.ex-feedback-input)');
     if (inputs.length > 3) {
         saveDataSS(sessId, exIdx, sIdx, inputs.length / 3);
@@ -444,12 +445,20 @@ function markSet(sessId, exIdx, sIdx, totalSets) {
     }
     
     if(row.classList.contains('done')) { 
-        const sesionActual = rutinaFull.sesiones[sessId];
-        const ejercicioActual = sesionActual.ejercicios[exIdx];
-        const tiempoSerie = parseInt(ejercicioActual.descanso) || 90;
-        const tiempoEjercicio = parseInt(ejercicioActual.descanso_final) || 120;
+        const bloqueActual = rutinaFull.sesiones[sessId].ejercicios[exIdx];
         const esUltimaSerie = (sIdx === totalSets - 1);
-        const tiempoDescanso = esUltimaSerie ? tiempoEjercicio : tiempoSerie;
+        
+        let tiempoDescanso;
+
+        if (esUltimaSerie) {
+            // Si es la última serie de todas, usamos el descanso del bloque (final)
+            tiempoDescanso = parseInt(bloqueActual.descanso_bloque) || 120;
+        } else {
+            // Si no, usamos el descanso específico del primer ejercicio del bloque
+            // (En superseries, el descanso suele ser el mismo para el combo)
+            tiempoDescanso = parseInt(bloqueActual.sub_ejercicios[0].descanso) || 90;
+        }
+
         startTimer(tiempoDescanso); 
     } 
 }
@@ -674,6 +683,24 @@ tableBody.push([
         });
 
         init();
+        function cambiarEjercicioActivo(exIdx, subIdx, tipo) {
+    const bloque = rutinaFull.sesiones[document.getElementById('session-picker').value].ejercicios[exIdx];
+    const subEx = bloque.sub_ejercicios[subIdx];
+    const data = tipo === 'principal' ? subEx : subEx.alternativa;
+
+    // Buscamos las celdas de OBJETIVO (OBJ) de ese sub-ejercicio en todas las filas
+    const filas = document.querySelectorAll(`[id^="row-${exIdx}-"]`);
+    filas.forEach((fila, sIdx) => {
+        const celdasObj = fila.querySelectorAll('.obj-cell');
+        const rA = data.reps_obj.split(',').map(x => x.trim());
+        const pA = data.peso_obj.split(',').map(x => x.trim());
+        const oR = rA[sIdx] || rA[rA.length-1];
+        const oK = pA[sIdx] || pA[pA.length-1];
+        
+        // Actualizamos el texto del objetivo
+        celdasObj[subIdx].innerHTML = `${oR}/${oK}`;
+    });
+}
     </script>
 </body>
 </html>
