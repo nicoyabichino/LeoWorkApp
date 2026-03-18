@@ -701,6 +701,16 @@ tableBody.push([
         celdasObj[subIdx].innerHTML = `${oR}/${oK}`;
     });
 }
+        function toggleNotas(id) {
+    const div = document.getElementById(`notas-${id}`);
+    if (div.style.display === 'block') {
+        div.style.display = 'none';
+    } else {
+        // Cerramos otras notas abiertas para no llenar la pantalla (opcional)
+        document.querySelectorAll('.ex-notas-display').forEach(n => n.style.display = 'none');
+        div.style.display = 'block';
+    }
+}
     </script>
 </body>
 </html>
