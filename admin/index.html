@@ -293,63 +293,65 @@ function generarLink() {
     if(!nombre) return alert("Falta nombre del alumno");
     
     const rutina = { alumno: nombre, semana: semana, sesiones: {} };
+
     document.querySelectorAll('.sesion').forEach((s, idx) => {
         const ejercicios = [];
-     // Dentro de generarLink() en el ADMIN:
-s.querySelectorAll('.ex-item').forEach(item => {
-    const subEjs = [];
-// DENTRO DE generarLink(), donde recorres s.querySelectorAll('.ex-item')
-s.querySelectorAll('.ex-item').forEach(item => {
-    const subEjs = [];
-    item.querySelectorAll('.sub-ex').forEach(sub => {
-        // Capturamos ejercicio principal
-        const principalCont = sub.querySelector('.campos-container');
-        const altCont = sub.querySelector('.alt-campos-container');
-        const tieneAlt = item.querySelector('.sw-alternativo').checked;
+        
+        s.querySelectorAll('.ex-item').forEach(item => {
+            const subEjs = [];
+            const tieneAlt = item.querySelector('.sw-alternativo').checked;
 
-        subEjs.push({
-            // Usamos la función obtenerNombreEjercicio que ya definiste
-            nombre: obtenerNombreEjercicio(principalCont),
-            grupo: principalCont.querySelector('.ex-grupo').value,
-            series: parseInt(principalCont.querySelector('.ex-series').value),
-            reps_obj: principalCont.querySelector('.ex-reps').value,
-            peso_obj: principalCont.querySelector('.ex-peso').value,
-            video: principalCont.querySelector('.ex-video').value,
-            
-            // Datos de la alternativa (solo si el switch está ON)
-            tiene_alternativa: tieneAlt,
-            alternativa: tieneAlt ? {
-                nombre: obtenerNombreEjercicio(altCont),
-                grupo: altCont.querySelector('.ex-grupo').value,
-                series: parseInt(altCont.querySelector('.ex-series').value),
-                reps_obj: altCont.querySelector('.ex-reps').value,
-                peso_obj: altCont.querySelector('.ex-peso').value,
-                video: altCont.querySelector('.ex-video').value,
-            } : null,
-            
-            notas: item.querySelector('.ex-notas').value
+            item.querySelectorAll('.sub-ex').forEach(sub => {
+                const principalCont = sub.querySelector('.campos-container');
+                const altCont = sub.querySelector('.alt-campos-container');
+
+                subEjs.push({
+                    nombre: obtenerNombreEjercicio(principalCont),
+                    grupo: principalCont.querySelector('.ex-grupo').value,
+                    series: parseInt(principalCont.querySelector('.ex-series').value) || 0,
+                    reps_obj: principalCont.querySelector('.ex-reps').value,
+                    peso_obj: principalCont.querySelector('.ex-peso').value,
+                    video: principalCont.querySelector('.ex-video').value,
+                    
+                    tiene_alternativa: tieneAlt,
+                    alternativa: tieneAlt ? {
+                        nombre: obtenerNombreEjercicio(altCont),
+                        grupo: altCont.querySelector('.ex-grupo').value,
+                        series: parseInt(altCont.querySelector('.ex-series').value) || 0,
+                        reps_obj: altCont.querySelector('.ex-reps').value,
+                        peso_obj: altCont.querySelector('.ex-peso').value,
+                        video: altCont.querySelector('.ex-video').value,
+                    } : null,
+                    
+                    notas: item.querySelector('.ex-notas').value
+                });
+            });
+
+            ejercicios.push({
+                sub_ejercicios: subEjs,
+                descanso: parseInt(item.querySelector('.ex-descanso').value) || 90,
+                descanso_final: parseInt(item.querySelector('.ex-descanso-final').value) || 120
+            });
         });
-    });
 
-    ejercicios.push({
-        sub_ejercicios: subEjs,
-        descanso: parseInt(item.querySelector('.ex-descanso').value) || 90,
-        descanso_final: parseInt(item.querySelector('.ex-descanso-final').value) || 120
-    });
-});
         rutina.sesiones[idx + 1] = {
             nombre: s.querySelector('.nombre-sesion').value || `Día ${idx+1}`,
             ejercicios: ejercicios
         };
     });
 
-    const base64 = btoa(unescape(encodeURIComponent(JSON.stringify(rutina))));
-    document.getElementById('target-alumno').innerText = nombre.toUpperCase();
-    document.getElementById('linkFinal').innerText = base64;
-    document.getElementById('resultado').style.display = "block";
-    window.scrollTo({ top: document.getElementById('resultado').offsetTop - 20, behavior: 'smooth' });
+    try {
+        const jsonStr = JSON.stringify(rutina);
+        const base64 = btoa(unescape(encodeURIComponent(jsonStr)));
+        document.getElementById('target-alumno').innerText = nombre.toUpperCase();
+        document.getElementById('linkFinal').innerText = base64;
+        document.getElementById('resultado').style.display = "block";
+        window.scrollTo({ top: document.getElementById('resultado').offsetTop - 20, behavior: 'smooth' });
+    } catch(e) {
+        console.error("Error al codificar:", e);
+        alert("Error al generar el código.");
+    }
 }
-
 function copiarLink(event) { // <--- Agregamos 'event' aquí
     const text = document.getElementById("linkFinal").innerText;
     const tempInput = document.getElementById("temp-copy");
