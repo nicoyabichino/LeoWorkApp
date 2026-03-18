@@ -205,12 +205,15 @@ function agregarEjercicio(sId) {
         
         <button class="btn-add-sub" style="display:none; background:#238636; color:white; border:none; padding:8px; border-radius:4px; font-size:0.7rem; margin-bottom:10px; width:100%;" onclick="agregarSubEjercicio(this)">+ Añadir Ejercicio a la Serie</button>
 
-        <textarea class="ex-notas" placeholder="Observaciones generales para este bloque..." style="width:100%; height:40px; margin-top:5px;"></textarea>
+        <div style="background:#111; padding:10px; border-radius:8px; border:1px solid #444; margin-top:10px;">
+            <label style="color:var(--primary); font-size:0.7rem;">DESCANSO AL TERMINAR ESTE BLOQUE (segundos)</label>
+            <input type="number" class="ex-descanso-final" value="120" style="width:100%; background:#000; color:#fff; border:1px solid #333;">
+        </div>
+
+        <textarea class="ex-notas" placeholder="Observaciones generales..." style="width:100%; height:40px; margin-top:5px;"></textarea>
         <button onclick="this.parentElement.remove()" style="color:var(--danger); border:none; background:none; font-size:0.7rem; width:100%; text-align:right; margin-top:5px;">Eliminar Bloque</button>
     `;
     container.appendChild(div);
-    
-    // Inicializar los selects de ambos paneles (Principal y Alternativo)
     div.querySelectorAll('.ex-grupo').forEach(g => actualizarEjercicios(g));
 }
 function crearHtmlCamposEjercicio(esAlternativo = false) {
@@ -284,12 +287,23 @@ function checkOtro(select) {
     }
 }
 
-    function actualizarEjercicios(selectGrupo) {
-        const grupo = selectGrupo.value;
-        const selectEx = selectGrupo.parentElement.parentElement.parentElement.querySelector('.ex-nombre');
-        const ejercicios = DATA_EJERCICIOS[grupo] || [];
-        selectEx.innerHTML = ejercicios.map(e => `<option value="${e}">${e}</option>`).join('');
+function actualizarEjercicios(selectGrupo) {
+    const grupo = selectGrupo.value;
+    const contenedorPadre = selectGrupo.closest('.campos-container') || selectGrupo.closest('.alt-campos-container');
+    const selectEx = contenedorPadre.querySelector('.ex-nombre');
+    
+    let ejercicios = [...(DATA_EJERCICIOS[grupo] || [])];
+    
+    // Forzamos que siempre exista "Otro" si no está en la lista
+    if (!ejercicios.includes("Otro") && !ejercicios.includes("OTRO")) {
+        ejercicios.push("Otro");
     }
+
+    selectEx.innerHTML = ejercicios.map(e => `<option value="${e}">${e}</option>`).join('');
+    
+    // Resetear el input "Otro" por si estaba abierto
+    checkOtro(selectEx);
+}
 function obtenerNombreEjercicio(contenedor) {
     const select = contenedor.querySelector('.ex-nombre');
     const inputOtro = contenedor.querySelector('.ex-nombre-otro');
@@ -310,44 +324,44 @@ function generarLink() {
         
         s.querySelectorAll('.ex-item').forEach(item => {
             const subEjs = [];
-            const tieneAlt = item.querySelector('.sw-alternativo').checked;
 
             item.querySelectorAll('.sub-ex').forEach(sub => {
                 const principalCont = sub.querySelector('.campos-container');
                 const altCont = sub.querySelector('.alt-campos-container');
 
-// Dentro de tu bucle de subEjs.push en generarLink():
-subEjs.push({
-    nombre: obtenerNombreEjercicio(principalCont),
-    grupo: principalCont.querySelector('.ex-grupo').value,
-    series: parseInt(principalCont.querySelector('.ex-series').value) || 0,
-    reps_obj: principalCont.querySelector('.ex-reps').value,
-    peso_obj: principalCont.querySelector('.ex-peso').value,
-    descanso: parseInt(principalCont.querySelector('.ex-descanso-especifico').value) || 90,
-    video: principalCont.querySelector('.ex-video').value,
-    
-    alternativa: {
-        nombre: obtenerNombreEjercicio(altCont),
-        grupo: altCont.querySelector('.ex-grupo').value,
-        series: parseInt(altCont.querySelector('.ex-series').value) || 0,
-        reps_obj: altCont.querySelector('.ex-reps').value,
-        peso_obj: altCont.querySelector('.ex-peso').value,
-        descanso: parseInt(altCont.querySelector('.ex-descanso-especifico').value) || 90,
-        video: altCont.querySelector('.ex-video').value,
-    },
-    notas: item.querySelector('.ex-notas').value
-});
+                // Guardamos los datos de ambos (Principal y Alternativo)
+                subEjs.push({
+                    nombre: obtenerNombreEjercicio(principalCont),
+                    grupo: principalCont.querySelector('.ex-grupo').value,
+                    series: parseInt(principalCont.querySelector('.ex-series').value) || 0,
+                    reps_obj: principalCont.querySelector('.ex-reps').value,
+                    peso_obj: principalCont.querySelector('.ex-peso').value,
+                    // Usamos el descanso individual de cada uno
+                    descanso: parseInt(principalCont.querySelector('.ex-descanso-especifico').value) || 90,
+                    video: principalCont.querySelector('.ex-video').value,
+                    
+                    alternativa: {
+                        nombre: obtenerNombreEjercicio(altCont),
+                        grupo: altCont.querySelector('.ex-grupo').value,
+                        series: parseInt(altCont.querySelector('.ex-series').value) || 0,
+                        reps_obj: altCont.querySelector('.ex-reps').value,
+                        peso_obj: altCont.querySelector('.ex-peso').value,
+                        descanso: parseInt(altCont.querySelector('.ex-descanso-especifico').value) || 90,
+                        video: altCont.querySelector('.ex-video').value,
+                    },
+                    notas: item.querySelector('.ex-notas').value
+                });
             });
 
+            // Al final del bloque (ex-item), guardamos el descanso para pasar al siguiente ejercicio
             ejercicios.push({
                 sub_ejercicios: subEjs,
-                descanso: parseInt(item.querySelector('.ex-descanso').value) || 90,
-                descanso_final: parseInt(item.querySelector('.ex-descanso-final').value) || 120
+                descanso_bloque: parseInt(item.querySelector('.ex-descanso-final').value) || 120
             });
         });
 
         rutina.sesiones[idx + 1] = {
-            nombre: s.querySelector('.nombre-sesion').value || `Día ${idx+1}`,
+            nombre: s.querySelector('.nombre-sesion').value || `Día ${idx + 1}`,
             ejercicios: ejercicios
         };
     });
