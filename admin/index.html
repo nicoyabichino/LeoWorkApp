@@ -157,13 +157,13 @@
     let contadorSesiones = 0;
 
 const DATA_EJERCICIOS = {
-    "MOVILIDAD": ["Rotacion de columna", "Movilidad de cadera", "Movilidad de rodilla", "Rotacion de hombros", "Gato malo/bueno"],
-    "ABDOMEN / CORE": ["Plancha frontal", "Plancha lateral", "Planchas dinámicas", "Crunch", "Oblicuos", "Bicho muerto", "Bird-dog", "Abs wheel (ruedita)", "Abs sovieticas", "Leñador ascendente", "Leñador descendente", "Elevacion de piernas"],
-    "TREN INF / CUADRICEPS / GEMELOS": ["Sentadilla con barra alta", "Sentadilla con barra baja", "Sentadilla frontal", "Sentadilla en multipower", "Sentadilla hack", "Sentadilla pendular", "Sentadilla goblet", "Sentadilla bulgara (enfoque cuadriceps)", "Prensa bilateral", "Prensa unilateral", "Sillon cuadriceps bilateral", "Sillon cuadriceps unilateral", "Estocada hacia adelante", "Subidas al banco (enfoque cuadriceps)", "Gemelos en prensa", "Gemelos en maquina especifica", "Gemelos con mancuernas", "Gemelos con barra"],
-    "TREN INF / ISQUIOS / GLUTEOS / ADUCTORES": ["Peso muerto convencional", "Peso muerto rumano", "Peso muerto piernas rigidas", "Peso muerto sumo", "Peso muerto unilateral", "Camilla de isquis bilateral", "Camilla de isquis unilateral", "Aductores en maquina", "Abducciones en maquina", "Patada de gluteo en maquina especifica", "Patada de gluteo en polea", "Hip-trust bilateral", "Hip-trust unilateral", "Sentadilla bulgara (enfoque gluteo)", "Subida al banco (enfoque gluteo)", "Abducciones con banda"],
-    "PECTORAL": ["Press plano barra", "Press plano mancuerna", "Press plano multipower", "Press inclinado barra", "Press inclinado mancuenra", "Press inclinado multipower", "Press declinado con mancuerna", "Press en polea altura media", "Peck deck", "Apertura con mancuernas", "Flexiones de brazos", "Poleas cruzadas"],
-    "DORSALES": ["Dominadas supina", "Dominadas pronacion", "Jalon al pecho supino", "Jalon al pecho prono", "Jalon al pecho agarre cerrado", "Remo bajo ancho", "Remo bajo cerrado", "Remo bajo unilateral", "Remo con mancuerna bilateral", "Remo con mancuerna unilateral", "Remo con barra codo abierto", "Remo con barra codo cerrado", "Pullover", "Remo dorian"],
-    "BICEPS / TRICEPS / DELTOIDES": ["Curl biceps con barra", "Curl biceps con mancuerna", "Curl biceps sentado con mancuerna", "Curl biceps predicador con barra", "Curl biceps predicador con mancuerna", "Curl biceps en polea", "Curl biceps bayessian", "Curl biceps martillo", "Triceps polea alta bilateral", "Triceps polea alta unilateral", "Triceps trasnuca bilateral", "Triceps trasnuca unilateral", "Press frances", "Fondo en paralela", "Press vertical barra", "Press vertical mancuerna", "Vuelo lateral", "Vuelo frontal", "Vuelo posterior", "Peck deck inverso."]
+    "MOVILIDAD": ["Rotacion de columna", "Movilidad de cadera", "Movilidad de rodilla", "Rotacion de hombros", "Gato malo/bueno", "Otro"],
+    "ABDOMEN / CORE": ["Plancha frontal", "Plancha lateral", "Planchas dinámicas", "Crunch", "Oblicuos", "Bicho muerto", "Bird-dog", "Abs wheel (ruedita)", "Abs sovieticas", "Leñador ascendente", "Leñador descendente", "Elevacion de piernas", "Otro"],
+    "TREN INF / CUADRICEPS / GEMELOS": ["Sentadilla con barra alta", "Sentadilla con barra baja", "Sentadilla frontal", "Sentadilla en multipower", "Sentadilla hack", "Sentadilla pendular", "Sentadilla goblet", "Sentadilla bulgara (enfoque cuadriceps)", "Prensa bilateral", "Prensa unilateral", "Sillon cuadriceps bilateral", "Sillon cuadriceps unilateral", "Estocada hacia adelante", "Subidas al banco (enfoque cuadriceps)", "Gemelos en prensa", "Gemelos en maquina especifica", "Gemelos con mancuernas", "Gemelos con barra", "Otro"],
+    "TREN INF / ISQUIOS / GLUTEOS / ADUCTORES": ["Peso muerto convencional", "Peso muerto rumano", "Peso muerto piernas rigidas", "Peso muerto sumo", "Peso muerto unilateral", "Camilla de isquis bilateral", "Camilla de isquis unilateral", "Aductores en maquina", "Abducciones en maquina", "Patada de gluteo en maquina especifica", "Patada de gluteo en polea", "Hip-trust bilateral", "Hip-trust unilateral", "Sentadilla bulgara (enfoque gluteo)", "Subida al banco (enfoque gluteo)", "Abducciones con banda", "Otro"],
+    "PECTORAL": ["Press plano barra", "Press plano mancuerna", "Press plano multipower", "Press inclinado barra", "Press inclinado mancuenra", "Press inclinado multipower", "Press declinado con mancuerna", "Press en polea altura media", "Peck deck", "Apertura con mancuernas", "Flexiones de brazos", "Poleas cruzadas", "Otro"],
+    "DORSALES": ["Dominadas supina", "Dominadas pronacion", "Jalon al pecho supino", "Jalon al pecho prono", "Jalon al pecho agarre cerrado", "Remo bajo ancho", "Remo bajo cerrado", "Remo bajo unilateral", "Remo con mancuerna bilateral", "Remo con mancuerna unilateral", "Remo con barra codo abierto", "Remo con barra codo cerrado", "Pullover", "Remo dorian", "Otro"],
+    "BICEPS / TRICEPS / DELTOIDES": ["Curl biceps con barra", "Curl biceps con mancuerna", "Curl biceps sentado con mancuerna", "Curl biceps predicador con barra", "Curl biceps predicador con mancuerna", "Curl biceps en polea", "Curl biceps bayessian", "Curl biceps martillo", "Triceps polea alta bilateral", "Triceps polea alta unilateral", "Triceps trasnuca bilateral", "Triceps trasnuca unilateral", "Press frances", "Fondo en paralela", "Press vertical barra", "Press vertical mancuerna", "Vuelo lateral", "Vuelo frontal", "Vuelo posterior", "Peck deck inverso.", "Otro"]
 };
 function agregarSesion() {
     contadorSesiones++;
@@ -188,32 +188,22 @@ function agregarEjercicio(sId) {
     const div = document.createElement('div');
     div.className = 'ex-item';
     
-    // Selector para elegir si es normal o superserie
-    const selectorTipo = `
-        <div style="margin-bottom:10px; display:flex; gap:10px;">
-            <select class="ex-tipo" onchange="cambiarModo(this)" style="background:var(--accent); font-weight:bold; height:35px; padding:5px;">
+    div.innerHTML = `
+        <div style="margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;">
+            <select class="ex-tipo" onchange="cambiarModo(this)" style="background:var(--accent); font-weight:bold; height:35px; padding:5px; border-radius:5px; color:white;">
                 <option value="normal">EJERCICIO NORMAL</option>
                 <option value="superserie">SUPERSERIE</option>
             </select>
+            <div style="display:flex; align-items:center; gap:5px;">
+                <span style="font-size:0.7rem; font-weight:bold; color:var(--primary);">ALTERNATIVA</span>
+                <input type="checkbox" class="sw-alternativo" onchange="toggleAlternativa(this)" style="width:20px; height:20px; margin:0;">
+            </div>
         </div>
-    `;
 
-    const gruposHtml = Object.keys(DATA_EJERCICIOS).map(g => `<option value="${g}">${g}</option>`).join('');
-    
-    div.innerHTML = `
-        ${selectorTipo}
         <div class="sub-ejercicios-container">
             <div class="sub-ex" style="border-bottom: 1px dashed #444; margin-bottom:10px; padding-bottom:10px;">
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom:8px;">
-                    <div><label>Grupo</label><select class="ex-grupo" onchange="actualizarEjercicios(this)">${gruposHtml}</select></div>
-                    <div><label>Ejercicio</label><select class="ex-nombre"></select></div>
-                </div>
-                <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px;">
-                    <div><label>Sets</label><input type="number" class="ex-series" value="4"></div>
-                    <div><label>Rep (Obj)</label><input type="text" class="ex-reps" placeholder="12,10"></div>
-                    <div><label>Kg (Obj)</label><input type="text" class="ex-peso" placeholder="50,60"></div>
-                </div>
-                <div style="margin-top:5px;"><label>Video</label><input type="text" class="ex-video" placeholder="YouTube"></div>
+                ${crearHtmlCamposEjercicio(false)}
+                ${crearHtmlCamposEjercicio(true)} 
             </div>
         </div>
         
@@ -224,12 +214,35 @@ function agregarEjercicio(sId) {
             <div><label>Descanso Final</label><input type="number" class="ex-descanso-final" value="120"></div>
         </div>
         <textarea class="ex-notas" placeholder="Indicaciones..." style="width:100%; height:40px; margin-top:5px;"></textarea>
-        <button onclick="this.parentElement.remove()" style="color:var(--danger); border:none; background:none; font-size:0.7rem; width:100%; text-align:right;">Eliminar Bloque</button>
+        <button onclick="this.parentElement.remove()" style="color:var(--danger); border:none; background:none; font-size:0.7rem; width:100%; text-align:right; margin-top:5px;">Eliminar Bloque</button>
     `;
     container.appendChild(div);
     actualizarEjercicios(div.querySelector('.ex-grupo'));
 }
+function crearHtmlCamposEjercicio(esAlternativo = false) {
+    const prefijo = esAlternativo ? 'alt-' : '';
+    const labelAlternativo = esAlternativo ? ' (ALTERNATIVA)' : '';
+    const displayAlt = esAlternativo ? 'none' : 'block';
 
+    return `
+        <div class="${prefijo}campos-container" style="display: ${displayAlt}; background: ${esAlternativo ? '#1a202c' : 'transparent'}; padding: ${esAlternativo ? '10px' : '0'}; border-radius: 8px; border: ${esAlternativo ? '1px dashed #3b82f6' : 'none'}; margin-top: 10px;">
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom:8px;">
+                <div><label>Grupo</label><select class="ex-grupo" onchange="actualizarEjercicios(this)">${Object.keys(DATA_EJERCICIOS).map(g => `<option value="${g}">${g}</option>`).join('')}</select></div>
+                <div>
+                    <label>Ejercicio${labelAlternativo}</label>
+                    <select class="ex-nombre" onchange="checkOtro(this)"></select>
+                    <input type="text" class="ex-nombre-otro" placeholder="Nombre del ejercicio..." style="display:none; margin-top:5px; border-color: var(--accent);">
+                </div>
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px;">
+                <div><label>Sets</label><input type="number" class="ex-series" value="4"></div>
+                <div><label>Rep (Obj)</label><input type="text" class="ex-reps" placeholder="12,10"></div>
+                <div><label>Kg (Obj)</label><input type="text" class="ex-peso" placeholder="50,60"></div>
+            </div>
+            <div style="margin-top:5px;"><label>Video</label><input type="text" class="ex-video" placeholder="YouTube"></div>
+        </div>
+    `;
+}
 function cambiarModo(select) {
     const parent = select.parentElement.parentElement;
     const btnAddSub = parent.querySelector('.btn-add-sub');
@@ -251,6 +264,18 @@ function agregarSubEjercicio(btn) {
     nuevoSub.querySelector('.ex-video').value = "";
     container.appendChild(nuevoSub);
 }
+    function toggleAlternativa(checkbox) {
+    const subEx = checkbox.closest('.ex-item').querySelectorAll('.sub-ex');
+    subEx.forEach(ex => {
+        const panelAlt = ex.querySelector('.alt-campos-container');
+        panelAlt.style.display = checkbox.checked ? 'block' : 'none';
+    });
+}
+
+function checkOtro(select) {
+    const inputOtro = select.parentElement.querySelector('.ex-nombre-otro');
+    inputOtro.style.display = (select.value === "OTRO") ? "block" : "none";
+}
 
     function actualizarEjercicios(selectGrupo) {
         const grupo = selectGrupo.value;
@@ -258,7 +283,10 @@ function agregarSubEjercicio(btn) {
         const ejercicios = DATA_EJERCICIOS[grupo] || [];
         selectEx.innerHTML = ejercicios.map(e => `<option value="${e}">${e}</option>`).join('');
     }
-
+function obtenerNombreEjercicio(contenedor) {
+    const select = contenedor.querySelector('.ex-nombre');
+    return select.value === "OTRO" ? contenedor.querySelector('.ex-nombre-otro').value : select.value;
+}
 function generarLink() {
     const nombre = document.getElementById('alumno-nombre').value;
     const semana = document.getElementById('semana-nro').value;
@@ -270,15 +298,36 @@ function generarLink() {
      // Dentro de generarLink() en el ADMIN:
 s.querySelectorAll('.ex-item').forEach(item => {
     const subEjs = [];
+// DENTRO DE generarLink(), donde recorres s.querySelectorAll('.ex-item')
+s.querySelectorAll('.ex-item').forEach(item => {
+    const subEjs = [];
     item.querySelectorAll('.sub-ex').forEach(sub => {
+        // Capturamos ejercicio principal
+        const principalCont = sub.querySelector('.campos-container');
+        const altCont = sub.querySelector('.alt-campos-container');
+        const tieneAlt = item.querySelector('.sw-alternativo').checked;
+
         subEjs.push({
-            nombre: sub.querySelector('.ex-nombre').value,
-            grupo: sub.querySelector('.ex-grupo').value,
-            series: parseInt(sub.querySelector('.ex-series').value),
-            reps_obj: sub.querySelector('.ex-reps').value,
-            peso_obj: sub.querySelector('.ex-peso').value,
-            video: sub.querySelector('.ex-video').value,
-            notas: item.querySelector('.ex-notas').value // Notas por bloque
+            // Usamos la función obtenerNombreEjercicio que ya definiste
+            nombre: obtenerNombreEjercicio(principalCont),
+            grupo: principalCont.querySelector('.ex-grupo').value,
+            series: parseInt(principalCont.querySelector('.ex-series').value),
+            reps_obj: principalCont.querySelector('.ex-reps').value,
+            peso_obj: principalCont.querySelector('.ex-peso').value,
+            video: principalCont.querySelector('.ex-video').value,
+            
+            // Datos de la alternativa (solo si el switch está ON)
+            tiene_alternativa: tieneAlt,
+            alternativa: tieneAlt ? {
+                nombre: obtenerNombreEjercicio(altCont),
+                grupo: altCont.querySelector('.ex-grupo').value,
+                series: parseInt(altCont.querySelector('.ex-series').value),
+                reps_obj: altCont.querySelector('.ex-reps').value,
+                peso_obj: altCont.querySelector('.ex-peso').value,
+                video: altCont.querySelector('.ex-video').value,
+            } : null,
+            
+            notas: item.querySelector('.ex-notas').value
         });
     });
 
