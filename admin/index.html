@@ -189,15 +189,11 @@ function agregarEjercicio(sId) {
     div.className = 'ex-item';
     
     div.innerHTML = `
-        <div style="margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;">
-            <select class="ex-tipo" onchange="cambiarModo(this)" style="background:var(--accent); font-weight:bold; height:35px; padding:5px; border-radius:5px; color:white;">
+        <div style="margin-bottom:10px;">
+            <select class="ex-tipo" onchange="cambiarModo(this)" style="background:var(--accent); font-weight:bold; height:35px; padding:5px; border-radius:5px; color:white; width:100%;">
                 <option value="normal">EJERCICIO NORMAL</option>
-                <option value="superserie">SUPERSERIE</option>
+                <option value="superserie">SUPERSERIE (A+B...)</option>
             </select>
-            <div style="display:flex; align-items:center; gap:5px;">
-                <span style="font-size:0.7rem; font-weight:bold; color:var(--primary);">ALTERNATIVA</span>
-                <input type="checkbox" class="sw-alternativo" onchange="toggleAlternativa(this)" style="width:20px; height:20px; margin:0;">
-            </div>
         </div>
 
         <div class="sub-ejercicios-container">
@@ -207,39 +203,44 @@ function agregarEjercicio(sId) {
             </div>
         </div>
         
-        <button class="btn-add-sub" style="display:none; background:#238636; color:white; border:none; padding:5px; border-radius:4px; font-size:0.7rem; margin-bottom:10px;" onclick="agregarSubEjercicio(this)">+ Acompañar Superserie</button>
+        <button class="btn-add-sub" style="display:none; background:#238636; color:white; border:none; padding:8px; border-radius:4px; font-size:0.7rem; margin-bottom:10px; width:100%;" onclick="agregarSubEjercicio(this)">+ Añadir Ejercicio a la Serie</button>
 
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; background: #000; padding: 10px; border-radius: 8px;">
-            <div><label>Descanso Sets</label><input type="number" class="ex-descanso" value="90"></div>
-            <div><label>Descanso Final</label><input type="number" class="ex-descanso-final" value="120"></div>
-        </div>
-        <textarea class="ex-notas" placeholder="Indicaciones..." style="width:100%; height:40px; margin-top:5px;"></textarea>
+        <textarea class="ex-notas" placeholder="Observaciones generales para este bloque..." style="width:100%; height:40px; margin-top:5px;"></textarea>
         <button onclick="this.parentElement.remove()" style="color:var(--danger); border:none; background:none; font-size:0.7rem; width:100%; text-align:right; margin-top:5px;">Eliminar Bloque</button>
     `;
     container.appendChild(div);
-    actualizarEjercicios(div.querySelector('.ex-grupo'));
+    
+    // Inicializar los selects de ambos paneles (Principal y Alternativo)
+    div.querySelectorAll('.ex-grupo').forEach(g => actualizarEjercicios(g));
 }
 function crearHtmlCamposEjercicio(esAlternativo = false) {
     const prefijo = esAlternativo ? 'alt-' : '';
-    const labelAlternativo = esAlternativo ? ' (ALTERNATIVA)' : '';
-    const displayAlt = esAlternativo ? 'none' : 'block';
+    const label = esAlternativo ? 'ALTERNATIVA (Si no puede el ppal)' : 'EJERCICIO PRINCIPAL';
+    const colorBorde = esAlternativo ? '#3b82f6' : '#238636';
 
     return `
-        <div class="${prefijo}campos-container" style="display: ${displayAlt}; background: ${esAlternativo ? '#1a202c' : 'transparent'}; padding: ${esAlternativo ? '10px' : '0'}; border-radius: 8px; border: ${esAlternativo ? '1px dashed #3b82f6' : 'none'}; margin-top: 10px;">
+        <div class="${prefijo}campos-container" style="background: rgba(255,255,255,0.03); padding: 10px; border-radius: 8px; border: 1px solid ${colorBorde}; margin-top: 10px;">
+            <div style="color:${colorBorde}; font-size:0.65rem; font-weight:bold; margin-bottom:5px;">${label}</div>
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom:8px;">
-                <div><label>Grupo</label><select class="ex-grupo" onchange="actualizarEjercicios(this)">${Object.keys(DATA_EJERCICIOS).map(g => `<option value="${g}">${g}</option>`).join('')}</select></div>
                 <div>
-                    <label>Ejercicio${labelAlternativo}</label>
+                    <label>Grupo</label>
+                    <select class="ex-grupo" onchange="actualizarEjercicios(this)">
+                        ${Object.keys(DATA_EJERCICIOS).map(g => `<option value="${g}">${g}</option>`).join('')}
+                    </select>
+                </div>
+                <div>
+                    <label>Nombre</label>
                     <select class="ex-nombre" onchange="checkOtro(this)"></select>
-                    <input type="text" class="ex-nombre-otro" placeholder="Nombre del ejercicio..." style="display:none; margin-top:5px; border-color: var(--accent);">
+                    <input type="text" class="ex-nombre-otro" placeholder="Escribir nombre..." style="display:none; margin-top:5px; border-color: var(--accent); background:#111; color:#fff;">
                 </div>
             </div>
-            <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px;">
+            <div style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:8px;">
                 <div><label>Sets</label><input type="number" class="ex-series" value="4"></div>
-                <div><label>Rep (Obj)</label><input type="text" class="ex-reps" placeholder="12,10"></div>
-                <div><label>Kg (Obj)</label><input type="text" class="ex-peso" placeholder="50,60"></div>
+                <div><label>Reps</label><input type="text" class="ex-reps" placeholder="12,10"></div>
+                <div><label>Kg</label><input type="text" class="ex-peso" placeholder="50"></div>
+                <div><label>Pausa</label><input type="number" class="ex-descanso-especifico" value="90"></div>
             </div>
-            <div style="margin-top:5px;"><label>Video</label><input type="text" class="ex-video" placeholder="YouTube"></div>
+            <div style="margin-top:5px;"><label>Video (Opcional)</label><input type="text" class="ex-video" placeholder="Link YouTube"></div>
         </div>
     `;
 }
@@ -273,8 +274,14 @@ function agregarSubEjercicio(btn) {
 }
 
 function checkOtro(select) {
+    // Busca el input que está justo al lado (en el mismo div padre)
     const inputOtro = select.parentElement.querySelector('.ex-nombre-otro');
-    inputOtro.style.display = (select.value === "OTRO") ? "block" : "none";
+    if (select.value === "OTRO" || select.value === "Otro") {
+        inputOtro.style.display = "block";
+        inputOtro.focus();
+    } else {
+        inputOtro.style.display = "none";
+    }
 }
 
     function actualizarEjercicios(selectGrupo) {
@@ -285,7 +292,11 @@ function checkOtro(select) {
     }
 function obtenerNombreEjercicio(contenedor) {
     const select = contenedor.querySelector('.ex-nombre');
-    return select.value === "OTRO" ? contenedor.querySelector('.ex-nombre-otro').value : select.value;
+    const inputOtro = contenedor.querySelector('.ex-nombre-otro');
+    if (select.value.toUpperCase() === "OTRO") {
+        return inputOtro.value || "Ejercicio sin nombre";
+    }
+    return select.value;
 }
 function generarLink() {
     const nombre = document.getElementById('alumno-nombre').value;
@@ -305,26 +316,27 @@ function generarLink() {
                 const principalCont = sub.querySelector('.campos-container');
                 const altCont = sub.querySelector('.alt-campos-container');
 
-                subEjs.push({
-                    nombre: obtenerNombreEjercicio(principalCont),
-                    grupo: principalCont.querySelector('.ex-grupo').value,
-                    series: parseInt(principalCont.querySelector('.ex-series').value) || 0,
-                    reps_obj: principalCont.querySelector('.ex-reps').value,
-                    peso_obj: principalCont.querySelector('.ex-peso').value,
-                    video: principalCont.querySelector('.ex-video').value,
-                    
-                    tiene_alternativa: tieneAlt,
-                    alternativa: tieneAlt ? {
-                        nombre: obtenerNombreEjercicio(altCont),
-                        grupo: altCont.querySelector('.ex-grupo').value,
-                        series: parseInt(altCont.querySelector('.ex-series').value) || 0,
-                        reps_obj: altCont.querySelector('.ex-reps').value,
-                        peso_obj: altCont.querySelector('.ex-peso').value,
-                        video: altCont.querySelector('.ex-video').value,
-                    } : null,
-                    
-                    notas: item.querySelector('.ex-notas').value
-                });
+// Dentro de tu bucle de subEjs.push en generarLink():
+subEjs.push({
+    nombre: obtenerNombreEjercicio(principalCont),
+    grupo: principalCont.querySelector('.ex-grupo').value,
+    series: parseInt(principalCont.querySelector('.ex-series').value) || 0,
+    reps_obj: principalCont.querySelector('.ex-reps').value,
+    peso_obj: principalCont.querySelector('.ex-peso').value,
+    descanso: parseInt(principalCont.querySelector('.ex-descanso-especifico').value) || 90,
+    video: principalCont.querySelector('.ex-video').value,
+    
+    alternativa: {
+        nombre: obtenerNombreEjercicio(altCont),
+        grupo: altCont.querySelector('.ex-grupo').value,
+        series: parseInt(altCont.querySelector('.ex-series').value) || 0,
+        reps_obj: altCont.querySelector('.ex-reps').value,
+        peso_obj: altCont.querySelector('.ex-peso').value,
+        descanso: parseInt(altCont.querySelector('.ex-descanso-especifico').value) || 90,
+        video: altCont.querySelector('.ex-video').value,
+    },
+    notas: item.querySelector('.ex-notas').value
+});
             });
 
             ejercicios.push({
