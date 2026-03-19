@@ -771,21 +771,57 @@ function cambiarEjercicioActivo(exIdx, subIdx, tipo) {
     }
     return select.value;
 }
-        function switchEjercicio(exIdx, subIdx) {
+function switchEjercicio(exIdx, subIdx) {
     const btn = document.getElementById(`btn-alt-${exIdx}-${subIdx}`);
     const nameSpan = document.getElementById(`name-${exIdx}-${subIdx}`);
+    // Buscamos el link de video que está en el mismo bloque que el nombre
+    const videoLink = nameSpan.closest('div').querySelector('.yt-icon');
     
-    // Detectamos el estado actual por una clase o por el texto
+    const sessId = document.getElementById('session-picker').value;
+    const bloque = rutinaFull.sesiones[sessId].ejercicios[exIdx];
+    const subEx = bloque.sub_ejercicios[subIdx];
+    
     const esPrincipal = !btn.classList.contains('active-alt');
     
     if (esPrincipal) {
+        // --- PASAR A ALTERNATIVO ---
         btn.classList.add('active-alt');
         btn.innerText = "✅ USANDO ALTERNATIVO";
+        
+        // Cambiar Nombre
+        nameSpan.innerText = `ALT: ${subEx.alternativa.nombre}`;
+        nameSpan.style.color = "var(--accent)"; // Un color distinto para que note el cambio
+        
+        // Cambiar Video
+        if (videoLink) {
+            if (subEx.alternativa.video) {
+                videoLink.href = subEx.alternativa.video;
+                videoLink.style.display = 'inline-block';
+            } else {
+                videoLink.style.display = 'none'; // Si el alt no tiene video, lo ocultamos
+            }
+        }
+        
         cambiarEjercicioActivo(exIdx, subIdx, 'alternativa');
     } else {
+        // --- VOLVER AL PRINCIPAL ---
         btn.classList.remove('active-alt');
-        const bloque = rutinaFull.sesiones[document.getElementById('session-picker').value].ejercicios[exIdx];
-        btn.innerText = `🔄 ALTERNATIVO: ${bloque.sub_ejercicios[subIdx].alternativa.nombre}`;
+        btn.innerText = `🔄 ALT: ${subEx.alternativa.nombre}`;
+        
+        // Restaurar Nombre
+        nameSpan.innerText = subEx.nombre;
+        nameSpan.style.color = "#fff";
+        
+        // Restaurar Video
+        if (videoLink) {
+            if (subEx.video) {
+                videoLink.href = subEx.video;
+                videoLink.style.display = 'inline-block';
+            } else {
+                videoLink.style.display = 'none';
+            }
+        }
+        
         cambiarEjercicioActivo(exIdx, subIdx, 'principal');
     }
 }
