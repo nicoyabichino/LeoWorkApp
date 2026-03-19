@@ -693,22 +693,44 @@ async function generarReporteProfe() {
         });
 
         init();
-        function cambiarEjercicioActivo(exIdx, subIdx, tipo) {
+function cambiarEjercicioActivo(exIdx, subIdx, tipo) {
     const bloque = rutinaFull.sesiones[document.getElementById('session-picker').value].ejercicios[exIdx];
     const subEx = bloque.sub_ejercicios[subIdx];
     const data = tipo === 'principal' ? subEx : subEx.alternativa;
+    
+    const numSeriesNuevas = parseInt(data.series) || 0;
 
-    // Buscamos las celdas de OBJETIVO (OBJ) de ese sub-ejercicio en todas las filas
+    // 1. Buscamos todas las filas de este bloque de ejercicio
     const filas = document.querySelectorAll(`[id^="row-${exIdx}-"]`);
+    
     filas.forEach((fila, sIdx) => {
-        const celdasObj = fila.querySelectorAll('.obj-cell');
-        const rA = data.reps_obj.split(',').map(x => x.trim());
-        const pA = data.peso_obj.split(',').map(x => x.trim());
-        const oR = rA[sIdx] || rA[rA.length-1];
-        const oK = pA[sIdx] || pA[pA.length-1];
-        
-        // Actualizamos el texto del objetivo
-        celdasObj[subIdx].innerHTML = `${oR}/${oK}`;
+        // 2. ¿Esta fila debe existir para el nuevo ejercicio?
+        if (sIdx < numSeriesNuevas) {
+            fila.style.display = 'grid'; // La mostramos
+            
+            // 3. Actualizamos los objetivos de esta fila
+            const celdasObj = fila.querySelectorAll('.obj-cell');
+            const rA = data.reps_obj.split(',').map(x => x.trim());
+            const pA = data.peso_obj.split(',').map(x => x.trim());
+            const oR = rA[sIdx] || rA[rA.length-1];
+            const oK = pA[sIdx] || pA[pA.length-1];
+            
+            celdasObj[subIdx].innerHTML = `${oR}/${oK}`;
+        } else {
+            fila.style.display = 'none'; // La ocultamos si el alternativo tiene menos sets
+        }
+    });
+
+    // 4. Actualizamos el total de sets en el botón de Check (opcional pero recomendado)
+    // Esto es para que el cronómetro sepa cuándo es la "última serie" del nuevo total
+    filas.forEach(f => {
+        const btn = f.querySelector('.check-btn');
+        if(btn) {
+            // Actualizamos el atributo onclick para que use el nuevo numSeriesNuevas
+            const onclickOriginal = btn.getAttribute('onclick');
+            const nuevoOnClick = onclickOriginal.replace(/,\s*\d+\)$/, `, ${numSeriesNuevas})`);
+            btn.setAttribute('onclick', nuevoOnClick);
+        }
     });
 }
         function toggleNotas(id) {
