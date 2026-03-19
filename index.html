@@ -134,6 +134,23 @@
     border-color: var(--primary);
     color: white;
 }
+        .alt-btn {
+    background: rgba(0, 212, 255, 0.1);
+    border: 1px solid #00d4ff;
+    color: #00d4ff;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 0.65rem;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 5px;
+    transition: all 0.3s;
+}
+
+.alt-btn.active-alt {
+    background: #00d4ff;
+    color: #000;
+}
     </style>
 </head>
 <body>
@@ -281,16 +298,19 @@ let cabeceraEjerciciosHtml = subEjercicios.map((ex, i) => {
     let nombreRender = "";
     const tieneAlt = ex.alternativa && ex.alternativa.nombre && ex.alternativa.nombre !== "OTRO";
 
+// --- BOTÓN DE ALTERNATIVO ESTILO 'INDICACIONES' ---
+    let btnAlternativo = "";
+    const tieneAlt = ex.alternativa && ex.alternativa.nombre && ex.alternativa.nombre !== "OTRO";
+
     if (tieneAlt) {
-        nombreRender = `
-            <select class="ex-alt-selector" 
-                    style="background:#222; color:#00d4ff; border:1px solid #444; border-radius:4px; font-size:0.8rem; padding:2px;"
-                    onchange="cambiarEjercicioActivo(${exIdx}, ${i}, this.value)">
-                <option value="principal">${ex.nombre}</option>
-                <option value="alternativa">ALT: ${ex.alternativa.nombre}</option>
-            </select>`;
-    } else {
-        nombreRender = `<strong style="color:#fff">${ex.nombre}</strong>`;
+        btnAlternativo = `
+            <button class="alt-btn" id="btn-alt-${exIdx}-${i}" 
+                    onclick="switchEjercicio(${exIdx}, ${i})">
+                🔄 ALTERNATIVO: ${ex.alternativa.nombre}
+            </button>`;
+    }
+
+    let nombreRender = `<strong id="name-${exIdx}-${i}" style="color:#fff">${ex.nombre}</strong>`;
     }
 
     return `
@@ -752,6 +772,24 @@ function cambiarEjercicioActivo(exIdx, subIdx, tipo) {
         return inputOtro.value || "Otro";
     }
     return select.value;
+}
+        function switchEjercicio(exIdx, subIdx) {
+    const btn = document.getElementById(`btn-alt-${exIdx}-${subIdx}`);
+    const nameSpan = document.getElementById(`name-${exIdx}-${subIdx}`);
+    
+    // Detectamos el estado actual por una clase o por el texto
+    const esPrincipal = !btn.classList.contains('active-alt');
+    
+    if (esPrincipal) {
+        btn.classList.add('active-alt');
+        btn.innerText = "✅ USANDO ALTERNATIVO";
+        cambiarEjercicioActivo(exIdx, subIdx, 'alternativa');
+    } else {
+        btn.classList.remove('active-alt');
+        const bloque = rutinaFull.sesiones[document.getElementById('session-picker').value].ejercicios[exIdx];
+        btn.innerText = `🔄 ALTERNATIVO: ${bloque.sub_ejercicios[subIdx].alternativa.nombre}`;
+        cambiarEjercicioActivo(exIdx, subIdx, 'principal');
+    }
 }
     </script>
 </body>
